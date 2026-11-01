@@ -60,10 +60,12 @@ jobs:
         id: platform-toolchain
         run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
       - name: Initialize Dapr proof prerequisites
-        uses: Hexalith/Hexalith.Builds/Github/dapr-init@04d961759994396132bb2b113ee465b64740a543
+        uses: Hexalith/Hexalith.Builds/Github/dapr-init@81c88b34d09d34260b92d7f0928dbbc1c7446baa
         with:
           version: ${{ steps.platform-toolchain.outputs.dapr-cli }}
           runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}
+      - name: Prepare verified published Builds artifacts
+        run: bash scripts/prepare-platform-builds.sh
       - name: Run complete canonical Platform gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -92,7 +94,7 @@ jobs:
 
   ci:
     needs: platform-toolchain
-    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@04d961759994396132bb2b113ee465b64740a543
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@81c88b34d09d34260b92d7f0928dbbc1c7446baa
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
@@ -100,6 +102,7 @@ jobs:
       dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}
       build-timeout-minutes: 60
       run-consumer-validation: true
+      package-prepare-script: scripts/prepare-platform-builds.sh
       unit-test-projects: |
         tests/Hexalith.Works.UnitTests
         tests/Hexalith.Works.ArchitectureTests

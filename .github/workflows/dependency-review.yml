@@ -16,7 +16,7 @@ jobs:
     permissions:
       contents: read
       pull-requests: write
-    uses: Hexalith/Hexalith.Builds/.github/workflows/dependency-review.yml@04d961759994396132bb2b113ee465b64740a543
+    uses: Hexalith/Hexalith.Builds/.github/workflows/dependency-review.yml@81c88b34d09d34260b92d7f0928dbbc1c7446baa
     with:
       # Stricter than the shared 'high' default: this module publishes libraries, so a moderate advisory
       # introduced by a pull request should be reviewed before it reaches consumers.

@@ -1,10 +1,17 @@
 using System.Text.Json;
+using System.Security.Claims;
 
 using Hexalith.EventStore.Client.Aggregates;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.Contracts.Queries;
 using Hexalith.EventStore.Contracts.Replay;
+using Hexalith.EventStore.Contracts.Authorization;
+using Hexalith.EventStore.Contracts.Routing;
+using Hexalith.EventStore.Contracts.Serialization;
 using Hexalith.EventStore.DomainService;
+using Hexalith.EventStore.ServiceDefaults.Routing;
+using Hexalith.EventStore.ServiceDefaults.Authentication;
+using Hexalith.Works.Routing;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -57,7 +64,7 @@ public sealed class WorksSdkEndpointCancellationTests
         }
 
         IDomainQueryHandler queryHandler = Substitute.For<IDomainQueryHandler>();
-        queryHandler.Domain.Returns("token-probe");
+        queryHandler.Domain.Returns("work");
         queryHandler.QueryType.Returns("get-probe");
         queryHandler.ExecuteAsync(Arg.Any<QueryEnvelope>(), Arg.Any<CancellationToken>()).Returns(async call =>
         {
@@ -71,7 +78,7 @@ public sealed class WorksSdkEndpointCancellationTests
         });
 
         IDomainProjectionHandler projectionHandler = Substitute.For<IDomainProjectionHandler>();
-        projectionHandler.Domain.Returns("token-probe");
+        projectionHandler.Domain.Returns("work");
         projectionHandler.Project(Arg.Any<ProjectionRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
         {
             boundRequest = call.ArgAt<ProjectionRequest>(0);
@@ -95,18 +102,37 @@ public sealed class WorksSdkEndpointCancellationTests
         WebApplicationBuilder builder = WebApplication.CreateBuilder(["--Logging:LogLevel:Default=Error"]);
         builder.Configuration["EventStore:DomainService:AppId"] = "cancellation-probe";
         builder.Configuration["EventStore:DomainService:ServiceVersion"] = "v1";
-        builder.AddEventStoreDomainService();
         builder.Services.AddSingleton(queryHandler);
         builder.Services.AddSingleton(projectionHandler);
-        builder.Services.AddKeyedSingleton<IAsyncAggregateReplay>("token-probe", replayHandler);
+        builder.AddEventStoreDomainService(typeof(WorkItemEventStoreAggregate).Assembly);
+        // This delegate-binding fixture selects its explicit probe receivers over the real Works command inventory.
+        Microsoft.Extensions.DependencyInjection.Extensions.ServiceCollectionDescriptorExtensions.RemoveAll<IAsyncDomainProjectionHandler>(builder.Services);
+        builder.Services.AddKeyedSingleton<IAsyncAggregateReplay>("work", replayHandler);
+        var queryDeclaration = new RouteContractDeclaration("cancellation-query", "query", "work", "get-probe", null,
+            "v1", null, "workload", EventStoreOperationIdentifiers.DomainServiceQuery, null, [],
+            new(queryHandler.GetType().FullName!, "exact", ["get-probe"], "domain-service", "computed", []));
+        var projectionDeclaration = new RouteContractDeclaration("cancellation-projection", "projection", "work", null, "probe-legacy",
+            "v1", null, "workload", EventStoreOperationIdentifiers.DomainServiceProject, null, [],
+            new(projectionHandler.GetType().FullName!, "exact", ["probe-legacy"], "domain-service", null, ["probe-summary"]));
+        builder.Services.AddSingleton(new LegacyProjectionCatalogRegistration([projectionDeclaration]));
+        IEndpointRouteBuilder? mapped = null;
+        WorksHttpCatalogFixture.Register(builder.Services, "cancellation-probe",
+            [.. WorksCatalogDeclarations.Commands.Select(command => command.Route), queryDeclaration, projectionDeclaration],
+            [.. WorksCatalogDeclarations.Operations.Where(operation => operation.Kind == "command"),
+                RouteOperationSchema.Create(queryDeclaration, typeof(QueryEnvelope), typeof(QueryResult), "internal", "UI-only", EventStorePayloadSerialization.Options),
+                RouteOperationSchema.Create(projectionDeclaration, typeof(ProjectionRequest), typeof(ProjectionResponse), "internal", "UI-only", EventStorePayloadSerialization.Options)],
+            () => mapped!.DataSources.SelectMany(source => source.Endpoints).ToArray());
         await using WebApplication app = builder.Build();
         app.MapEventStoreDomainService();
+        mapped = app;
+        var generation = await app.Services.GetRequiredService<IRouteCatalogAuthority>().AcquireAsync(testToken);
+        await using var generationLifetime = generation.ConfigureAwait(false);
 
         object request = route switch
         {
-            "/query" => new QueryEnvelope("tenant", "token-probe", "probe", "get-probe", [123, 125], "correlation", "user"),
-            "/replay-state" => new AggregateReconstructionRequest("tenant", "token-probe", "probe", "probe", 0, [], false, null),
-            "/project" => new ProjectionRequest("tenant", "token-probe", "probe", []),
+            "/query" => new QueryEnvelope("tenant", "work", "probe", "get-probe", [123, 125], "correlation", "user"),
+            "/replay-state" => new AggregateReconstructionRequest("tenant", "work", "probe", "probe", 0, [], false, null),
+            "/project" => new ProjectionRequest("tenant", "work", "probe", []),
             _ => throw new ArgumentOutOfRangeException(nameof(route)),
         };
         byte[] body = JsonSerializer.SerializeToUtf8Bytes(request, request.GetType(), JsonSerializerOptions.Web);
@@ -115,7 +141,11 @@ public sealed class WorksSdkEndpointCancellationTests
         {
             RequestServices = scope.ServiceProvider,
             RequestAborted = caller.Token,
+            User = new ClaimsPrincipal(new ClaimsIdentity([new Claim("eventstore:surface", "service"),
+                new Claim(EventStoreWorkloadAuthenticationDefaults.WorkloadClaimType, "eventstore")], "verified-fixture-workload")),
         };
+        context.Request.Headers[RouteCatalogInvocationHandler.RootHeader] = generation.Snapshot.RootDigest;
+        context.Request.Headers[RouteCatalogInvocationHandler.EpochHeader] = generation.Snapshot.Epoch.ToString(System.Globalization.CultureInfo.InvariantCulture);
         IHttpRequestBodyDetectionFeature bodyDetection = Substitute.For<IHttpRequestBodyDetectionFeature>();
         bodyDetection.CanHaveBody.Returns(true);
         context.Features.Set(bodyDetection);

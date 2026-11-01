@@ -23,20 +23,9 @@ internal static class WorksPlatformOperationsChecks
         ProcessSource source, CancellationToken cancellationToken)
     {
         ResourceEvent admin = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore-admin", cancellationToken, cancellationToken).ConfigureAwait(false);
-        using HttpClient sidecar = WorksAppHostTestReadiness.CreateDaprClient(admin, "Admin");
         string auditKey = WorksSyntheticDispositionAuditSink.Key(source);
         ProcessSourceState before = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), cancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull();
         int priorAuditCount = (await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore", auditKey, cancellationToken).ConfigureAwait(false)).Value?.Attempts.Count ?? 0;
-        Dictionary<string, object> bindings = new()
-        {
-            [EventStoreWorkloadAuthenticationDefaults.TenantBindingClaimType] = source.Tenant,
-            [EventStoreWorkloadAuthenticationDefaults.DomainBindingClaimType] = source.Domain,
-            ["eventstore:bound-aggregate"] = source.Aggregate,
-            [EventStoreWorkloadAuthenticationDefaults.ActorBindingClaimType] = "synthetic-operator-416",
-            ["eventstore:bound-purpose"] = "works.process-disposition",
-        };
-        object body = new { source, reason = "Synthetic Platform parity revalidation" };
-        string Assertion() => WorksPlatformProofRequests.Assertion("eventstore-admin", "works", ["domain-service:process", "process:dispose"], bindings);
         int circuitRefusals = 0;
         async Task<HttpResponseMessage> PostThroughCircuitAsync(CancellationToken token)
         {
@@ -44,8 +33,7 @@ internal static class WorksPlatformOperationsChecks
             transportDeadline.CancelAfter(TimeSpan.FromSeconds(60));
             while (true)
             {
-                HttpResponseMessage response = await WorksPlatformProofRequests.PostAsync(sidecar, "works", "/work/processes/revalidate",
-                    body, Assertion(), transportDeadline.Token).ConfigureAwait(false);
+                HttpResponseMessage response = await WorksAdminProofRequests.PostAsync(admin, source, "accepted", Guid.NewGuid().ToString("N"), transportDeadline.Token).ConfigureAwait(false);
                 string responseBody = await response.Content.ReadAsStringAsync(transportDeadline.Token).ConfigureAwait(false);
                 if (response.StatusCode != HttpStatusCode.InternalServerError
                     || !responseBody.Contains("circuit breaker", StringComparison.OrdinalIgnoreCase)
@@ -59,18 +47,19 @@ internal static class WorksPlatformOperationsChecks
         async Task<object> RequireReceiverRefusalAsync(string kind, int receiverStatus)
         {
             string nonce = Guid.NewGuid().ToString("N");
-            Dictionary<string, string> headers = new() { [WorksPlatformDispositionProbe.NonceHeader] = nonce, [WorksPlatformDispositionProbe.KindHeader] = kind };
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             deadline.CancelAfter(TimeSpan.FromSeconds(65));
             int lastStatus = 0;
+            var statuses = new List<int>();
             string lastBody = string.Empty;
             try
             {
                 while (true)
                 {
-                    using HttpResponseMessage refused = await WorksPlatformProofRequests.PostAsync(sidecar, "works", WorksPlatformDispositionProbe.Route,
-                        body, Assertion(), deadline.Token, headers).ConfigureAwait(false);
+                    using HttpResponseMessage refused = await WorksAdminProofRequests.PostAsync(admin, source, kind, nonce, deadline.Token).ConfigureAwait(false);
                     lastStatus = (int)refused.StatusCode;
+                    statuses.Add(lastStatus);
+                    if (statuses.Count > 16) statuses.RemoveAt(8);
                     string raw = await refused.Content.ReadAsStringAsync(deadline.Token).ConfigureAwait(false);
                     lastBody = raw[..Math.Min(raw.Length, 2000)];
                     bool transportOpen = refused.StatusCode == HttpStatusCode.InternalServerError
@@ -98,7 +87,7 @@ internal static class WorksPlatformOperationsChecks
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
             {
                 throw new InvalidOperationException("No correlated actual receiver refusal completed before the bounded transport deadline. kind="
-                    + kind + "; HTTP=" + lastStatus + "; body=" + lastBody);
+                    + kind + "; HTTP=" + lastStatus + "; observedHTTP=" + string.Join(',', statuses) + "; body=" + lastBody);
             }
         }
         async Task RequireUnchangedDispositionAsync()
@@ -109,18 +98,12 @@ internal static class WorksPlatformOperationsChecks
             current.PendingPlan.ShouldBe(before.PendingPlan);
             ((await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore", auditKey, cancellationToken).ConfigureAwait(false)).Value?.Attempts.Count ?? 0).ShouldBe(priorAuditCount);
         }
-        bindings["eventstore:bound-purpose"] = "wrong-purpose";
         object wrongPurpose = await RequireReceiverRefusalAsync("wrong-purpose", 403).ConfigureAwait(false);
         await RequireUnchangedDispositionAsync().ConfigureAwait(false);
-        bindings["eventstore:bound-purpose"] = "works.process-disposition";
-        bindings[EventStoreWorkloadAuthenticationDefaults.TenantBindingClaimType] = source.Tenant + "-foreign";
         object wrongTenant = await RequireReceiverRefusalAsync("wrong-tenant", 403).ConfigureAwait(false);
         await RequireUnchangedDispositionAsync().ConfigureAwait(false);
-        bindings[EventStoreWorkloadAuthenticationDefaults.TenantBindingClaimType] = source.Tenant;
-        bindings["eventstore:bound-aggregate"] = source.Aggregate + "-foreign";
         object wrongAggregate = await RequireReceiverRefusalAsync("wrong-aggregate", 403).ConfigureAwait(false);
         await RequireUnchangedDispositionAsync().ConfigureAwait(false);
-        bindings["eventstore:bound-aggregate"] = source.Aggregate;
         _ = await ReadModelWritePolicy.UpdateAsync<WorksPlatformAuditFault>(store, "statestore", WorksPlatformAuditFaultStore.FaultKey,
             _ => new WorksPlatformAuditFault(true), maxAttempts: 8, cancellationToken: cancellationToken).ConfigureAwait(false);
         object auditOutage = await RequireReceiverRefusalAsync("audit-outage", 500).ConfigureAwait(false);

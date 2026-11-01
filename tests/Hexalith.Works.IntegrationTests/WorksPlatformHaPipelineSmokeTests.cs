@@ -43,6 +43,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
         using RSA authority = RSA.Create(2048);
         string key = Convert.ToBase64String(authority.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        await isolation.CaptureDevelopmentCatalogProfileAsync(digestKey, ct, replicas: 2).ConfigureAwait(true);
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, gateway, sidecar, token) =>
         {
             object trust = await WorksPlatformTrustChecks.VerifyAsync(app, "works-dapr-cli", "works", "eventstore", token).ConfigureAwait(false);
@@ -133,12 +134,14 @@ public sealed class WorksPlatformHaPipelineSmokeTests
                 }) + Environment.NewLine, token).ConfigureAwait(false);
         }, builder =>
         {
-            AddIndependentReplica(builder);
+            builder.Resources.OfType<ProjectResource>().Count(resource => resource.Name is "works" or "works-ha").ShouldBe(2,
+                "Both physical Works hosts must be created and enrolled by Platform before its catalog capture.");
             WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint,
                 [new ProcessSource(tenant, "work", item)]);
             foreach (ProjectResource host in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "works-ha"))
                 builder.CreateResourceBuilder(host).WithEnvironment(WorksPlatformReminderCallbackProbe.ActorEnvironment, ReminderIdentityCodec.ComputeActorId(tenant, item));
-        }, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
+        }, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory,
+            developmentCatalogProfilePath: isolation.DevelopmentCatalogProfilePath).ConfigureAwait(true);
     }
 
     private static void AddIndependentReplica(IDistributedApplicationTestingBuilder builder)

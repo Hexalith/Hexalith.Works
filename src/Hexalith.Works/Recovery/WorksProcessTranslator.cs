@@ -1,3 +1,5 @@
+using System.Diagnostics;
+
 using System.Text.Json;
 
 using Hexalith.EventStore.Client.Processes;
@@ -12,16 +14,56 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Reactor;
 using Hexalith.Works.Runtime;
 
+using Microsoft.Extensions.Logging;
+
 namespace Hexalith.Works.Recovery;
 
 /// <summary>Acquires authoritative read-only relationship context around the pure Works Reactor translations.</summary>
-internal sealed class WorksProcessTranslator(WorksSourceStreamReader streams) : IProcessTranslator
+internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader streams, ILogger<WorksProcessTranslator>? logger = null) : IProcessTranslator
 {
     private readonly WorksSourceStreamReader _streams = streams ?? throw new ArgumentNullException(nameof(streams));
+
+    private static long _nextObservation;
 
     /// <inheritdoc/>
     public async ValueTask<IReadOnlyList<ProcessEffect>> TranslateAsync(ProcessSource source, StreamReadEvent streamEvent,
         CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(streamEvent);
+        long observation = Interlocked.Increment(ref _nextObservation);
+        string type = (streamEvent.EventTypeName is { Length: <= 512 } name ? name : string.Empty).Split(',')[0].Split('.').Last();
+        string kind = type is nameof(WorkItemCancelled) or nameof(WorkItemExpired) or nameof(WorkItemCompleted) or nameof(WorkItemRescheduled) ? type : "other";
+        long began = Stopwatch.GetTimestamp();
+        TryObserve(() => TranslationStarted(logger!, observation, kind));
+        try
+        {
+            var result = await TranslateCoreAsync(source, streamEvent, cancellationToken).ConfigureAwait(false);
+            TryObserve(() => TranslationCompleted(logger!, observation, kind, Stopwatch.GetElapsedTime(began).TotalMilliseconds, "completed", result.Count));
+            return result;
+        }
+        catch (Exception exception)
+        {
+            TryObserve(() => TranslationCompleted(logger!, observation, kind, Stopwatch.GetElapsedTime(began).TotalMilliseconds,
+                exception is OperationCanceledException ? "cancelled" : "failed", null));
+            throw;
+        }
+    }
+
+    private void TryObserve(Action write)
+    {
+        try { if (logger?.IsEnabled(LogLevel.Debug) == true) write(); }
+        catch (Exception exception) when (exception is not OutOfMemoryException) { }
+    }
+
+    [LoggerMessage(290101, LogLevel.Debug, "Works process translation {Observation} started; kind={Kind}.")]
+    private static partial void TranslationStarted(ILogger logger, long observation, string kind);
+
+    [LoggerMessage(290102, LogLevel.Debug, "Works process translation {Observation} completed; kind={Kind}, milliseconds={Milliseconds}, outcome={Outcome}, effects={Effects}.")]
+    private static partial void TranslationCompleted(ILogger logger, long observation, string kind, double milliseconds, string outcome, int? effects);
+
+    private async ValueTask<IReadOnlyList<ProcessEffect>> TranslateCoreAsync(ProcessSource source, StreamReadEvent streamEvent,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(source);
         ArgumentNullException.ThrowIfNull(streamEvent);

@@ -14,12 +14,21 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-The current EventStore source is `36c78f3435d2d492a73f1b0707cf865c8735d740`, six commits after public
-`v3.128.3` (`aff4efed59ed51ca34e6106030854b8616971521`). Release pins 3.128.3.
-PolymorphicSerializations source is `221ac4592ba908ae7661ba1fa9e2d1fcc23baee0`, exactly `v1.19.5`,
-and Release pins 1.19.5. The current source markers in the API and boundary records bind the consumed
+The current EventStore source is `61e6fa853d81cf822d67d6abfd6a130bdbb14ce2`, three commits after public
+`v3.129.0` (`c02afa0fce310ccdb696232f18829df96cba088e`). Release pins 3.129.0.
+PolymorphicSerializations source is `92ede24cc11129379efe52cfe7fd2c820c567f7f`, two commits after public
+`v1.19.6` (`2e68a028c695d577cd733d0c1e40ec57531c7547`), and Release pins 1.19.6. The current source markers in the API and boundary records bind the consumed
 EventStore checkout; the existing Architecture drift controls verify those markers independently.
 Historical public-producer and live-proof revisions retain their original scope.
+
+The unmapped source entry point explicitly selects Commons (including Http) and McpCli
+source edges as well as the two governed producer pairs. It refuses an active module-tool
+mapping so its source selectors cannot overwrite that mapping. Restore and compilation
+share a private output tree under the selected evidence directory; concurrent package
+restores cannot replace this proof's assets. Use a directory under `.artifacts/` when running
+test assemblies that locate their owning repository through build-directory ancestors.
+The added root Memories dependency supplies Platform's current source preparation contracts;
+nested submodules remain uninitialized.
 
 The original CI/CD review asked for Debug compilation in CI because evaluating project references
 does not compile them. The required Hexalith baseline keeps CI in Release/package mode. The replacement

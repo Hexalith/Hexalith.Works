@@ -37,3 +37,6 @@
 [submodule "Hexalith.McpCli"]
 	path = references/Hexalith.McpCli
 	url = https://github.com/Hexalith/Hexalith.McpCli.git
+[submodule "references/Hexalith.Memories"]
+	path = references/Hexalith.Memories
+	url = https://github.com/Hexalith/Hexalith.Memories.git

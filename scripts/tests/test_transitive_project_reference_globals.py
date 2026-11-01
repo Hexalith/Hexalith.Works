@@ -9,6 +9,8 @@ import unittest
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
+from scripts.tests.build_policy_fixtures import add_source_root_markers
+
 ROOT = Path(__file__).resolve().parents[2]
 PIN = ET.parse(ROOT / "Directory.Packages.props").findtext(".//HexalithEventStoreVersion")
 
@@ -28,6 +30,7 @@ class TransitiveProjectReferenceGlobalsTests(unittest.TestCase):
             feed = root / "feed"
             for path in (works, external, feed):
                 path.mkdir()
+            add_source_root_markers(works)
             for filename in ("Directory.Build.props", "Directory.Build.targets", "global.json"):
                 shutil.copyfile(ROOT / filename, works / filename)
             (works / "Directory.Packages.props").write_text(
@@ -114,6 +117,7 @@ class ParallelSolutionNodeIdentityTests(unittest.TestCase):
         works, external, feed, audit = [root / name for name in ("works", "external", "feed", "audit")]
         for path in (works, external, feed, audit):
             path.mkdir()
+        add_source_root_markers(works)
         for filename in ("Directory.Build.props", "Directory.Build.targets", "global.json"):
             shutil.copyfile(ROOT / filename, works / filename)
         self.write_xml(works / "Directory.Packages.props", ET.fromstring(

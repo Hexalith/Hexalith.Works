@@ -20,5 +20,8 @@ internal static class WorksProcessDispositionEndpoints
             catch (UnauthorizedAccessException) { return Results.StatusCode(StatusCodes.Status403Forbidden); }
             catch (ArgumentException) { return Results.BadRequest(); }
             catch (InvalidOperationException) { return Results.StatusCode(StatusCodes.Status503ServiceUnavailable); }
-        }).RequireEventStoreDomainServicePolicy("/process");
+        }).RequireEventStoreDomainServiceAuxiliaryPolicy<WorksProcessDispositionRequest>("/process", "work", Scope);
+
+    private static DomainRouteCatalogAuxiliaryScope? Scope(WorksProcessDispositionRequest request)
+        => request.Source is null ? null : new(request.Source.Tenant, request.Source.Domain);
 }

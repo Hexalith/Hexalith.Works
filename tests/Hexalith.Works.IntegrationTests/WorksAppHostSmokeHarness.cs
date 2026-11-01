@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Net.Sockets;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
+using System.Runtime.Loader;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
@@ -119,16 +120,27 @@ internal static class WorksAppHostSmokeHarness
         // app IDs with any unrelated local sidecar that shares them.
         string registry = Path.Combine(discovery, WorksAppHostDiscoveryIsolation.RegistryFileName);
         var isolatedConfigurations = new Dictionary<string, string>(StringComparer.Ordinal);
+        var configurationProvenance = new List<object>();
         string Isolated(string? configuration)
         {
             if (string.IsNullOrWhiteSpace(configuration))
                 throw new InvalidOperationException("Every live sidecar needs a Dapr configuration to isolate its name resolution.");
             if (!isolatedConfigurations.TryGetValue(configuration, out string? isolated))
             {
-                isolated = Path.Combine(discovery, isolatedConfigurations.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                var file = new FileInfo(configuration);
+                bool sdkOwned = platform && file.Directory?.Name.StartsWith("hexalith-route-catalog-", StringComparison.Ordinal) == true
+                    && file.Name.EndsWith(".configuration.json", StringComparison.Ordinal)
+                    && file.Directory.Parent?.FullName == Path.GetTempPath().TrimEnd(Path.DirectorySeparatorChar)
+                    && file.LinkTarget is null && file.Directory.LinkTarget is null
+                    && (OperatingSystem.IsWindows() || File.GetUnixFileMode(configuration) == (UnixFileMode.UserRead | UnixFileMode.UserWrite));
+                isolated = sdkOwned ? configuration : Path.Combine(discovery, isolatedConfigurations.Count.ToString(System.Globalization.CultureInfo.InvariantCulture)
                     + "-" + Path.GetFileName(configuration));
-                File.WriteAllText(isolated, WorksAppHostDiscoveryIsolation.Render(File.ReadAllText(configuration), registry,
+                byte[] original = File.ReadAllBytes(configuration);
+                File.WriteAllText(isolated, WorksAppHostDiscoveryIsolation.Render(System.Text.Encoding.UTF8.GetString(original), registry,
                     platform ? sentryPort : null));
+                configurationProvenance.Add(new { source = configuration, actual = isolated, sdkOwned,
+                    sourceSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(original)),
+                    actualSha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(isolated))) });
                 isolatedConfigurations[configuration] = isolated;
             }
 
@@ -172,6 +184,7 @@ internal static class WorksAppHostSmokeHarness
                 }
             });
         }
+        File.WriteAllText(Path.Combine(discovery, "derived-configurations.json"), JsonSerializer.Serialize(configurationProvenance));
     }
 
     private static Dictionary<string, string> AssignHostingEvidence(IDistributedApplicationTestingBuilder builder, string directory)
@@ -280,7 +293,11 @@ internal static class WorksAppHostSmokeHarness
         try
         {
             ResourceLoggerService logs = app.Services.GetRequiredService<ResourceLoggerService>();
-            foreach (string resource in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls", "eventstore", "works", "works-ha", "eventstore-operations", "eventstore-admin" })
+            string[] sidecars = app.Services.GetRequiredService<DistributedApplicationModel>().Resources.OfType<ProjectResource>()
+                .Where(project => project.Name is "works" or "eventstore")
+                .SelectMany(project => project.Annotations.OfType<DaprSidecarAnnotation>().Select(annotation => annotation.Sidecar.Name + "-cli")).ToArray();
+            foreach (string resource in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls", "eventstore", "works" }
+                .Concat(sidecars).Concat(["works-ha", "eventstore-operations", "eventstore-admin"]).Distinct(StringComparer.Ordinal))
             {
                 var lines = new List<LogLine>();
                 using var resourceBudget = CancellationTokenSource.CreateLinkedTokenSource(budget.Token);
@@ -289,6 +306,47 @@ internal static class WorksAppHostSmokeHarness
                 {
                     string resourceId = app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? current)
                         ? current.ResourceId : resource;
+                    if (current is not null)
+                    {
+                        _ = output.AppendLine().Append(resource).Append(" endpoints: ")
+                            .AppendLine(string.Join(", ", current.Snapshot.Urls.Select(url => url.Name + "=" + url.Url)));
+                        foreach (var report in current.Snapshot.HealthReports)
+                            _ = output.Append(resource).Append(" health: ").Append(report.Name).Append('=').Append(report.Status)
+                                .Append(' ').AppendLine(report.Description);
+                        try
+                        {
+                            if (resource is "works" or "works-ha")
+                            {
+                                try
+                                {
+                                    _ = output.Append(resource).Append(" actual reminder readiness: ").AppendLine(
+                                        await WorksReminderHealthProjection.CaptureStartupAsync(app, resource, resourceBudget.Token).ConfigureAwait(false));
+                                }
+                                catch (Exception exception) when (exception is not OutOfMemoryException)
+                                { _ = output.Append(resource).Append(" actual reminder readiness capture failed: ").AppendLine(exception.GetType().Name); }
+                            }
+                            string? catalog = await WorksCatalogStartupDiagnostics.CaptureAsync(current, resourceBudget.Token).ConfigureAwait(false);
+                            if (catalog is not null) _ = output.Append(resource).Append(" catalog structure: ").AppendLine(catalog);
+                            if (resource is "works" or "works-ha")
+                                _ = output.Append(resource).Append(" recovery state: ").AppendLine(
+                                    await WorksRecoveryStartupDiagnostics.CaptureAsync(current, resourceBudget.Token).ConfigureAwait(false));
+                        }
+                        catch (Exception exception) when (exception is not OutOfMemoryException)
+                        { _ = output.Append(resource).Append(" catalog structure capture failed: ").AppendLine(exception.GetType().Name); }
+                    }
+                    if (resource == "dapr-sentry" && current is not null)
+                    {
+                        try
+                        {
+                            using var client = app.CreateHttpClient(resource, "health");
+                            using var response = await client.GetAsync("/healthz", resourceBudget.Token).ConfigureAwait(false);
+                            string body = await response.Content.ReadAsStringAsync(resourceBudget.Token).ConfigureAwait(false);
+                            _ = output.Append(resource).Append(" actual health probe: ").Append((int)response.StatusCode)
+                                .Append(' ').AppendLine(body.Length > 512 ? body[..512] : body);
+                        }
+                        catch (Exception exception) when (exception is HttpRequestException or OperationCanceledException)
+                        { _ = output.Append(resource).Append(" actual health probe: ").AppendLine(exception.GetType().Name); }
+                    }
                     await foreach (IReadOnlyList<LogLine> batch in logs.GetAllAsync(resourceId)
                         .WithCancellation(resourceBudget.Token).ConfigureAwait(false)) lines.AddRange(batch);
                 }
@@ -300,9 +358,44 @@ internal static class WorksAppHostSmokeHarness
                 {
                     _ = output.AppendLine().Append(resource).Append(" log read failed: ").AppendLine(exception.GetType().Name);
                 }
+                if (app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? observed)
+                    && observed.Snapshot.EnvironmentVariables.SingleOrDefault(variable => variable.Name == WorksReminderPhaseDiagnostics.PathKey)?.Value is { Length: > 0 } reminderPath)
+                {
+                    if (File.Exists(reminderPath))
+                    {
+                        byte[] phases = await WorksProofCallerProtocol.ReadAsync(reminderPath, CancellationToken.None).ConfigureAwait(false);
+                        _ = output.AppendLine().Append(resource).Append(" actual reminder phases: ").AppendLine(System.Text.Encoding.UTF8.GetString(phases));
+                    }
+                    if (File.Exists(reminderPath + ".translations.json"))
+                    {
+                        byte[] translations = await WorksProofCallerProtocol.ReadAsync(reminderPath + ".translations.json", CancellationToken.None).ConfigureAwait(false);
+                        _ = output.AppendLine().Append(resource).Append(" actual process translations: ").AppendLine(System.Text.Encoding.UTF8.GetString(translations));
+                    }
+                    if (File.Exists(reminderPath + ".passes.json"))
+                    {
+                        byte[] passes = await WorksProofCallerProtocol.ReadAsync(reminderPath + ".passes.json", CancellationToken.None).ConfigureAwait(false);
+                        _ = output.AppendLine().Append(resource).Append(" actual reminder pass counts: ").AppendLine(System.Text.Encoding.UTF8.GetString(passes));
+                    }
+                }
+                if (app.ResourceNotifications.TryGetCurrentState(resource, out ResourceEvent? catalogObserved)
+                    && catalogObserved.Snapshot.EnvironmentVariables.SingleOrDefault(variable => variable.Name == WorksCatalogFirstChanceObserver.PathKey)?.Value is { Length: > 0 } catalogPath
+                    && File.Exists(catalogPath))
+                {
+                    byte[] refusals = await WorksProofCallerProtocol.ReadAsync(catalogPath, CancellationToken.None).ConfigureAwait(false);
+                    _ = output.AppendLine().Append(resource).Append(" passive SDK refusals: ").AppendLine(System.Text.Encoding.UTF8.GetString(refusals));
+                }
                 _ = output.AppendLine().Append(resource).AppendLine(" startup output:");
-                foreach (LogLine line in lines.TakeLast(40))
-                    _ = output.AppendLine(line.Content.Length > 4000 ? line.Content[..4000] : line.Content);
+                var firstFailures = lines.Where(line => line.Content.Contains("BackgroundService failed", StringComparison.Ordinal)
+                    || line.Content.Contains("Unhandled exception", StringComparison.Ordinal)).Take(4);
+                var discoveryFailures = lines.Where(line => line.Content.Contains("\"EventId\":4511,", StringComparison.Ordinal)
+                    || line.Content.Contains("\"EventId\":200211,", StringComparison.Ordinal)
+                    || line.Content.Contains("\"EventId\":200212,", StringComparison.Ordinal)
+                    || line.Content.Contains("\"EventId\":5130,", StringComparison.Ordinal));
+                var actorFailures = lines.Where(line => line.Content.Contains("\"LogLevel\":\"Error\"", StringComparison.Ordinal)
+                    || line.Content.Contains("level=error", StringComparison.Ordinal));
+                foreach (LogLine line in firstFailures.Concat(discoveryFailures.Take(4)).Concat(discoveryFailures.TakeLast(8))
+                    .Concat(actorFailures.Take(4)).Concat(actorFailures.TakeLast(4)).Concat(lines.TakeLast(40)).Distinct())
+                    _ = output.AppendLine(WorksSdkProofDiagnostics.Redact(line.Content.Length > 6500 ? line.Content[..6500] : line.Content));
             }
         }
         catch (Exception exception)
@@ -329,10 +422,13 @@ internal static class WorksAppHostSmokeHarness
         bool expectWorksReadinessDegraded = false,
         string? schedulerVolumeName = null,
         string? certificateDirectory = null,
-        bool useRetainedHost = false)
+        bool useRetainedHost = false,
+        string? developmentCatalogProfilePath = null)
     {
         ArgumentNullException.ThrowIfNull(body);
         RequireOwnedPlatformFixture(WorksAppHostSelection.IsPlatform, configure is not null, schedulerVolumeName, certificateDirectory);
+        if (WorksAppHostSelection.IsPlatform && !useRetainedHost && string.IsNullOrWhiteSpace(developmentCatalogProfilePath))
+            throw new InvalidOperationException("The canonical Platform proof requires its owned catalog profile before composition.");
 
         // A restart fact calls this method twice after only one prerequisite probe. Recheck immediately before
         // every start so teardown lag from the first run cannot race the second scheduler/placement bind. Once
@@ -356,6 +452,8 @@ internal static class WorksAppHostSmokeHarness
                     "--environment=Development",
                     $"--Platform:Works:Enabled={(WorksAppHostSelection.IsPlatform && !useRetainedHost).ToString().ToLowerInvariant()}",
                     .. (certificateDirectory is null ? Array.Empty<string>() : new[] { $"--Dapr:Mtls:CertificateDirectory={certificateDirectory}" }),
+                    .. (developmentCatalogProfilePath is null || useRetainedHost ? Array.Empty<string>()
+                        : new[] { $"--Platform:Works:DevelopmentCatalogProfile={developmentCatalogProfilePath}" }),
                     $"--Works:Authentication:DevSigningKey={DevSigningKey}",
                     // These acceptance facts share fixed localhost control-plane addresses and are serialized by
                     // WorksAppHostTestCollection. Preserve those ports instead of the testing builder's default
@@ -386,6 +484,9 @@ internal static class WorksAppHostSmokeHarness
         DistributedApplication? app = null;
         Exception? primaryException = null;
         string? discoveryDirectory = null;
+        bool retainDiscoveryWithFleet = false;
+        WorksFleetScope? fleetScope = null;
+        string? fleetOwnerPath = null;
         try
         {
             // On an actual Platform start, capture Platform's own composition before the fixture configures the builder,
@@ -393,6 +494,9 @@ internal static class WorksAppHostSmokeHarness
             Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
                 ? WorksPlatformCompositionGuard.Capture(builder) : null;
             configure?.Invoke(builder);
+            if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_CATALOG_SOURCE_SENTRY_DIAGNOSTICS") == "1")
+                builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-sentry"))
+                    .WithArgs("--log-level=debug").WithEnvironment("FSNOTIFY_DEBUG", "1");
             Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? fixtureComposition = platformComposition is null
                 ? null : WorksPlatformCompositionGuard.Capture(builder);
             WorksAppHostTestReadiness.ConfigureHarnessLogging(builder);
@@ -410,7 +514,16 @@ internal static class WorksAppHostSmokeHarness
             }
 
             // Created only inside this try, so the cleanup below always removes it.
-            discoveryDirectory = Directory.CreateTempSubdirectory(WorksAppHostDiscoveryIsolation.DirectoryPrefix).FullName;
+            if (WorksAppHostSelection.IsPlatform && !useRetainedHost)
+            {
+                string owner = Path.GetDirectoryName(builder.Configuration["Platform:Works:DevelopmentCatalogProfile"]
+                    ?? throw new InvalidOperationException("The canonical discovery registry requires the preselected owner profile."))!;
+                discoveryDirectory = Path.Combine(owner, WorksAppHostDiscoveryIsolation.DirectoryPrefix + Guid.NewGuid().ToString("N"));
+                if (OperatingSystem.IsWindows()) Directory.CreateDirectory(discoveryDirectory);
+                else Directory.CreateDirectory(discoveryDirectory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+                retainDiscoveryWithFleet = true;
+            }
+            else discoveryDirectory = Directory.CreateTempSubdirectory(WorksAppHostDiscoveryIsolation.DirectoryPrefix).FullName;
             IsolateApplicationPorts(builder, discoveryDirectory, WorksAppHostSelection.IsPlatform,
                 WorksAppHostSelection.ControlPlanePorts, Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH"));
             Dictionary<string, string> hostingEvidence = WorksAppHostSelection.IsPlatform
@@ -473,6 +586,12 @@ internal static class WorksAppHostSmokeHarness
                     .ConfigureAwait(true);
             }
 
+            if (WorksAppHostSelection.IsPlatform && useRetainedHost && !expectWorksReadinessDegraded)
+            {
+                using HttpClient retainedWorks = app.CreateHttpClient("works");
+                await WorksAppHostTestReadiness.WaitForRetainedWorksReadinessAsync(retainedWorks, startupToken).ConfigureAwait(true);
+            }
+
             using HttpClient client = app.CreateHttpClient("eventstore");
             client.Timeout = TimeSpan.FromSeconds(60);
             await WorksAppHostTestReadiness
@@ -527,9 +646,7 @@ internal static class WorksAppHostSmokeHarness
                     actorType = actorTypeName,
                     // The test runner's loaded SDK assemblies; each host's deployed SDK assemblies are bound per
                     // module in runtimeModules.
-                    sdkAssemblies = AppDomain.CurrentDomain.GetAssemblies()
-                        .Where(assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location) && assembly.GetName().Name!.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal))
-                        .OrderBy(assembly => assembly.GetName().Name, StringComparer.Ordinal)
+                    sdkAssemblies = RuntimeSdkAssemblies()
                         .Select(assembly => new
                         {
                             name = assembly.GetName().Name,
@@ -547,6 +664,16 @@ internal static class WorksAppHostSmokeHarness
                 // from reminder deadlines can cancel an otherwise healthy future-reminder fact before it fires.
                 // Body helpers carry their own bounded polling deadlines and remain linked to the test runner's
                 // cancellation token.
+                string? selectedProfile = builder.Configuration["Platform:Works:DevelopmentCatalogProfile"];
+                if (selectedProfile is not null)
+                {
+                    string selectedOwner = Path.Combine(Path.GetDirectoryName(selectedProfile)!, WorksFleetQuiescence.OwnerName);
+                    if (File.Exists(selectedOwner))
+                    {
+                        fleetOwnerPath = selectedOwner;
+                        fleetScope = await WorksFleetQuiescence.CaptureAsync(app, selectedOwner, cancellationToken).ConfigureAwait(true);
+                    }
+                }
                 await body(app, client, sidecarClient, cancellationToken).ConfigureAwait(true);
             }
             catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
@@ -608,9 +735,16 @@ internal static class WorksAppHostSmokeHarness
             }
         }
 
+        if (fleetScope is not null && fleetOwnerPath is not null && cleanupFailures.Count == 0)
+        {
+            using var ownerDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            try { await WorksFleetQuiescence.CompleteAsync(fleetScope, fleetOwnerPath, ownerDeadline.Token).ConfigureAwait(true); }
+            catch (Exception exception) { cleanupFailures.Add(new InvalidOperationException("[teardown] The complete stopped-fleet owner proof could not be established.", exception)); }
+        }
+
         try
         {
-            if (discoveryDirectory is not null) Directory.Delete(discoveryDirectory, recursive: true);
+            if (discoveryDirectory is not null && !retainDiscoveryWithFleet) Directory.Delete(discoveryDirectory, recursive: true);
         }
         catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
         {
@@ -638,6 +772,13 @@ internal static class WorksAppHostSmokeHarness
                 cleanupFailures);
         }
     }
+
+    // Metadata preparation uses disposable collectible contexts. Inventory the actual
+    // runtime context, and keep mandatory file reads/hashes for every selected assembly.
+    internal static Assembly[] RuntimeSdkAssemblies() => AssemblyLoadContext.Default.Assemblies
+        .Where(assembly => !assembly.IsDynamic && !string.IsNullOrEmpty(assembly.Location)
+            && assembly.GetName().Name!.StartsWith("Hexalith.EventStore.", StringComparison.Ordinal))
+        .OrderBy(assembly => assembly.GetName().Name, StringComparer.Ordinal).ToArray();
 
     /// <summary>
     /// Create → Assign → Claim → Suspend(DateReached instant): drives the work item to Suspended parked on the
@@ -769,6 +910,7 @@ internal static class WorksAppHostSmokeHarness
             Subject = new ClaimsIdentity(
             [
                 new Claim("sub", "works-reminder-recovery-user"),
+                new Claim("eventstore:surface", "ui"),
                 new Claim("tenants", JsonSerializer.Serialize(new[] { tenantId })),
                 new Claim("domains", JsonSerializer.Serialize(new[] { "work" })),
                 new Claim("permissions", JsonSerializer.Serialize(new[] { "command:submit", "command:query", "command:replay" })),

@@ -18,6 +18,7 @@ internal static class WorksPlatformProofRequests
         DateTime now = DateTime.UtcNow;
         Dictionary<string, object> claims = bindings is null ? [] : new(bindings);
         claims["azp"] = caller;
+        claims[RouteCatalogSurfacePolicy.ClaimType] = "service";
         claims[EventStoreWorkloadAuthenticationDefaults.OperationClaimType] = operations;
         return new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
         {
@@ -27,10 +28,11 @@ internal static class WorksPlatformProofRequests
         });
     }
 
-    /// <summary>Uses the caller's actual Dapr sidecar; receiver app-channel tokens remain independently enforced.</summary>
+    /// <summary>Uses an opted-in actual in-host SDK sender for positive proofs; explicit raw adversarial calls retain their own credentials.</summary>
     internal static async Task<HttpResponseMessage> PostAsync(HttpClient callerSidecar, string receiver, string route,
-        object body, string assertion, CancellationToken cancellationToken, IReadOnlyDictionary<string, string>? probeHeaders = null)
+        object body, string assertion, CancellationToken cancellationToken, IReadOnlyDictionary<string, string>? probeHeaders = null, bool useActualSender = true)
     {
+        if (useActualSender) _ = WorksProofCallerProtocol.Command(route.TrimStart('/'));
         using var request = new HttpRequestMessage(HttpMethod.Post,
             "v1.0/invoke/" + Uri.EscapeDataString(receiver) + "/method/" + route.TrimStart('/'))
         {
@@ -38,6 +40,7 @@ internal static class WorksPlatformProofRequests
         };
         request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json") { CharSet = "utf-8" };
         request.Headers.TryAddWithoutValidation(EventStoreWorkloadAuthenticationDefaults.AssertionHeaderName, assertion);
+        request.Options.Set(WorksProofCallerProtocol.UseActualSender, useActualSender);
         if (probeHeaders is not null)
             foreach ((string name, string value) in probeHeaders) request.Headers.TryAddWithoutValidation(name, value);
         return await callerSidecar.SendAsync(request, cancellationToken).ConfigureAwait(false);

@@ -19,6 +19,7 @@ internal static class WorksHost
         configureWebHost?.Invoke(builder.WebHost);
         _ = builder.Services.AddWorksDomainAdapters(builder.Configuration);
         _ = builder.AddEventStoreDomainService(typeof(WorkItemEventStoreAggregate).Assembly);
+        _ = builder.Services.AddEventStoreDevelopmentDomainCatalog(builder.Configuration, typeof(WorkItemEventStoreAggregate).Assembly);
         configureServices?.Invoke(builder.Services);
         WebApplication app = builder.Build();
         app.MapWorksProcessDisposition();

@@ -74,7 +74,7 @@ public sealed class BuildConfigurationTests
         string root = RepositoryRoot.Locate();
         JsonNode globalJson = JsonNode.Parse(File.ReadAllText(Path.Combine(root, "global.json")))!;
 
-        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.402");
+        globalJson["sdk"]?["version"]?.GetValue<string>().ShouldBe("10.0.403");
         globalJson["sdk"]?["rollForward"]?.GetValue<string>().ShouldBe("latestPatch");
         globalJson["test"]?["runner"]?.GetValue<string>().ShouldBe("Microsoft.Testing.Platform");
         globalJson["msbuild-sdks"]?["Aspire.AppHost.Sdk"].ShouldBeNull("Platform owns the hosting SDK pin after cutover.");

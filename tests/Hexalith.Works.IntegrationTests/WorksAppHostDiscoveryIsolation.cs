@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>
@@ -30,6 +33,7 @@ internal static class WorksAppHostDiscoveryIsolation
         ArgumentException.ThrowIfNullOrWhiteSpace(registryPath);
         if (!Path.IsPathFullyQualified(registryPath) || registryPath.IndexOfAny(['"', '\\', '\r', '\n']) >= 0)
             throw new InvalidOperationException("The isolated Dapr name-resolution registry must be a plain absolute path.");
+        if (committed.TrimStart().StartsWith('{')) return RenderJson(committed, registryPath, sentryPort);
         string newline = committed.Contains("\r\n", StringComparison.Ordinal) ? "\r\n" : "\n";
         string[] lines = committed.Split(newline);
         if (sentryPort is not null)
@@ -66,5 +70,29 @@ internal static class WorksAppHostDiscoveryIsolation
             "      disableWAL: \"true\"",
         ];
         return string.Join(newline, [.. lines.Take(specs[0] + 1), .. block, .. lines.Skip(specs[0] + 1)]);
+    }
+
+    private static string RenderJson(string committed, string registryPath, int? sentryPort)
+    {
+        var document = JsonNode.Parse(committed)?.AsObject() ?? throw new InvalidOperationException("The SDK configuration must be a JSON object.");
+        if (document["kind"]?.GetValue<string>() != "Configuration" || document["spec"] is not JsonObject spec
+            || spec["accessControl"] is not JsonObject || spec.ContainsKey("nameResolution"))
+            throw new InvalidOperationException("The SDK configuration must retain its exact receiver ACL and have no existing name resolution.");
+        if (sentryPort is not null)
+        {
+            if (sentryPort is < 1024 or >= 65535 || spec["mtls"] is not JsonObject mtls
+                || mtls["enabled"]?.GetValue<bool>() != true || mtls["sentryAddress"] is not JsonValue address
+                || !address.TryGetValue<string>(out _))
+                throw new InvalidOperationException("The SDK configuration must retain enabled mTLS and its actual Sentry address.");
+            mtls["sentryAddress"] = "127.0.0.1:" + sentryPort.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        }
+        spec["nameResolution"] = new JsonObject
+        {
+            ["component"] = "sqlite", ["version"] = "v1", ["configuration"] = new JsonObject
+            {
+                ["connectionString"] = registryPath, ["busyTimeout"] = "5s", ["timeout"] = "2s", ["disableWAL"] = "true",
+            },
+        };
+        return document.ToJsonString(new JsonSerializerOptions { WriteIndented = true }) + "\n";
     }
 }

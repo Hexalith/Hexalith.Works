@@ -32,10 +32,13 @@ internal static partial class WorksSdkProofDiagnostics
             }
             catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
             foreach (LogLine line in lines.TakeLast(200))
-                output.AppendLine(CredentialPattern().Replace(line.Content, "[redacted]"));
+                output.AppendLine(Redact(line.Content));
         }
         await File.AppendAllTextAsync(path + "-admission.log", output.ToString(), cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>Removes bearer credentials and long opaque material from bounded fixture logs.</summary>
+    internal static string Redact(string content) => CredentialPattern().Replace(content, "[redacted]");
 
     [GeneratedRegex(@"(?i)(?:bearer\s+\S+|[A-Za-z0-9+/=_-]{80,})")]
     private static partial Regex CredentialPattern();

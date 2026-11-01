@@ -36,6 +36,14 @@ public sealed class WorksSdkRecoveryProfileTests
         options.Validate().ShouldBeEmpty();
         settings["EventStore:Reminders:ReconciliationInterval"].ShouldBe("00:00:02");
         settings["Works:Recovery:ContextReadTimeout"].ShouldBe("00:00:02");
+        EventStoreReminderOptions reminders = services.GetRequiredService<IOptions<EventStoreReminderOptions>>().Value;
+        reminders.CatalogOperationTimeout.ShouldBe(TimeSpan.FromSeconds(3));
+        reminders.CatalogServiceBudget.ShouldBe(TimeSpan.FromSeconds(30));
+        reminders.Validate().ShouldBeEmpty();
+        services.GetRequiredService<IOptions<WorksRecoveryOptions>>().Value.ContextReadTimeout.ShouldBe(TimeSpan.FromSeconds(2));
+        // ConfigureRecoveryProfile is shared by the selected and retained topology's Works
+        // resources; the HA replica receives the same real emitted and SDK-bound options.
+        reminders.CatalogServiceBudget.ShouldBeGreaterThan(TimeSpan.FromSeconds(options.SupportedCandidateCount * 2));
 
         // The registered five-effect contract needs 29 operation deadlines per envelope (55.1 s).
         // Whole-cycle work is 12 * (2 * 56 + 17 * 1.9) + 10 = 1741.6 s, below 1790 s.
@@ -92,6 +100,28 @@ public sealed class WorksSdkRecoveryProfileTests
             .Failures.ShouldContain(failure => failure.StartsWith(failurePrefix, StringComparison.Ordinal));
     }
 
+    /// <summary>Fixture calibration does not modify either production default or the SDK's hard upper bound.</summary>
+    [Fact]
+    public void FixtureCalibrationPreservesProductionDefaults()
+    {
+        new EventStoreReminderOptions().CatalogOperationTimeout.ShouldBe(TimeSpan.FromSeconds(2));
+        new EventStoreReminderOptions().CatalogServiceBudget.ShouldBe(TimeSpan.FromSeconds(2));
+        new WorksRecoveryOptions().ContextReadTimeout.ShouldBe(TimeSpan.FromMilliseconds(500));
+    }
+
+    /// <summary>The finite fixture cannot silently exceed the actual SDK validation boundary.</summary>
+    /// <param name="field">The reminder option to exceed.</param>
+    [Theory]
+    [InlineData("CatalogOperationTimeout")]
+    [InlineData("CatalogServiceBudget")]
+    public async Task ReminderProfileCannotExceedSdkHardLimits(string field)
+    {
+        Dictionary<string, string?> settings = await ComposedSettingsAsync("works");
+        settings["EventStore:Reminders:" + field] = "00:00:30.0000001";
+        using ServiceProvider services = Services(settings);
+        Should.Throw<OptionsValidationException>(() => services.GetRequiredService<IOptions<EventStoreReminderOptions>>().Value);
+    }
+
     private static ServiceProvider Services(Dictionary<string, string?> settings)
     {
         IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
@@ -111,7 +141,8 @@ public sealed class WorksSdkRecoveryProfileTests
         var context = new EnvironmentCallbackContext(builder.ExecutionContext, resource, environment, TestContext.Current.CancellationToken);
         foreach (EnvironmentCallbackAnnotation callback in resource.Annotations.OfType<EnvironmentCallbackAnnotation>())
             await callback.Callback(context).ConfigureAwait(true);
-        environment.Count.ShouldBe(9);
+        environment.Count.ShouldBe(13);
+        environment["Logging__LogLevel__Hexalith.EventStore.DomainService.ReminderReconciler"].ShouldBe("Information");
         return environment.ToDictionary(pair => pair.Key.Replace("__", ":", StringComparison.Ordinal), pair => (string?)pair.Value);
     }
 }

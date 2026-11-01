@@ -93,11 +93,11 @@ def normalized(block: str, values: dict[str, str]) -> tuple[str, ...]:
 def build_contract(text: str, initialization: str, values: dict[str, str]) -> tuple:
     """Compare complete selected steps, including their execution context and order."""
 
-    header = text.split("    steps:", 1)[0]
+    header = re.split(r"(?m)^ {2,4}steps:\s*$", text, maxsplit=1)[0]
     enabled(header)
     if re.search(r"(?m)^(env|defaults):|^    (env|defaults):", header):
         raise ValueError("incompatible inherited producer execution context")
-    names = ("Initialize root-declared submodules", "Initialize .NET", "Restore", "Build")
+    names = ("Initialize root-declared submodules", "Initialize .NET", "Prepare package dependencies", "Restore", "Build")
     positions = [text.index("- name: " + name + "\n") for name in names]
     if positions != sorted(positions):
         raise ValueError("incompatible build step order")
@@ -105,8 +105,16 @@ def build_contract(text: str, initialization: str, values: dict[str, str]) -> tu
     blocks = []
     for name in names[1:]:
         block = step(text, name)
-        enabled(block)
-        blocks.append(normalized(block, values))
+        enabled(block, "${{ inputs.package-prepare-script != '' }}" if name == "Prepare package dependencies" else None)
+        contract = normalized(block, values)
+        if name == "Prepare package dependencies":
+            # CI's 31-minute outer deadline exceeds the shared 1800s+30s Bash bound.
+            # Composite steps rely on that same command deadline; reject any shorter/different override.
+            deadlines = [line for line in contract if line.startswith("timeout-minutes:")]
+            if deadlines not in ([], ["timeout-minutes: 31"]):
+                raise ValueError("incompatible package preparation deadline")
+            contract = tuple(line for line in contract if line != "timeout-minutes: 31")
+        blocks.append(contract)
     return (initialization, tuple(blocks))
 
 
@@ -126,7 +134,7 @@ def require_compatible(ci: str, release: str, ci_init: str, release_init: str,
     for producer, caller in ((ci, ci_call), (release, release_call)):
         supplied = mapping(caller, "with", len(re.search(r"(?m)^( +)with:", caller)[1]))
         resolved = {}
-        for name in ("solution", "dotnet-global-json"):
+        for name in ("solution", "dotnet-global-json", "package-prepare-script"):
             resolved[name] = (field(supplied, name) if re.search(r"(?m)^ +" + name + ": ", supplied)
                               else input_default(producer, name))
         values.append(resolved)
@@ -218,6 +226,18 @@ class ReleaseBuildsCompatibilityTests(unittest.TestCase):
         changed = self.release.replace(restore, restore + " --source unapproved-feed", 1)
         with self.assertRaisesRegex(ValueError, "incompatible"):
             self.compatible(release=changed)
+
+    def test_package_preparation_caller_and_producer_drift_is_rejected(self) -> None:
+        changed = self.release_caller.replace("package-prepare-script: scripts/prepare-platform-builds.sh",
+                                              "package-prepare-script: scripts/other.sh", 1)
+        with self.assertRaisesRegex(ValueError, "incompatible"):
+            self.compatible(release_caller=changed)
+        body = "timeout --signal=TERM --kill-after=30s 1800 bash"
+        self.assertIn(body, self.release)
+        with self.assertRaisesRegex(ValueError, "incompatible"):
+            self.compatible(release=self.release.replace(body, "timeout 1 bash", 1))
+        with self.assertRaisesRegex(ValueError, "incompatible"):
+            self.compatible(release=self.release.replace("inputs.package-prepare-script != ''", "false", 1))
 
     def test_different_dependency_initialization_is_rejected(self) -> None:
         changed = self.release_init.replace("submodule update --init", "submodule update --init --remote", 1)

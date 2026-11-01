@@ -2243,3 +2243,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R30C-D3 — WaitForNamedProjectionLifecycleIdleAsync may pass vacuously (unverified medium).
   evidence: Hand-built ProjectionLifecycleActor ids and 204/404-as-idle; settle with a live run observing a real Delivering row or comparing id/key shape with the SDK.
+
+- source_spec: `spec-sync-upgrade-and-release-workspace.md`
+  summary: Isolate owned infrastructure subprocess groups so descendants remain terminable after their immediate parent exits.
+  evidence: RouteCatalogOwnedProcess captures descendants only in catch; if a parent already exited while descendants retain output pipes, Linux reparents them and CaptureDescendants(parentPid) finds none. This also exists in origin/main, whose output await was unbounded. A child that outlives a normally exiting parent is the regression scenario; any fix must never signal an inherited process group.

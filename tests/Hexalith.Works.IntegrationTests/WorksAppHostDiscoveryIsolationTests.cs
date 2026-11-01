@@ -2,6 +2,7 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 
 using CommunityToolkit.Aspire.Hosting.Dapr;
+using System.Text.Json.Nodes;
 
 using Shouldly;
 
@@ -12,6 +13,64 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Proves that live-start discovery isolation adds only an owned SQLite registry to each committed policy.</summary>
 public sealed class WorksAppHostDiscoveryIsolationTests
 {
+    /// <summary>The actual harness keeps the SDK's private receiver path and permissions for its later independent capture.</summary>
+    [Fact]
+    public void SdkOwnedJsonKeepsItsCapturedPathAndRecordsDerivationHashes()
+    {
+        string owned = Directory.CreateTempSubdirectory("hexalith-route-catalog-").FullName;
+        string discovery = Directory.CreateTempSubdirectory(WorksAppHostDiscoveryIsolation.DirectoryPrefix).FullName;
+        try
+        {
+            string path = Path.Combine(owned, "works.configuration.json");
+            File.WriteAllText(path, """{"kind":"Configuration","metadata":{"name":"actual-sdk"},"spec":{"accessControl":{"defaultAction":"deny","policies":[]},"mtls":{"enabled":true,"sentryAddress":"localhost:50001"}}}""");
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            var before = JsonNode.Parse(File.ReadAllText(path))!;
+            string project = Path.Combine(discovery, "ModelOnly.csproj"); File.WriteAllText(project, "<Project />");
+            var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { DisableDashboard = true });
+            foreach (string name in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls" })
+                builder.AddContainer(name, "synthetic-never-started").WithEndpoint(targetPort: 50001, name: "grpc");
+            var receiver = builder.AddProject("works", project).WithDaprSidecar(sidecar => sidecar.WithOptions(new DaprSidecarOptions { AppId = "works", Config = path }));
+            WorksAppHostSmokeHarness.IsolateApplicationPorts(builder, discovery, true, (61001, 61005, 61006), null);
+            receiver.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options.Config.ShouldBe(path);
+            var after = JsonNode.Parse(File.ReadAllText(path))!;
+            JsonNode.DeepEquals(before["spec"]!["accessControl"], after["spec"]!["accessControl"]).ShouldBeTrue();
+            after["spec"]!["mtls"]!["enabled"]!.GetValue<bool>().ShouldBeTrue();
+            after["spec"]!["mtls"]!["sentryAddress"]!.GetValue<string>().ShouldBe("127.0.0.1:61001");
+            if (!OperatingSystem.IsWindows()) File.GetUnixFileMode(path).ShouldBe(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            var provenance = JsonNode.Parse(File.ReadAllText(Path.Combine(discovery, "derived-configurations.json")))!.AsArray().ShouldHaveSingleItem()!;
+            provenance["sdkOwned"]!.GetValue<bool>().ShouldBeTrue();
+            provenance["source"]!.GetValue<string>().ShouldBe(path); provenance["actual"]!.GetValue<string>().ShouldBe(path);
+            provenance["sourceSha256"]!.GetValue<string>().ShouldNotBe(provenance["actualSha256"]!.GetValue<string>());
+        }
+        finally { Directory.Delete(owned, true); Directory.Delete(discovery, true); }
+    }
+
+    /// <summary>SDK-owned JSON changes only discovery and the actual Sentry address, retaining every policy and owner field.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData(61001)]
+    public void SdkJsonIsolationPreservesExactAclAndAuthenticationSemantics(int? port)
+    {
+        var original = JsonNode.Parse("""
+            {"apiVersion":"dapr.io/v1alpha1","kind":"Configuration","metadata":{"name":"sdk-owned"},"spec":{
+              "accessControl":{"defaultAction":"deny","trustDomain":"public","policies":[{"appId":"eventstore","operations":[{"name":"process","httpVerb":["POST"],"action":"allow"}]}]},
+              "mtls":{"enabled":true,"sentryAddress":"127.0.0.1:50001","allowedClockSkew":"15m"},"otherOwnerSetting":{"retained":true}}}
+            """)!;
+        var rendered = JsonNode.Parse(WorksAppHostDiscoveryIsolation.Render(original.ToJsonString(), Registry, port))!;
+        rendered["spec"]!["nameResolution"]!["configuration"]!["connectionString"]!.GetValue<string>().ShouldBe(Registry);
+        rendered["spec"]!.AsObject().Remove("nameResolution");
+        if (port is not null) original["spec"]!["mtls"]!["sentryAddress"] = "127.0.0.1:61001";
+        JsonNode.DeepEquals(original, rendered).ShouldBeTrue();
+        foreach (string fault in new[] { "existing-discovery", "disabled-mtls", "missing-acl" })
+        {
+            var changed = original.DeepClone();
+            if (fault == "existing-discovery") changed["spec"]!["nameResolution"] = new JsonObject();
+            if (fault == "disabled-mtls") changed["spec"]!["mtls"]!["enabled"] = false;
+            if (fault == "missing-acl") changed["spec"]!.AsObject().Remove("accessControl");
+            Should.Throw<InvalidOperationException>(() => WorksAppHostDiscoveryIsolation.Render(changed.ToJsonString(), Registry, 61001));
+        }
+    }
+
     /// <summary>An isolated host port changes only the Sentry endpoint alongside the owned discovery block.</summary>
     [Fact]
     public void IsolatedSentryPortPreservesEveryTrustAndAccessPolicyLine()

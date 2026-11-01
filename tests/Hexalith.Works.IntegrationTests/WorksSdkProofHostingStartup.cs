@@ -9,6 +9,7 @@ using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.DomainService;
 using Hexalith.EventStore.Server.Commands;
 using Hexalith.EventStore.Server.DomainServices;
+using Hexalith.EventStore.ServiceDefaults.Routing;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
@@ -37,26 +38,57 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
             // Hosting startups run in their listed order, so Platform's telemetry is already registered here
             // exactly when its own hosting startup executed before this proof.
             bool platformTelemetryRegisteredBeforeProof = WorksSdkProofHostingEvidence.PlatformTelemetryRegistered(services);
-            ConfigureProofServices(context, services);
+            ConfigureProofServices(context, services, Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_ROLE")!,
+                Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_KEY"));
             WorksSdkProofHostingEvidence.Write(services, platformTelemetryRegisteredBeforeProof);
         });
     }
 
-    private static void ConfigureProofServices(WebHostBuilderContext context, IServiceCollection services)
+    internal static void ConfigureProofServices(WebHostBuilderContext context, IServiceCollection services, string role, string? privateKey)
     {
-        string role = Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_ROLE")!;
+        if (context.Configuration[WorksCatalogFirstChanceObserver.PathKey] is not null)
+            services.AddHostedService<WorksCatalogFirstChanceObserver>();
+        if (role == "eventstore-admin")
+        {
+            WorksAdminProofService.RegisterIssuer(services, context.Configuration);
+            services.AddHostedService<WorksAdminProofService>();
+            return;
+        }
         if (role == "metadata-only")
         {
             ConfigureMetadata(services);
             return;
         }
         var rsa = RSA.Create();
-        rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_KEY")!), out _);
+        rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKey!), out _);
         var key = new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" };
         services.AddSingleton(key);
         services.AddSingleton<WorksSdkProofIntentRegistry>();
         if (role == "works")
         {
+            // Keep the actual Works health result, exposing only the same bounded diagnostic response used by the gateway.
+            services.Configure<Hexalith.EventStore.ServiceDefaults.EventStoreServiceDefaultsOptions>(options =>
+                options.DevelopmentHealthResponseWriter = WorksReminderHealthProjection.WriteAsync);
+            services.AddSingleton(_ => new WorksReminderPassDiagnostics(context.Configuration[WorksReminderPhaseDiagnostics.PathKey] is { Length: > 0 } phasePath
+                ? phasePath + ".passes.json" : null));
+            services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(provider => provider.GetRequiredService<WorksReminderPassDiagnostics>());
+            if (context.Configuration[WorksReminderPhaseDiagnostics.PathKey] is not null)
+            {
+                services.AddSingleton<WorksReminderPhaseDiagnostics>();
+                services.AddSingleton(_ => new WorksProcessTranslationDiagnostics(context.Configuration[WorksReminderPhaseDiagnostics.PathKey] + ".translations.json"));
+                services.AddSingleton<Microsoft.Extensions.Logging.ILoggerProvider>(provider => provider.GetRequiredService<WorksProcessTranslationDiagnostics>());
+                services.AddSingleton<Microsoft.Extensions.Http.IHttpMessageHandlerBuilderFilter, WorksGatewayStreamPhaseFilter>();
+                services.AddScoped<Hexalith.Works.Reminders.WorksReminderIntentSource>();
+                services.AddScoped<IReminderIntentSource>(provider => new WorksProofReminderIntentSource(
+                    provider.GetRequiredService<Hexalith.Works.Reminders.WorksReminderIntentSource>(), provider.GetRequiredService<WorksReminderPhaseDiagnostics>()));
+                services.AddSingleton<IStartupFilter, WorksReminderPhaseFilter>();
+            }
+            if (context.Configuration[WorksReminderProofProtocol.DirectoryKey] is not null)
+                services.AddHostedService<WorksReminderProofService>();
+            if (context.Configuration[WorksTrustedEffectProofProtocol.DirectoryKey] is not null)
+                services.AddHostedService<WorksTrustedEffectProofService>();
+            if (context.Configuration[WorksProofRuntimeInventoryService.PathKey] is not null)
+                services.AddHostedService<WorksProofRuntimeInventoryService>();
             if (Environment.GetEnvironmentVariable(WorksPlatformReminderCallbackProbe.ActorEnvironment) is { Length: > 0 })
                 services.AddSingleton<IStartupFilter, WorksPlatformReminderCallbackProbe>();
 #if WORKS_PLATFORM_PARITY
@@ -78,6 +110,16 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         }
         else if (role == "eventstore")
         {
+            if (context.Configuration[WorksRetainedFencePreflightService.PathKey] is not null)
+                services.AddHostedService<WorksRetainedFencePreflightService>();
+            if (context.Configuration[WorksFleetQuiescence.OwnerEnvironment] is not null)
+            {
+                services.AddSingleton<WorksStoppedFleetVerifier>();
+                services.AddSingleton<IRouteCatalogQuiescenceVerifier>(provider => provider.GetRequiredService<WorksStoppedFleetVerifier>());
+                services.AddHostedService<WorksStoppedFleetMaintenanceService>();
+            }
+            if (context.Configuration[WorksProofCallerProtocol.DirectoryKey] is not null)
+                services.AddHostedService<WorksProofCallerService>();
             ConfigureMetadata(services);
             services.AddSingleton<IIdempotencyIntentAdapterRegistry>(provider => provider.GetRequiredService<WorksSdkProofIntentRegistry>());
             services.AddSingleton<ITrustedEffectRetentionGate, WorksSdkProofRetentionGate>();
@@ -104,13 +146,7 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         // Use the SDK's explicit Development response-writer seam to expose the actual
         // aggregate and individual readiness states required by the fixture's probes.
         services.Configure<Hexalith.EventStore.ServiceDefaults.EventStoreServiceDefaultsOptions>(options =>
-            options.DevelopmentHealthResponseWriter = static (http, report) =>
-                http.Response.WriteAsJsonAsync(new
-                {
-                    status = report.Status.ToString(),
-                    results = report.Entries.ToDictionary(entry => entry.Key,
-                        entry => new { status = entry.Value.Status.ToString(), description = entry.Value.Description }),
-                }));
+            options.DevelopmentHealthResponseWriter = WorksReminderHealthProjection.WriteAsync);
         // These development sample apps are absent from the Works topology. Preserve the real
         // Works binding and named projection discovery while bounding advisory startup probes.
         services.PostConfigure<DomainServiceOptions>(options =>

@@ -8,8 +8,8 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 public sealed class CiCdConfigurationTests
 {
-    private const string ApprovedBuildsSha = "04d961759994396132bb2b113ee465b64740a543";
-    private const string ReleasePreparationSha = "397c94a4e246c90b21cf408790fa0d55bf32d795";
+    private const string ApprovedBuildsSha = "81c88b34d09d34260b92d7f0928dbbc1c7446baa";
+    private const string ReleasePreparationSha = "81c88b34d09d34260b92d7f0928dbbc1c7446baa";
 
     private const string ForceSkipProbeEnvironment = "HEXALITH_WORKS_FORCE_SKIP_PROBE";
 

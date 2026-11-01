@@ -62,13 +62,14 @@ jobs:
 
       - name: Prepare domain release
         id: prepare
-        uses: Hexalith/Hexalith.Builds/Github/prepare-domain-release@397c94a4e246c90b21cf408790fa0d55bf32d795
+        uses: Hexalith/Hexalith.Builds/Github/prepare-domain-release@81c88b34d09d34260b92d7f0928dbbc1c7446baa
         with:
           solution: Hexalith.Works.slnx
-          builds-execution-sha: 397c94a4e246c90b21cf408790fa0d55bf32d795
+          builds-execution-sha: 81c88b34d09d34260b92d7f0928dbbc1c7446baa
           source-branch: main
           source-ci-workflow: ci.yml
           package-manifest: tools/release-packages.json
+          package-prepare-script: scripts/prepare-platform-builds.sh
           expected-package-count: 5
           publication-flag: ${{ vars.HEXALITH_RELEASE_PUBLISH_ENABLED }}
           nuget-user: ${{ vars.NUGET_USER }}
@@ -85,7 +86,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-          HEXALITH_BUILDS_EXECUTION_SHA: 397c94a4e246c90b21cf408790fa0d55bf32d795
+          HEXALITH_BUILDS_EXECUTION_SHA: 81c88b34d09d34260b92d7f0928dbbc1c7446baa
           HEXALITH_RELEASE_ENVIRONMENT: production
           HEXALITH_RELEASE_SOURCE_BRANCH: main
           HEXALITH_RELEASE_SOURCE_CI_WORKFLOW: ci.yml

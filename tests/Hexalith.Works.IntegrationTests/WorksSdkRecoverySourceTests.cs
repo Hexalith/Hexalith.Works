@@ -33,6 +33,7 @@ using Shouldly;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>Exercises recovery sources against the SDK-owned runtime family and control index.</summary>
+[Collection("SDK discovery admission")]
 public sealed class WorksSdkRecoverySourceTests
 {
     /// <summary>The SDK refuses malformed global membership before duplicate source keys can escape.</summary>

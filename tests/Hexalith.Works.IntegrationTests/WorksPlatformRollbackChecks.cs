@@ -49,13 +49,8 @@ internal static class WorksPlatformRollbackChecks
         TrustedEffectSubmission submission = fault.Submission.ShouldNotBeNull();
         string causation = fault.CausationId.ShouldNotBeNull();
         EffectIdentityCodec.ComputeEffectId(submission.Identity).ShouldBe(resumedEffect);
-        var key = new RsaSecurityKey(authority) { KeyId = "story415-ephemeral" };
-        string delegation = (await new WorksSdkProofDelegationProvider(key, new WorksSdkProofIntentRegistry(), store)
-            .GetDelegationTokenAsync(new ReminderDelegationRequest(submission, "works", "works.child-completion-resume", causation), cancellationToken)
-            .ConfigureAwait(false)).ShouldNotBeNull();
-        using HttpResponseMessage replay = await WorksPlatformProofRequests.PostAsync(worksSidecar, "eventstore", "/api/v1/trusted-effects",
-            new TrustedEffectSubmitRequest(submission, "works.child-completion-resume", causation, delegation),
-            WorksPlatformProofRequests.Assertion("works", "eventstore", ["eventstore:trusted-effect"]), cancellationToken).ConfigureAwait(false);
+        var effectTarget = new WorksTrustedEffectProofTarget(tenant, submission.Identity.SourceAggregate, submission.Identity.TargetAggregate, resumedEffect);
+        using HttpResponseMessage replay = await WorksTrustedEffectProofRequests.PostAsync(works, effectTarget, conflict: false, cancellationToken).ConfigureAwait(false);
         replay.EnsureSuccessStatusCode();
         TrustedEffectResult receipt = (await replay.Content.ReadFromJsonAsync<TrustedEffectResult>(cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
         receipt.Replayed.ShouldBeTrue();
@@ -86,18 +81,7 @@ internal static class WorksPlatformRollbackChecks
             queryType = fullTenant.QueryType, isDelegated = fullTenant.IsDelegated, authenticatedWorkloadId = fullTenant.AuthenticatedWorkloadId,
             success = refusedFullTenant.Success, error = refusedFullTenant.ErrorMessage, identityCalls = executor.Calls - refusalCallsBefore,
         };
-        JsonObject changedCommand = JsonNode.Parse(submission.CommandPayload)!.AsObject();
-        string conditionKey = changedCommand.Select(property => property.Key)
-            .Single(name => string.Equals(name, "AwaitCondition", StringComparison.OrdinalIgnoreCase));
-        changedCommand[conditionKey].ShouldNotBeNull();
-        changedCommand[conditionKey] = null;
-        TrustedEffectSubmission conflicting = submission with { CommandPayload = JsonSerializer.SerializeToUtf8Bytes(changedCommand) };
-        string conflictingDelegation = (await new WorksSdkProofDelegationProvider(key, new WorksSdkProofIntentRegistry(), store)
-            .GetDelegationTokenAsync(new ReminderDelegationRequest(conflicting, "works", "works.child-completion-resume", causation), cancellationToken)
-            .ConfigureAwait(false)).ShouldNotBeNull();
-        using HttpResponseMessage conflict = await WorksPlatformProofRequests.PostAsync(worksSidecar, "eventstore", "/api/v1/trusted-effects",
-            new TrustedEffectSubmitRequest(conflicting, "works.child-completion-resume", causation, conflictingDelegation),
-            WorksPlatformProofRequests.Assertion("works", "eventstore", ["eventstore:trusted-effect"]), cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage conflict = await WorksTrustedEffectProofRequests.PostAsync(works, effectTarget, conflict: true, cancellationToken).ConfigureAwait(false);
         conflict.IsSuccessStatusCode.ShouldBeFalse("Conflicting admitted semantics must never execute through an existing effect identity.");
         string actor = Uri.EscapeDataString(new Hexalith.EventStore.Contracts.Identity.AggregateIdentity(tenant, "work", parent).ActorId);
         JsonElement index = await gatewaySidecar.GetFromJsonAsync<JsonElement>($"v1.0/actors/AggregateActor/{actor}/state/effect_evidence_index", cancellationToken).ConfigureAwait(false);
@@ -161,11 +145,26 @@ internal static class WorksPlatformRollbackChecks
             Path.Combine(eventStore, "src", "Hexalith.EventStore", "Hexalith.EventStore.csproj"),
             Path.Combine(eventStore, "src", "Hexalith.EventStore.Operations", "Hexalith.EventStore.Operations.csproj"),
             Path.Combine(eventStore, "src", "Hexalith.EventStore.Admin.Server.Host", "Hexalith.EventStore.Admin.Server.Host.csproj"),
-            WorksAppHostSelection.RetainedProjectPath,
         ];
-        string[] directories = [.. projects.Select(project => WorksPlatformRuntimeArtifacts.DirectoryFor(project, configuration)),
-            Path.GetDirectoryName(WorksAppHostSelection.RetainedEntryPoint().Assembly.Location)!,
-            Path.GetDirectoryName(Environment.GetEnvironmentVariable("WORKS_PLATFORM_APPHOST_ASSEMBLY"))!];
+        string retained = WorksAppHostSelection.RetainedEntryPoint().Assembly.Location;
+        string platformHost = WorksAppHostSelection.EntryPoint().Assembly.Location;
+        string[] currentDirectories = [.. projects.Select(project => WorksPlatformRuntimeArtifacts.DirectoryFor(project, configuration))];
+        string[] required = [.. projects.Select((project, index) => Path.Combine(currentDirectories[index], Path.GetFileNameWithoutExtension(project) + ".dll")), retained, platformHost];
+        return HashActualBinaryDirectories(currentDirectories, retained, platformHost, required);
+    }
+
+    /// <summary>Snapshots actual qualified host locations, preserving every missing-path refusal.</summary>
+    internal static IReadOnlyDictionary<string, string> HashActualBinaryDirectories(IReadOnlyList<string> currentDirectories,
+        string retainedAssembly, string platformAssembly, IReadOnlyList<string> requiredAssemblies)
+    {
+        string[] directories = [.. currentDirectories, Path.GetDirectoryName(retainedAssembly)!, Path.GetDirectoryName(platformAssembly)!];
+        foreach (string required in requiredAssemblies)
+        {
+            string absolute = Path.GetFullPath(required);
+            if (!Path.IsPathFullyQualified(required) || !directories.Any(directory => absolute.StartsWith(Path.GetFullPath(directory) + Path.DirectorySeparatorChar, StringComparison.Ordinal)))
+                throw new InvalidOperationException("A required binary is outside the actual selected runtime directories.");
+            _ = File.ReadAllBytes(required);
+        }
         return directories.SelectMany(directory => Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             .Where(path => !string.Equals(path, Environment.ProcessPath, StringComparison.Ordinal))
             .Distinct(StringComparer.Ordinal).ToDictionary(path => path,

@@ -155,7 +155,7 @@ public sealed class WorksSdkProtectedHttpTests
         await using WebApplication app = BuildProtectedHost(store, Address(parties), coordinator,
             [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer()}"]);
         await app.StartAsync(ct).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         store.Observe = true;
         QueryEnvelope query = ExecutorQuery() with { CallerAuthority = new QueryCallerAuthority("authenticated-caller", [], []) };
         using var requestLifetime = CancellationTokenSource.CreateLinkedTokenSource(ct);
@@ -208,7 +208,7 @@ public sealed class WorksSdkProtectedHttpTests
         var coordinator = new SharedProjectionEpochCoordinator(store, store);
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", coordinator);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         var tenant = new TenantId(Tenant);
         var workItem = new WorkItemId("mine");
         ProjectionDispatchRequest created = NamedDelivery(new WorkItemCreated("mine", 1, tenant, workItem,
@@ -286,7 +286,7 @@ public sealed class WorksSdkProtectedHttpTests
             typeof(WorkItemCreated).FullName!, 1, DateTimeOffset.UnixEpoch, "wakeup-proof", "json",
             JsonSerializer.SerializeToUtf8Bytes(created))
         { Domain = scenario == "foreign-domain" ? "foreign" : "work" };
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         for (int attempt = 0; attempt < 2; attempt++)
         {
             using HttpResponseMessage response = await client.SendAsync(Request("/work/events", envelope, channel: true, assertion: null),
@@ -532,7 +532,7 @@ public sealed class WorksSdkProtectedHttpTests
         }
         await using WebApplication app = BuildProtectedHost(store, Address(parties), coordinator, [.. settings]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
 
         // The protected SDK receiver sees only the gateway assertion. Its published Parties client
         // authenticates independently; neither payload flags nor the actor's bearer supply service authority.
@@ -633,7 +633,7 @@ public sealed class WorksSdkProtectedHttpTests
             [$"--Works:Query:PartiesGatewayBearerToken={bearer}"]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         store.Observe = true;
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         foreach (string queryType in new[] { WhatsNextQueryHandler.WhatsNextQueryType, GetWorkItemQueryHandler.GetWorkItemQueryType })
         {
             using HttpResponseMessage response = await client.SendAsync(Request("/query", ExecutorQuery() with { QueryType = queryType },
@@ -720,7 +720,7 @@ public sealed class WorksSdkProtectedHttpTests
         {
             int beforeOperations = store.Operations;
             QueryEnvelope query = ExecutorQuery() with { CallerAuthority = new QueryCallerAuthority("authenticated-caller", [], []) };
-            using var client = new HttpClient { BaseAddress = new Uri(Address(host)) };
+            using var client = WorksHttpCatalogFixture.Client(host, Address(host));
             using HttpResponseMessage response = await client.SendAsync(Request("/query", query, channel: true,
                 assertion: Assertion("domain-service:query", query: query)), TestContext.Current.CancellationToken).ConfigureAwait(true);
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
@@ -757,7 +757,7 @@ public sealed class WorksSdkProtectedHttpTests
         await using WebApplication app = BuildProtectedHost(store, Address(parties));
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         store.ClearReceivedCalls();
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
 
         // Canonical EventStore invocation strips the human bearer. The actual Works typed client
         // registration cannot acquire authority from the workload assertion alone.
@@ -785,7 +785,7 @@ public sealed class WorksSdkProtectedHttpTests
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999");
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         store.ClearReceivedCalls();
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         using HttpResponseMessage response = await client.SendAsync(Request("/query", ExecutorQuery(),
             channel: true, assertion: Assertion("domain-service:query"), bearer: HumanBearer),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
@@ -805,7 +805,7 @@ public sealed class WorksSdkProtectedHttpTests
                 "--Works:Query:PermittedCoordinatorWorkloads:0=scheduler"]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         store.ClearReceivedCalls();
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         QueryEnvelope query = ExecutorQuery() with
         {
             IsDelegated = false,
@@ -836,11 +836,11 @@ public sealed class WorksSdkProtectedHttpTests
                 $"--Authentication:JwtBearer:SigningKey={SigningKey}",
                 $"--Authentication:JwtBearer:AllowedAlgorithms:0={SecurityAlgorithms.HmacSha256}",
                 "--Authentication:JwtBearer:RequireHttpsMetadata=false",
-            ], webHost => webHost.UseUrls("http://127.0.0.1:0"));
+            ], webHost => webHost.UseUrls("http://127.0.0.1:0"), services => WorksHttpCatalogFixture.Register(services, AppId));
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         string address = app.Services.GetRequiredService<IServer>().Features
             .Get<IServerAddressesFeature>().ShouldNotBeNull().Addresses.Single();
-        using var client = new HttpClient { BaseAddress = new Uri(address) };
+        using var client = WorksHttpCatalogFixture.Client(app, address);
         QueryEnvelope query = new("tenant-sdk", "work", "work-sdk", WhatsNextQueryHandler.WhatsNextQueryType,
             [], "corr-http", "untrusted-user", null, false, null, null, "eventstore", false, null, null);
 
@@ -904,7 +904,7 @@ public sealed class WorksSdkProtectedHttpTests
         if (topic) endpoint.WithTopic("pubsub", "work.events");
         InvalidOperationException refusal = await Should.ThrowAsync<InvalidOperationException>(() =>
             app.StartAsync(TestContext.Current.CancellationToken)).ConfigureAwait(true);
-        refusal.Message.ShouldContain("route inventory violates the internal trust boundary");
+        refusal.Message.ShouldContain("HTTP endpoint inventory failed");
         refusal.Message.ShouldContain(route);
     }
 
@@ -984,6 +984,8 @@ public sealed class WorksSdkProtectedHttpTests
     [InlineData("expired-binding")]
     [InlineData("unsafe-custody")]
     [InlineData("unavailable-custody")]
+    [InlineData("missing-service-surface")]
+    [InlineData("ui-service-surface")]
     public async Task ProtectedExecutorUsesCanonicalGatewayAndRealPlatformReaderAdmission(string? failure)
     {
         var authority = new WorksSdkPlatformAuthorityFixture(Tenant, Actor, Issuer, SigningKey, CurrentIdentity);
@@ -994,11 +996,12 @@ public sealed class WorksSdkProtectedHttpTests
         await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
         IReadModelStore forbiddenStore = Substitute.For<IReadModelStore>();
         IReadModelStore store = failure is null ? persisted : forbiddenStore;
-        string[] settings = failure == "missing" ? [] : [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer(failure == "expired")}"];
+        string[] settings = failure == "missing" ? [] : [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer(failure == "expired",
+            surface: failure == "missing-service-surface" ? null : failure == "ui-service-surface" ? "ui" : "service")}"];
         await using WebApplication app = BuildProtectedHost(store, Address(parties), failure is null ? coordinator : null, settings);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         forbiddenStore.ClearReceivedCalls();
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         foreach (string queryType in new[] { WhatsNextQueryHandler.WhatsNextQueryType, GetWorkItemQueryHandler.GetWorkItemQueryType })
         {
             using HttpResponseMessage response = await client.SendAsync(Request("/query", ExecutorQuery() with { QueryType = queryType },
@@ -1022,6 +1025,144 @@ public sealed class WorksSdkProtectedHttpTests
         var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         (await coordinator.GetCheckpointAsync(projection.CreateScope(Tenant), "mine", TestContext.Current.CancellationToken)
             .ConfigureAwait(true))!.Position.ShouldBe(2);
+    }
+
+    /// <summary>The real public gateway preserves Works query payloads, response routing and independent Party authorization.</summary>
+    [Theory]
+    [InlineData("get-work-item", "ui", HttpStatusCode.OK)]
+    [InlineData("whats-next", "ui", HttpStatusCode.OK)]
+    [InlineData("get-work-item", "agent", HttpStatusCode.Forbidden)]
+    [InlineData("whats-next", "missing", HttpStatusCode.Forbidden)]
+    [InlineData("get-work-item", "forged", HttpStatusCode.Unauthorized)]
+    [InlineData("whats-next", "forged-header", HttpStatusCode.Forbidden)]
+    [InlineData("get-work-item", "wrong-tenant", HttpStatusCode.Forbidden)]
+    [InlineData("whats-next", "wrong-domain", HttpStatusCode.Forbidden)]
+    [InlineData("get-work-item", "wrong-permission", HttpStatusCode.Forbidden)]
+    [InlineData("whats-next", "nondelegated", HttpStatusCode.Forbidden)]
+    [InlineData("get-work-item", "restricted-party", HttpStatusCode.Forbidden)]
+    public async Task PublicGatewayPreservesWorksQueryPayloadAndDomainAuthority(string queryType, string scenario, HttpStatusCode expected)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var identity = new WorksSdkPlatformAuthorityFixture(Tenant, Actor, Issuer, SigningKey, () =>
+        {
+            var current = CurrentIdentity();
+            return scenario == "restricted-party" ? current with { Evidence = current.Evidence! with { IsRestricted = true } } : current;
+        });
+        await using WebApplication parties = identity.Build(scenario == "restricted-party" ? "restricted-party" : null);
+        await parties.StartAsync(ct).ConfigureAwait(true);
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
+        await using WebApplication domain = BuildProtectedHost(store, Address(parties), coordinator,
+            [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer()}"]);
+        await domain.StartAsync(ct).ConfigureAwait(true);
+        using var domainClient = WorksHttpCatalogFixture.Client(domain, Address(domain));
+        var authority = domain.Services.GetRequiredService<Hexalith.EventStore.ServiceDefaults.Routing.IRouteCatalogAuthority>();
+        int invocations = 0;
+        var invoker = new WorksGatewayDomainQueryInvoker(async (query, token) =>
+        {
+            invocations++;
+            query.Payload.ShouldBe(JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-mine" }));
+            query.OriginalActorId.ShouldBe(Actor);
+            query.AuthenticatedWorkloadId.ShouldBe("eventstore");
+            query.IsDelegated.ShouldBe(scenario != "nondelegated");
+            using var call = Request("/query", query, channel: true, assertion: Assertion("domain-service:query",
+                query: query.CallerAuthority is null ? null : query));
+            using var response = await domainClient.SendAsync(call, token).ConfigureAwait(false);
+            response.StatusCode.ShouldBe(HttpStatusCode.OK);
+            return (await response.Content.ReadFromJsonAsync<QueryResult>(cancellationToken: token).ConfigureAwait(false))!;
+        });
+        var inner = Substitute.For<Hexalith.EventStore.Server.Queries.IQueryRouter>();
+        var registry = Substitute.For<Hexalith.EventStore.Queries.IDomainQueryHandlerRegistry>();
+        var router = new Hexalith.EventStore.Queries.HandlerAwareQueryRouter(authority, inner, registry, invoker,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Hexalith.EventStore.Queries.HandlerAwareQueryRouter>.Instance);
+        await using WebApplication gateway = WorksGatewayHttpFixture.Build(authority, router,
+            Substitute.For<Hexalith.EventStore.Server.Commands.ICommandRouter>(), new InMemoryCommandStatusStore(), new InMemoryCommandArchiveStore(), Issuer, SigningKey);
+        await gateway.StartAsync(ct).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(gateway)) };
+        using var request = Request("/api/v1/queries", new SubmitQueryRequest(Tenant, "work", "mine", queryType,
+            Payload: JsonSerializer.SerializeToElement(new { partyId = "party-mine" })), bearer: GatewayUiToken(scenario));
+        if (scenario == "forged-header") request.Headers.Add("X-EventStore-Surface", "ui");
+        using var result = await client.SendAsync(request, ct).ConfigureAwait(true);
+        result.StatusCode.ShouldBe(expected, await result.Content.ReadAsStringAsync(ct).ConfigureAwait(true));
+        if (expected == HttpStatusCode.OK)
+        {
+            var body = (await result.Content.ReadFromJsonAsync<SubmitQueryResponse>(cancellationToken: ct).ConfigureAwait(true))!;
+            if (queryType == GetWorkItemQueryHandler.GetWorkItemQueryType) body.Payload.GetProperty("found").GetBoolean().ShouldBeTrue();
+            else body.Payload.ValueKind.ShouldBe(JsonValueKind.Array);
+            invocations.ShouldBe(1);
+            identity.VerifiedQueries.ShouldBeGreaterThan(0);
+        }
+        else if (scenario is not ("nondelegated" or "restricted-party"))
+        {
+            invocations.ShouldBe(0);
+            identity.VerifiedQueries.ShouldBe(0);
+        }
+        inner.ReceivedCalls().ShouldBeEmpty();
+        registry.ReceivedCalls().ShouldBeEmpty();
+    }
+
+    /// <summary>Actual public command admission retains UI-only eligibility, existing RBAC and durable advisory writes.</summary>
+    [Theory]
+    [InlineData("ui", HttpStatusCode.Accepted)]
+    [InlineData("agent", HttpStatusCode.Forbidden)]
+    [InlineData("missing", HttpStatusCode.Forbidden)]
+    [InlineData("forged", HttpStatusCode.Unauthorized)]
+    [InlineData("forged-header", HttpStatusCode.Forbidden)]
+    [InlineData("wrong-tenant", HttpStatusCode.Forbidden)]
+    [InlineData("wrong-domain", HttpStatusCode.Forbidden)]
+    [InlineData("wrong-permission", HttpStatusCode.Forbidden)]
+    public async Task PublicGatewayPreservesWorksCommandAdmission(string scenario, HttpStatusCode expected)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        await using WebApplication domain = BuildProtectedHost(new InMemoryReadModelStore(), "http://127.0.0.1:8999");
+        await domain.StartAsync(ct).ConfigureAwait(true);
+        var authority = domain.Services.GetRequiredService<Hexalith.EventStore.ServiceDefaults.Routing.IRouteCatalogAuthority>();
+        var commands = Substitute.For<Hexalith.EventStore.Server.Commands.ICommandRouter>();
+        commands.RouteCommandAsync(Arg.Any<Hexalith.EventStore.Server.Pipeline.Commands.SubmitCommand>(), Arg.Any<CancellationToken>())
+            .Returns(new Hexalith.EventStore.Server.Actors.CommandProcessingResult(true));
+        var statuses = new InMemoryCommandStatusStore();
+        var archives = new InMemoryCommandArchiveStore();
+        await using WebApplication gateway = WorksGatewayHttpFixture.Build(authority,
+            Substitute.For<Hexalith.EventStore.Server.Queries.IQueryRouter>(), commands, statuses, archives, Issuer, SigningKey);
+        await gateway.StartAsync(ct).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(gateway)) };
+        using var request = Request("/api/v1/commands", new SubmitCommandRequest("gateway-create-message", Tenant, "work", "gateway-create", nameof(CreateWorkItem),
+            JsonSerializer.SerializeToElement(new CreateWorkItem(new TenantId(Tenant), new WorkItemId("gateway-create"), "UI command proof"))),
+            bearer: GatewayUiToken(scenario, "command:submit"));
+        if (scenario == "forged-header") request.Headers.Add("X-EventStore-Surface", "ui");
+        using var response = await client.SendAsync(request, ct).ConfigureAwait(true);
+        response.StatusCode.ShouldBe(expected);
+        if (expected == HttpStatusCode.Accepted)
+        {
+            await commands.Received(1).RouteCommandAsync(Arg.Is<Hexalith.EventStore.Server.Pipeline.Commands.SubmitCommand>(command =>
+                command.Tenant == Tenant && command.Domain == "work" && command.CommandType == nameof(CreateWorkItem)), Arg.Any<CancellationToken>());
+            statuses.GetStatusCount().ShouldBe(1);
+            archives.GetArchiveCount().ShouldBe(1);
+        }
+        else
+        {
+            commands.ReceivedCalls().ShouldBeEmpty();
+            statuses.GetStatusCount().ShouldBe(0);
+            archives.GetArchiveCount().ShouldBe(0);
+        }
+    }
+
+    private static string GatewayUiToken(string scenario, string permission = "query:read")
+    {
+        var claims = new Dictionary<string, object>
+        {
+            ["sub"] = Actor, ["azp"] = "eventstore", ["eventstore:tenant"] = scenario == "wrong-tenant" ? "foreign-tenant" : Tenant,
+            ["eventstore:domain"] = scenario == "wrong-domain" ? "foreign" : "work",
+            ["eventstore:permission"] = scenario == "wrong-permission" ? "unrelated" : permission,
+        };
+        if (scenario != "missing") claims["eventstore:surface"] = scenario is "agent" or "forged-header" ? "agent" : "ui";
+        if (scenario != "nondelegated") claims["act"] = JsonSerializer.Serialize(new { sub = "synthetic-delegated-ui" });
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Issuer = Issuer, Audience = WorksGatewayHttpFixture.Audience, Expires = DateTime.UtcNow.AddMinutes(5), Claims = claims,
+            SigningCredentials = new(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(scenario == "forged" ? SigningKey + "-foreign" : SigningKey)), SecurityAlgorithms.HmacSha256),
+        });
     }
 
     private static HttpRequestMessage Request(string route, object query, bool channel = false, string? assertion = null, string? bearer = null)
@@ -1049,6 +1190,7 @@ public sealed class WorksSdkProtectedHttpTests
     }
 
     [Theory]
+    [InlineData("ordinary")]
     [InlineData("scheduled")]
     [InlineData("cascade")]
     [InlineData("stale")]
@@ -1066,15 +1208,15 @@ public sealed class WorksSdkProtectedHttpTests
         await using WebApplication app = BuildProtectedHost(scenario == "audit-outage" ? new OriginAuditUnavailableReadModelStore(store) : store, "http://127.0.0.1:8999", settings:
             ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         var tenant = new TenantId(Tenant);
         var item = new WorkItemId("expiry-origin");
         DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
         WorkItemExpirySchedule Witness(long revision) => new(due,
             ReminderIdentityCodec.ComputeScheduleToken(Tenant, item.Value, due, revision), revision);
         var state = new WorkItemState();
-        state.Apply(new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("origin proof"), Expiry: Witness(2)));
-        var command = new ExpireWorkItem(tenant, item, scenario == "cascade" ? null : Witness(scenario == "stale" ? 1 : 2));
+        state.Apply(new WorkItemCreated(item.Value, 1, tenant, item, new Obligation("origin proof"), Expiry: scenario == "ordinary" ? null : Witness(2)));
+        var command = new ExpireWorkItem(tenant, item, scenario is "ordinary" or "cascade" ? null : Witness(scenario == "stale" ? 1 : 2));
         byte[] payload = JsonSerializer.SerializeToUtf8Bytes(command);
         string kind = scenario == "cascade" ? EffectKindCatalog.CascadeExpire : scenario == "kind" ? EffectKindCatalog.DateResume : EffectKindCatalog.Expiry;
         var identity = new EffectIdentity(Tenant, "work", "source-origin", 9, kind, "work", item.Value, 0);
@@ -1084,7 +1226,7 @@ public sealed class WorksSdkProtectedHttpTests
             payload, message, "committed-source", workload, new() { ["trusted-purpose"] = "works.cascade-expire" });
         var request = new DomainServiceRequest(envelope, state)
         {
-            TrustedEffectOrigin = scenario == "missing-origin" ? null : new TrustedEffectOrigin(identity, workload,
+            TrustedEffectOrigin = scenario is "ordinary" or "missing-origin" ? null : new TrustedEffectOrigin(identity, workload,
                 scenario is "purpose" or "audit-outage" ? "wrong-purpose" : WorksEffectPurposes.ForKind(kind), "committed-source", nameof(ExpireWorkItem),
                 EffectIdentityCodec.RenderDigest(SHA256.HashData(payload))),
         };
@@ -1093,7 +1235,7 @@ public sealed class WorksSdkProtectedHttpTests
         using HttpResponseMessage response = await client.SendAsync(Request("/process", request, channel: true,
             assertion: Assertion("domain-service:process", scenario == "caller" ? "foreign-caller" : "eventstore")),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
-        if (scenario is "scheduled" or "cascade" or "stale")
+        if (scenario is "ordinary" or "scheduled" or "cascade" or "stale")
         {
             response.StatusCode.ShouldBe(HttpStatusCode.OK);
             DomainServiceWireResult result = (await response.Content.ReadFromJsonAsync<DomainServiceWireResult>(
@@ -1150,7 +1292,7 @@ public sealed class WorksSdkProtectedHttpTests
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
             ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         var tenant = new TenantId(Tenant);
         var item = new WorkItemId("origin-matrix");
         DateTimeOffset due = DateTimeOffset.UnixEpoch.AddDays(1);
@@ -1217,7 +1359,7 @@ public sealed class WorksSdkProtectedHttpTests
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", coordinator,
             ["--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
         await app.StartAsync(TestContext.Current.CancellationToken);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         var command = new CreateWorkItem(new TenantId(payloadReserved ? reserved : Tenant), new WorkItemId("reserved-http"), "refused");
         var envelope = new CommandEnvelope("01ARZ3NDEKTSV4RRFFQ69G5FAV", payloadReserved ? Tenant : reserved,
             "work", "reserved-http", nameof(CreateWorkItem), JsonSerializer.SerializeToUtf8Bytes(command),
@@ -1282,7 +1424,7 @@ public sealed class WorksSdkProtectedHttpTests
                 services.AddSingleton(observedAuthorizer);
             });
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         var source = new ProcessSource(Tenant, "work", "existing-source");
         ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
         app.Services.GetRequiredService<IProcessDispositionAuditSink>().ShouldBeOfType<WorksProcessDispositionAuditSink>();
@@ -1323,6 +1465,46 @@ public sealed class WorksSdkProtectedHttpTests
         await observedAuthorizer.Received(1).AuthorizeAsync(Arg.Any<System.Security.Claims.ClaimsPrincipal>(), source, Arg.Any<CancellationToken>());
     }
 
+    /// <summary>Malformed and foreign sources refuse before any business-state read or audit.</summary>
+    [Theory]
+    [InlineData("blank-tenant", HttpStatusCode.BadRequest)]
+    [InlineData("invalid-source", HttpStatusCode.BadRequest)]
+    [InlineData("invalid-domain", HttpStatusCode.BadRequest)]
+    [InlineData("foreign-domain", HttpStatusCode.Forbidden)]
+    [InlineData("foreign-tenant", HttpStatusCode.Forbidden)]
+    public async Task InvalidOrForeignRevalidationDoesNotReadBusinessStateOrAudit(string scenario, HttpStatusCode expected)
+    {
+        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var authorizer = Substitute.For<IProcessDispositionAuthorizer>();
+        authorizer.AuthorizeAsync(Arg.Any<ClaimsPrincipal>(), Arg.Any<ProcessSource>(), Arg.Any<CancellationToken>()).Returns(false);
+        var audit = Substitute.For<IProcessDispositionAuditSink>();
+        await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
+            ["--Works:Recovery:UseSdkRuntime=true", "--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"],
+            configure: services =>
+            {
+                services.RemoveAll<IProcessDispositionAuthorizer>();
+                services.AddSingleton(authorizer);
+                services.RemoveAll<IProcessDispositionAuditSink>();
+                services.AddSingleton(audit);
+            });
+        await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        store.ClearReceivedCalls();
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
+        var source = new ProcessSource(scenario == "blank-tenant" ? " " : scenario == "foreign-tenant" ? "foreign-tenant" : Tenant,
+            scenario == "foreign-domain" ? "foreign" : scenario == "invalid-domain" ? "invalid/domain" : "work",
+            scenario == "invalid-source" ? " " : "revalidation-one");
+
+        using HttpResponseMessage response = await client.SendAsync(Request("/work/processes/revalidate",
+            new WorksProcessDispositionRequest(source, "synthetic repair"), channel: true, assertion: Assertion("domain-service:process")),
+            TestContext.Current.CancellationToken).ConfigureAwait(true);
+
+        response.StatusCode.ShouldBe(expected);
+        store.ReceivedCalls().ShouldBeEmpty();
+        audit.ReceivedCalls().ShouldBeEmpty();
+        await authorizer.Received(scenario == "foreign-tenant" ? 1 : 0).AuthorizeAsync(Arg.Any<ClaimsPrincipal>(),
+            Arg.Any<ProcessSource>(), Arg.Any<CancellationToken>());
+    }
+
     /// <summary>Malformed requests and unavailable audit authority fail before disposition or audit state changes.</summary>
     [Theory]
     [InlineData("null-source", HttpStatusCode.BadRequest)]
@@ -1350,7 +1532,7 @@ public sealed class WorksSdkProtectedHttpTests
                 services.AddSingleton(audit);
             });
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
         await checkpoints.EnsureCandidateAsync(source, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
         ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true))!;
@@ -1464,7 +1646,7 @@ public sealed class WorksSdkProtectedHttpTests
                 services.AddSingleton(submitter);
             });
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        using var client = new HttpClient { BaseAddress = new Uri(Address(app)) };
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         ProcessCheckpointStore checkpoints = app.Services.GetRequiredService<ProcessCheckpointStore>();
         await checkpoints.EnsureCandidateAsync(source, cancellationToken: TestContext.Current.CancellationToken).ConfigureAwait(true);
         ProcessSourceState owned = (await checkpoints.AcquireAsync(source, TestContext.Current.CancellationToken).ConfigureAwait(true))!;
@@ -1659,6 +1841,7 @@ public sealed class WorksSdkProtectedHttpTests
                 services.RemoveAll<SharedProjectionEpochCoordinator>();
                 services.AddSingleton(coordinator);
             }
+            WorksHttpCatalogFixture.Register(services, AppId);
             configure?.Invoke(services);
         });
 
@@ -1699,22 +1882,24 @@ public sealed class WorksSdkProtectedHttpTests
         return app;
     }
 
-    private static string ServiceBearer(bool expired = false, string credentialId = "service-authority")
+    private static string ServiceBearer(bool expired = false, string credentialId = "service-authority", string? surface = "service")
     {
         DateTime now = DateTime.UtcNow;
+        var claims = new Dictionary<string, object>
+        {
+            ["sub"] = "works-identity-reader",
+            ["azp"] = "works",
+            ["jti"] = credentialId,
+            ["eventstore:tenant"] = Tenant,
+            ["eventstore:domain"] = "party",
+            ["eventstore:permission"] = "query:read",
+        };
+        if (surface is not null) claims["eventstore:surface"] = surface;
         return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
         {
             Issuer = Issuer,
             Audience = "parties-identity-reader",
-            Claims = new Dictionary<string, object>
-            {
-                ["sub"] = "works-identity-reader",
-                ["azp"] = "works",
-                ["jti"] = credentialId,
-                ["eventstore:tenant"] = Tenant,
-                ["eventstore:domain"] = "party",
-                ["eventstore:permission"] = "query:read",
-            },
+            Claims = claims,
             IssuedAt = expired ? now.AddHours(-3) : now.AddMinutes(-2),
             NotBefore = expired ? now.AddHours(-3) : now.AddMinutes(-2),
             Expires = expired ? now.AddHours(-2) : now.AddMinutes(5),
@@ -1846,6 +2031,7 @@ public sealed class WorksSdkProtectedHttpTests
         {
             [EventStoreWorkloadAuthenticationDefaults.CallerClaimType] = caller,
             [EventStoreWorkloadAuthenticationDefaults.OperationClaimType] = new[] { operation },
+            ["eventstore:surface"] = "service",
         };
         if (query is not null)
         {

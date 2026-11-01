@@ -1,0 +1,366 @@
+{
+  "status": "3.128.4 complete gate blocked; unchanged focused package contracts pass; no live or rollback qualification",
+  "scope": "Committed Works 038f49080a86d312b30d12567f521c3954593569 and original root dependencies except committed Builds a22b55f0a4f6d2aaa3a5ccc505896064ac595364. Does not qualify concurrently upgraded live workspace.",
+  "fullExitCode": 1,
+  "fullFailure": "Platform custody requires public SDK members IssueOperationId and ReadCurrentOriginalAsync absent from 3.128.4; actual Release consumer reproduces CS0117 and CS1061.",
+  "focusedPackageContracts": {
+    "passed": 2,
+    "failed": 0,
+    "skipped": 0,
+    "sourceUnchanged": true,
+    "scope": "Temporary MSBuild focus excludes unrelated uncompilable Composition source, retains its catalog-selected Aspire package, and compiles/runs the actual unchanged WorksSdkPackageContractTests source. Not a complete consumer or Platform gate."
+  },
+  "helperChecks": {
+    "owner": 157,
+    "component": 15
+  },
+  "scriptChecks": {
+    "total": 112,
+    "passed": 110,
+    "failed": 2,
+    "causes": [
+      "Missing locked node_modules in isolated clone",
+      "Baseline source-pair manifest still declares EventStore 3.128.3 while effective pin is 3.128.4"
+    ]
+  },
+  "publicProducerPrerequisite": {
+    "3.128.4": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/3.128.4/hexalith.eventstore.contracts.3.128.4.nupkg",
+      "packageSha256": "7782f10ed9586208de4e6fd94c157eb2d84e732fbfb89fd1b37c5b0e9b7d4eea",
+      "repositoryCommit": "717a06e16c3afd81b904eaf4de646b74b13262d2",
+      "matchingPublicMembers": []
+    },
+    "3.129.0": {
+      "url": "https://api.nuget.org/v3-flatcontainer/hexalith.eventstore.contracts/3.129.0/hexalith.eventstore.contracts.3.129.0.nupkg",
+      "packageSha256": "afc30fea1b194cabde98b77608251adba65c572aeb34ac120937f85a0aae4c80",
+      "repositoryCommit": "c02afa0fce310ccdb696232f18829df96cba088e",
+      "matchingPublicMembers": [
+        "M:Hexalith.EventStore.Contracts.Security.DeletionBatchCapabilityIdentity.IssueOperationId(System.String,System.String)",
+        "M:Hexalith.EventStore.Contracts.Security.IAnchoredStateTransitionAuthority.ReadCurrentOriginalAsync(System.String,System.Threading.CancellationToken)"
+      ]
+    }
+  },
+  "invalidEvidence": [
+    "The first dotnet-inspect --oneline invocation was parsed as an unmatched type filter; its no-changes line is invalid evidence. Correct exact-type diff and official package docs are preserved.",
+    "Two initial focused MSBuild setup attempts refuse with MSB4190; a third excludes Aspire from the SDK inventory and correctly fails the unchanged >=9 assertion; fourth restores the original selected package inventory and passes.",
+    "The initial moving-workspace build has eight transient CS0246 errors and no exact-input qualification credit.",
+    "The initial direct verifier lacks the supported bootstrap root links and refuses the uninitialized nested catalog; it is not a parity result."
+  ],
+  "files": [
+    {
+      "path": "raw/baseline-capture.json.gz",
+      "sha256": "b1a5151e138a5b426b6f276265074ee506d148aff19f6c586e6ad2d8459a43d7",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/baseline-capture.json",
+      "nativeSha256": "75ad67d4e7afe094ceabfb129073844f2d0f15ebc5424364eef1a2bb55c8ea80",
+      "nativeBytes": 27220519
+    },
+    {
+      "path": "raw/release-restore.log.gz",
+      "sha256": "fd2b902f1c474d93877f439f403b8f59ea2c34e8aca2d692c7e66b10ec47e660",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/release-restore.log",
+      "nativeSha256": "d8dc906bdee9187d83985340ee6717b9b3551ae0ec28f8755b6dc5671566a8e3",
+      "nativeBytes": 2110
+    },
+    {
+      "path": "raw/release-build.log.gz",
+      "sha256": "e76d4bc81b1bce15f939dc2451dc9a91c598c52c6d94ba6442332c1d8361121e",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/release-build.log",
+      "nativeSha256": "6dcff8e02ac869b9f73384525b1254b7b180ad75c916710b8c85cd8e2dc20149",
+      "nativeBytes": 8736
+    },
+    {
+      "path": "raw/catalog-refusal.log.gz",
+      "sha256": "c6d42082ec1a8ecc4d0c54169b8f251581907e23f47abd4fa21f918b5c89dab1",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/catalog-refusal.log",
+      "nativeSha256": "b71da83b1f1627d019e89ec42b9f2e39152854185ca7708539f086e3f78c5ba8",
+      "nativeBytes": 189
+    },
+    {
+      "path": "raw/focused-commands.json.gz",
+      "sha256": "e649fa2f3b8eb327b72ae4ceae97ef8b0726f1ffa35948265b3b85a5ae415c87",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/focused-commands.json",
+      "nativeSha256": "04ad0a6fa1b47f9716f73d8d97ac7803696c518ba9235514f742776746763aa9",
+      "nativeBytes": 2320
+    },
+    {
+      "path": "raw/baseline-release-build.log.gz",
+      "sha256": "7f80912e0057a209e36be73fdfd7aed4a132a8aff2c2f624cd77b6944eedb2c1",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/baseline-release-build.log",
+      "nativeSha256": "9f7c07a0ae50aae328592186a3c6efb068d8da7b99d30e2724e2e9e1012cbd4e",
+      "nativeBytes": 6001
+    },
+    {
+      "path": "raw/package-contract-focus-build.log.gz",
+      "sha256": "39737ea858fccfea9bf4d7163cb98b2a05a721e950efd5d962fba89816aa6de6",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-contract-focus-build.log",
+      "nativeSha256": "acd7f02d66cb7230aac834b58bbf1b960d32c89b3f4eefa93efc38dfd63b8865",
+      "nativeBytes": 872
+    },
+    {
+      "path": "raw/package-contract-focus.targets.gz",
+      "sha256": "bb9ef76a3833d4b8483ff04106ba7e8f3f1da4c1066b95e092c291e2ab4228b7",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-contract-focus.targets",
+      "nativeSha256": "1d2e6b703c149590f2a3dab81d3dd295e32f59a8cf8a0c78ae9ef36721dc32e7",
+      "nativeBytes": 376
+    },
+    {
+      "path": "raw/package-contract-focus2.targets.gz",
+      "sha256": "bb9ef76a3833d4b8483ff04106ba7e8f3f1da4c1066b95e092c291e2ab4228b7",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-contract-focus2.targets",
+      "nativeSha256": "1d2e6b703c149590f2a3dab81d3dd295e32f59a8cf8a0c78ae9ef36721dc32e7",
+      "nativeBytes": 376
+    },
+    {
+      "path": "raw/package-contract-focus2-build.log.gz",
+      "sha256": "8306694177221b858c4c3a1691becb934888a9abad5db22987a45dc4446ecff4",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-contract-focus2-build.log",
+      "nativeSha256": "65e361f89eb3a96ff2d9df989a5bf9eae1b2e949b342bb30e40ccfeedab0b4ad",
+      "nativeBytes": 874
+    },
+    {
+      "path": "raw/package-focus2-commands.json.gz",
+      "sha256": "1770aa8e127fc89da3f0e1c81ae7bdc14b5be2ba6f8cb62b72decca88507ac59",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus2-commands.json",
+      "nativeSha256": "1011f397eede64b23f8a8799c580ee0366ffdcdc7454d170dad1fc721eec39d6",
+      "nativeBytes": 732
+    },
+    {
+      "path": "raw/package-contract-focus3.targets.gz",
+      "sha256": "9e1e0a85dd58125a3f22e555f14b5095b7e36ae328bb75d75e1aceb174c2d12f",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-contract-focus3.targets",
+      "nativeSha256": "468fa6facae2a12b1d400e08115f72f2701a42074f8b970df62a320c69c8dd02",
+      "nativeBytes": 374
+    },
+    {
+      "path": "raw/package-focus3-build.log.gz",
+      "sha256": "bc52ca8ae97cdeef260ba8d8baf73a31e4dc9f91ac6953a73248cd02edb8f39c",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus3-build.log",
+      "nativeSha256": "7dd29f36b0db855c2581ff2b979e6fdb934a2cd62d0faf5d21c21161861fd092",
+      "nativeBytes": 2492
+    },
+    {
+      "path": "raw/package-focus3-tests.log.gz",
+      "sha256": "61dbb235db7cb63b7f9f03d2b8a63ef6356fd7158530bf862be59a8e827a4d10",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus3-tests.log",
+      "nativeSha256": "c883b180b501284975b6c34c46f2cd76d2ebeeedd718ff88e5a7e5beb29900c3",
+      "nativeBytes": 1096
+    },
+    {
+      "path": "raw/package-focus3-result.json.gz",
+      "sha256": "159b91c2135dc6b43c924acc601044cdf849635958692a4c3de37a4b8329f2f2",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus3-result.json",
+      "nativeSha256": "0affafb738f2488aa62285128595b3779e172d25d84c1f38897c045be96abe43",
+      "nativeBytes": 1020
+    },
+    {
+      "path": "raw/package-focus3.xml.gz",
+      "sha256": "22ebb892ac60c3b8ba7e7316244a670fe5c03239e2cd2fb8fad27b78ba0fbfd3",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus3.xml",
+      "nativeSha256": "6b4d9b20519000ed53e97d5660fb7dbf8dceac09bf9162414bb42f7b6420e8a3",
+      "nativeBytes": 3155
+    },
+    {
+      "path": "raw/package-contract-focus4.targets.gz",
+      "sha256": "66603452d9257160f4c87b8e2f788d4f13c804ee40dca36d026992bd3ba18c88",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-contract-focus4.targets",
+      "nativeSha256": "2eacdbc7c3bf69623a8e4ba1b73cd08891fc6201d4ba49c33aa338df78e03fad",
+      "nativeBytes": 436
+    },
+    {
+      "path": "raw/package-focus4-build.log.gz",
+      "sha256": "9bd60dd9ac792ace6a15c537de60342d1d4cc02652c74739d8ec2d39b0981613",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus4-build.log",
+      "nativeSha256": "bba1b469ba6292a9497ccc38b31de92c9f8a0f59c07be09c12f7af8cdaeada90",
+      "nativeBytes": 2492
+    },
+    {
+      "path": "raw/package-focus4-tests.log.gz",
+      "sha256": "23ecf65a7b8f7208be05f2f4efcbd61b66992a57fe9acf9ba3b9197bd663d21d",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus4-tests.log",
+      "nativeSha256": "80e3950749d3e380ccc5e0678ec22cc835c6d1a6aa008cb3fae681412b9a43c2",
+      "nativeBytes": 398
+    },
+    {
+      "path": "raw/package-focus4-result.json.gz",
+      "sha256": "dcb5d8f24fe486e228e0971aa6e4ed0a1fbdd2deef0c3343a11a460c84af1cfc",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus4-result.json",
+      "nativeSha256": "8db0ad179ef327dccf4f63df77726ce4adc95f2c79e80657f65b4b5aec8b156f",
+      "nativeBytes": 1232
+    },
+    {
+      "path": "raw/package-focus4.xml.gz",
+      "sha256": "eb8f9efc7948e33668fc8706b58ff31bd8f586866f59dd1f3cbd3d4a1d75b54b",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/package-focus4.xml",
+      "nativeSha256": "5d532ff0c49318cb57454f24b667262d09cb581dde30b86381f3b6ef86bdac09",
+      "nativeBytes": 2484
+    },
+    {
+      "path": "raw/release-pin-guard.log.gz",
+      "sha256": "2cf46a81f98751a97325c3f49e050d7761fc178252d891ed062382922d3c0b28",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/release-pin-guard.log",
+      "nativeSha256": "eaf3293b459c6c72090033b729deeef6c54492fa69fe2cca9117070bf9527f4b",
+      "nativeBytes": 153
+    },
+    {
+      "path": "raw/parent-script-controls.log.gz",
+      "sha256": "da26d0443e526bad9d5c053f8fa36870b981bfa76656990ba9c3d6117fcc5ce6",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/parent-script-controls.log",
+      "nativeSha256": "2946ab232a34419576e43cf75cf6e4b1f62e0869cbaacb19a075c1e8a0166786",
+      "nativeBytes": 6646
+    },
+    {
+      "path": "raw/contracts-version-diff.log.gz",
+      "sha256": "7f4378e374384dcdacf708008eeab003a6e782d405cf5717dc969702456dbfcf",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-version-diff.log",
+      "nativeSha256": "6a5b31c5720ec3a1cc7ee169ec2301b2185251401ffc20534dd36f510486fa08",
+      "nativeBytes": 501
+    },
+    {
+      "path": "raw/contracts-exact-types-diff.json.gz",
+      "sha256": "0ae4c3cca6cae1acd52f7f6a91640849fc213498f7cd776577a6f00f72794ee9",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-exact-types-diff.json",
+      "nativeSha256": "e4fbe3cb926486f669ccd265fb3f461999d5934dd024090f6eed8efdd107b294",
+      "nativeBytes": 1449
+    },
+    {
+      "path": "raw/contracts-exact-types-diff.stderr.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-exact-types-diff.stderr.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "raw/published-api-prerequisite.json.gz",
+      "sha256": "0a7fa9b5683a154b6bc53761296d873c6b794d4e28e33c287e0381efcbbfc1c8",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/published-api-prerequisite.json",
+      "nativeSha256": "6e2d3b2122f28fbe348b001ee6aa86d5e0a4c10b66f89d9c555bde574d085b01",
+      "nativeBytes": 982
+    },
+    {
+      "path": "raw/contracts-3.128.4.nupkg.gz",
+      "sha256": "6337353ef73137176b8d274e59ccea86edef641c5b30f2818e741e245d5dca8c",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-3.128.4.nupkg",
+      "nativeSha256": "7782f10ed9586208de4e6fd94c157eb2d84e732fbfb89fd1b37c5b0e9b7d4eea",
+      "nativeBytes": 400897
+    },
+    {
+      "path": "raw/contracts-3.129.0.nupkg.gz",
+      "sha256": "249113c2b6fa3abedf6643010959c4e8e104851a7f5b08305406b35d3e85b66a",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-3.129.0.nupkg",
+      "nativeSha256": "afc30fea1b194cabde98b77608251adba65c572aeb34ac120937f85a0aae4c80",
+      "nativeBytes": 433056
+    },
+    {
+      "path": "raw/contracts-3.128.4.xml.gz",
+      "sha256": "1ced1037b2a156885809a98839356777b82c6e412d382d5a0c11a51c96a6e41a",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-3.128.4.xml",
+      "nativeSha256": "3259fa3e4dee68ec251d4f3513042df1abfb6984d0b465e83d3b7df1ee979f98",
+      "nativeBytes": 1048833
+    },
+    {
+      "path": "raw/contracts-3.129.0.xml.gz",
+      "sha256": "bdc408a756714b4fa206980a0576c7f65f6254ff62af8e7c0d70ae86f5620fde",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/contracts-3.129.0.xml",
+      "nativeSha256": "6d704f27e4fe6b9af9b823b726dd0e8b3d44de4d4516c5998532cdcc44bb1182",
+      "nativeBytes": 1112323
+    },
+    {
+      "path": "raw/qualify.py.gz",
+      "sha256": "c7b00a21ac717336d219eeb7b6968c8e223f233233a59e11c16dcdb70bbda819",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/qualify.py",
+      "nativeSha256": "bee693488cfc9eadd4839c3b602f69615edaa936b1e67481f2c75d04e73e548a",
+      "nativeBytes": 2436
+    },
+    {
+      "path": "raw/invocation.json.gz",
+      "sha256": "c12ba07fa8dcf452963f1ccbf8035bc4e10e4b29cfb93330d6cebb6feacc205b",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/invocation.json",
+      "nativeSha256": "1f9be2da3ac8af498190d203f226c6954ad2fbe4e37cf1d3890a1629855ddb5c",
+      "nativeBytes": 1546
+    },
+    {
+      "path": "raw/qualification-result.json.gz",
+      "sha256": "6ec46dd879a3c7a1d01779de92410b5b2690bee327f5099a5c7f5cc2aba472dc",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/qualification-result.json",
+      "nativeSha256": "caa3dbd56be1f12f5fe2048bdcde229145e6252f23cc7b891b512e2aad79283a",
+      "nativeBytes": 1687
+    },
+    {
+      "path": "raw/qualify-driver.log.gz",
+      "sha256": "be7ca4d583c4460bf264a598df1b68dc4cd03e25e0887be74505a07fdebc23f4",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/qualify-driver.log",
+      "nativeSha256": "8c6757be00e15078aef68343ce92921b24fc01a665fb0e0bce39ae9241b11da1",
+      "nativeBytes": 1818
+    },
+    {
+      "path": "raw/full-driver.log.gz",
+      "sha256": "f43e09944c044854a9e3eeb50e93b5544331e325a66432171d3a9976b431840a",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full-driver.log",
+      "nativeSha256": "66631a3b5abc9b76b05886e778155a57dd737c8400ecce1dd0d29a47c3be9583",
+      "nativeBytes": 604
+    },
+    {
+      "path": "raw/full/bootstrap.json.gz",
+      "sha256": "13c035904b7262a0d433301c09296ae5e3c23aa5a145c6d10f45439c696408b3",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/bootstrap.json",
+      "nativeSha256": "fd55c38f7b0fe9dcd764144a42cd7b98f483d30f7ceecf4c5a6f6f639b011278",
+      "nativeBytes": 208103
+    },
+    {
+      "path": "raw/full/platform-source-binding.json.gz",
+      "sha256": "a90beecd02779d96720c2c46e8287b139919990080736e0149243b7a24e13637",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/platform-source-binding.json",
+      "nativeSha256": "1b6c814edb8cf4ef72e6d51e7ece3c5bf906e7d0439dea0fb5722a25993412b2",
+      "nativeBytes": 415233
+    },
+    {
+      "path": "raw/full/gate/ledger.json.gz",
+      "sha256": "4219565567afd616b08647356a46c76efc1d7202a8b3ce2d6076ebfef9cba8a3",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/gate/ledger.json",
+      "nativeSha256": "6bb08da04b6842a998ffca92d7005440a069a4ea22232dc5be401e1a7b985a7d",
+      "nativeBytes": 1759780
+    },
+    {
+      "path": "raw/full/gate/evidence-gate-tests.log.gz",
+      "sha256": "8ee8bc70ace8c94f438a39d59431aa54e05a2d414886a96641a535314e3bf86a",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/gate/evidence-gate-tests.log",
+      "nativeSha256": "160c985a07f6edbb8a0b31b1d3d27ff5dfd381f9971365ab46ca322eeacf5d43",
+      "nativeBytes": 15090
+    },
+    {
+      "path": "raw/full/gate/component-evidence-gate-tests.log.gz",
+      "sha256": "300fbc52541cbd1603aaabfeaa101f33bd53e49f35b1891f7ee39fdd2d9f2006",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/gate/component-evidence-gate-tests.log",
+      "nativeSha256": "64fd76909e129a7b6d603e4a67e314079186f8e2592140014b8f413fff511eef",
+      "nativeBytes": 548
+    },
+    {
+      "path": "raw/full/gate/agents-full-refusal.log.gz",
+      "sha256": "b89ff0e20211cbb82274c23a7e661e03d01e1bd6c2a98e3cce43a873012896c3",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/gate/agents-full-refusal.log",
+      "nativeSha256": "3f2623dfd75d8b7cfb784873ee71ac6f910cb3f8ea3abb183157040f0cccc82d",
+      "nativeBytes": 391
+    },
+    {
+      "path": "raw/full/gate/agents-local-scaffold.log.gz",
+      "sha256": "5ec374b27b79e0fff6b21278d12e8f0f50a4b144a60b41616f3c2074b02990e4",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/full/gate/agents-local-scaffold.log",
+      "nativeSha256": "c0d35a36d529e5920eda942bb5b51d74886e9dd24de0ee37754affbecdcf3a75",
+      "nativeBytes": 4996
+    },
+    {
+      "path": "raw/focused-validation.py.gz",
+      "sha256": "915be1f15049280976d894c67a4c99d775d2364414e2a50dd181d32298a71725",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/focused-validation.py",
+      "nativeSha256": "0de336871222c16857364ba527bf5dc02d54442b5e198252d67b4f288083e552",
+      "nativeBytes": 2408
+    },
+    {
+      "path": "raw/focused-retry.py.gz",
+      "sha256": "007c22879a3b94257c2012ae743a4e43299118ea8b4e90e56d6d304acf99fbdb",
+      "nativePath": "/tmp/story49-qualification-20261031-pMAQI0/focused-retry.py",
+      "nativeSha256": "4fb133b7a9316755a843d3b74aec9cc80b5063ae59a2461ea59862e1c1562b4f",
+      "nativeBytes": 1870
+    }
+  ]
+}

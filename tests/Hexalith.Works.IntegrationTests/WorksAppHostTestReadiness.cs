@@ -61,10 +61,8 @@ internal static class WorksAppHostTestReadiness
                     && placement.TryGetProperty("status", out JsonElement status)
                     && string.Equals(status.GetString(), "Healthy", StringComparison.Ordinal))
                 {
-                    // The Works sidecar starts its own /alive probes before the Works process binds its port.
-                    // Give the default five-second Dapr probe interval one complete pass so direct service
-                    // invocation no longer reports the otherwise-transient "app unhealthy" response.
-                    await Task.Delay(TimeSpan.FromSeconds(6), cancellationToken).ConfigureAwait(false);
+                    // The infrastructure harness separately verifies the actual Works sidecar's app-channel
+                    // readiness and actor runtime below. A fixed probe-interval sleep proves neither.
                     return;
                 }
             }
@@ -87,6 +85,29 @@ internal static class WorksAppHostTestReadiness
         throw new TimeoutException(
             "[startup/readiness] EventStore did not report healthy Dapr actor placement within 120 seconds. "
             + lastDiagnostic);
+    }
+
+    /// <summary>Requires actual readiness for an archived topology whose unchanged annotation exposes liveness.</summary>
+    internal static async Task WaitForRetainedWorksReadinessAsync(HttpClient client, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            try
+            {
+                using var probe = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+                probe.CancelAfter(TimeSpan.FromSeconds(2));
+                using HttpResponseMessage response = await client.GetAsync("/ready", probe.Token).ConfigureAwait(false);
+                if (response.IsSuccessStatusCode)
+                {
+                    using JsonDocument document = JsonDocument.Parse(await response.Content.ReadAsByteArrayAsync(probe.Token).ConfigureAwait(false));
+                    if (document.RootElement.GetProperty("status").GetString() == "Healthy") return;
+                }
+            }
+            catch (HttpRequestException) { }
+            catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested) { }
+            await Task.Delay(250, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     /// <summary>
@@ -163,11 +184,13 @@ internal static class WorksAppHostTestReadiness
                 $"[startup/readiness] The healthy {resourceDisplayName} resource did not expose a valid DAPR_HTTP_ENDPOINT.");
         }
 
-        return new HttpClient
-        {
-            BaseAddress = address,
-            Timeout = TimeSpan.FromSeconds(10),
-        };
+        string? callerDirectory = resource.Snapshot.EnvironmentVariables.FirstOrDefault(variable => variable.Name == WorksProofCallerProtocol.DirectoryKey)?.Value;
+        string? session = resource.Snapshot.EnvironmentVariables.FirstOrDefault(variable => variable.Name == WorksProofCallerProtocol.SessionKey)?.Value;
+        HttpClient client = callerDirectory is null ? new HttpClient() : new HttpClient(new WorksProofCallerTransport(callerDirectory,
+            session ?? throw new InvalidOperationException("The actual proof caller lacks its run binding."), address));
+        client.BaseAddress = address;
+        client.Timeout = TimeSpan.FromSeconds(10);
+        return client;
     }
 
     /// <summary>
@@ -266,7 +289,11 @@ internal static class WorksAppHostTestReadiness
                         && actorRuntimeReady
                         && schedulerConnected)
                     {
-                        return;
+                        // This is an infrastructure probe after the host is started, never an application
+                        // startup dependency. Unlike elapsed time, 204 proves the sidecar initialized its app channel.
+                        using HttpResponseMessage health = await sidecarClient.GetAsync("/v1.0/healthz", cancellationToken).ConfigureAwait(false);
+                        if (health.StatusCode == System.Net.HttpStatusCode.NoContent) return;
+                        lastDiagnostic = $"Works sidecar app-channel health returned {(int)health.StatusCode}.";
                     }
                 }
             }

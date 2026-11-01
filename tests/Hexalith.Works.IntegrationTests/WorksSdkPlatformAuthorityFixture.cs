@@ -23,6 +23,7 @@ using Hexalith.EventStore.Server.Actors;
 using Hexalith.EventStore.Server.Identity;
 using Hexalith.EventStore.Server.Pipeline.Queries;
 using Hexalith.EventStore.Server.Queries;
+using Hexalith.EventStore.ServiceDefaults.Authentication;
 using Hexalith.Parties.Contracts.Models;
 using Hexalith.Platform.Identity;
 
@@ -63,7 +64,9 @@ internal sealed class WorksSdkPlatformAuthorityFixture(string tenant, string act
                 ValidAlgorithms = [SecurityAlgorithms.HmacSha256], ClockSkew = TimeSpan.Zero,
             };
         });
-        builder.Services.AddAuthorization();
+        builder.Services.AddAuthorization(options => options.AddPolicy(EventStoreHttpHostSecurityExtensions.HumanPolicy,
+            EventStoreHttpHostSecurityExtensions.CreateHumanPolicy()));
+        WorksHttpCatalogFixture.RegisterIdentityGateway(builder.Services, tenant);
         builder.Services.AddControllers().AddApplicationPart(typeof(QueriesController).Assembly);
         var options = Options.Create(new PlatformIdentityOptions
         {
@@ -122,7 +125,14 @@ internal sealed class WorksSdkPlatformAuthorityFixture(string tenant, string act
                 new(2, typeof(HumanActorBindingEstablished).FullName!, JsonSerializer.SerializeToUtf8Bytes(established, PartiesJsonOptions.Default),
                     "json", 1, "binding", null, null, binding.ValidFrom, null),
             ];
-            return Task.FromResult(new AuthoritativeStreamReadResult(new AuthoritativeEventStream(requested, 2,
+            if (failure == "restricted-party")
+            {
+                var restricted = new ProcessingRestricted { PartyId = sample.PartyId, TenantId = tenant,
+                    RestrictedAt = binding.ValidFrom, RestrictedBy = "synthetic-authoritative-owner" };
+                events = [.. events, new(3, typeof(ProcessingRestricted).FullName!, JsonSerializer.SerializeToUtf8Bytes(restricted, PartiesJsonOptions.Default),
+                    "json", 1, "restriction", null, null, binding.ValidFrom, null)];
+            }
+            return Task.FromResult(new AuthoritativeStreamReadResult(new AuthoritativeEventStream(requested, events.Length,
                 DateTimeOffset.UtcNow, events, "synthetic-source-observation"), null));
         });
         custody.CanReadAsync(Arg.Any<AggregateIdentity>(), Arg.Any<IdentityHistoryCustodyEvidence>(), Arg.Any<CancellationToken>())

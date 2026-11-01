@@ -102,19 +102,52 @@ def msbuild_escape(value):
     return "".join(f"%{ord(character):02X}" if character in "%$@();,?'*" else character for character in str(value))
 
 
-def source_snapshot(checkout, run):
+def source_snapshot(checkout, run, artifacts=None):
     """Bind Git-visible tracked and untracked source contents, not only their filenames."""
     prefix = ["git", "-C", str(checkout)]
     patch = run([*prefix, "diff", "--no-ext-diff", "--no-textconv", "--binary", "--no-renames", "HEAD"])
     untracked = run([*prefix, "ls-files", "--others", "--exclude-standard", "-z"])
+    def is_own_record(path):
+        if artifacts is None:
+            return False
+        candidate = (checkout / path).resolve()
+        return candidate.parent == artifacts.resolve() and (candidate.name == "result.json"
+            or candidate.name.startswith("command-") and candidate.name.endswith(".log")
+            and candidate.name[8:-4].isdigit())
     return {
         "revision": run([*prefix, "rev-parse", "HEAD"]).strip(),
         "trackedDiffSha256": hashlib.sha256(patch.encode()).hexdigest(),
         "untrackedFiles": {
             path: hashlib.sha256((checkout / path).read_bytes()).hexdigest()
             for path in untracked.split("\0") if path
+            and not is_own_record(path)
         },
     }
+
+
+def source_owners(root, run):
+    """Cover every initialized root-declared owner, including imported build inputs.
+
+    This intentionally conservative closure includes the Works sources and all
+    available root dependencies. It remains distinct from the two reviewed
+    source/package pairs; none of their identity checks is broadened.
+    """
+    declared = run(["git", "config", "--file", str(root / ".gitmodules"),
+                    "--get-regexp", r"^submodule\..*\.path$"])
+    owners = {".": root}
+    for entry in declared.splitlines():
+        _, path = entry.split(maxsplit=1)
+        parts = Path(path).parts
+        if len(parts) != 2 or parts[0] != "references" or parts[1] in {".", ".."}:
+            raise ValueError(f"Invalid root-declared source owner: {path}")
+        checkout = root / path
+        if (checkout / ".git").exists():
+            if Path(run(["git", "-C", str(checkout), "rev-parse", "--show-toplevel"]).strip()).resolve() != checkout.resolve():
+                raise ValueError(f"{path}: source owner inspection selected a different worktree")
+            owners[path] = checkout
+    if not set(DEPENDENCIES).issubset(owners):
+        raise ValueError("Governed source owners must be initialized root dependencies")
+    return owners
 
 
 def verify(root, artifacts, *, check_only=False):
@@ -163,15 +196,30 @@ def verify(root, artifacts, *, check_only=False):
         if check_only:
             report["status"] = "passed"
             return 0
+        owners = source_owners(root, run)
+        overlays = {path: source_snapshot(checkout, run, artifacts) for path, checkout in owners.items()}
+        report["sourceOverlays"] = overlays
+        report["sourceOwnerClosure"] = "initialized-root-declared-inputs-and-works"
         solution = str(root / "Hexalith.Works.slnx")
         source = [builds, "-p:UseHexalithProjectReferences=true", "-p:UseNuGetDeps=false",
                   "-p:HexalithEventStoreFromSource=true", "-p:HexalithPolymorphicSerializationsFromSource=true"]
         source += [f"-p:{value[1]}={msbuild_escape(root / path)}" for path, value in DEPENDENCIES.items()]
-        run(["dotnet", "restore", solution, "-p:Configuration=Debug", *source], timeout=1800)
-        run(["dotnet", "build", solution, "--configuration", "Debug", "--no-restore", "-m:1", *source],
+        if any(value and name.casefold() in {"hexalith_source_mapping_hash", "hexalithsourcemappingmode"}
+               for name, value in environment.items()):
+            raise ValueError("Source verification requires an unmapped entry point; preserve the active module-tool mapping")
+        source += [f"-p:HexalithCommonsRoot={msbuild_escape(root / 'references/Hexalith.Commons')}",
+                   "-p:HexalithCommonsFromSource=true", "-p:HexalithCommonsHttpFromSource=true",
+                   f"-p:HexalithMcpCliRoot={msbuild_escape(root / 'references/Hexalith.McpCli')}",
+                   "-p:HexalithMcpCliFromSource=true"]
+        # Restore assets and output directories are shared across configurations by default.
+        # Keep this source proof independent from concurrent package restores/builds.
+        outputs = ["--artifacts-path", str(artifacts / "build")]
+        report["buildArtifactsRoot"] = str(artifacts / "build")
+        run(["dotnet", "restore", solution, "-p:Configuration=Debug", *outputs, *source], timeout=1800)
+        run(["dotnet", "build", solution, "--configuration", "Debug", "--no-restore", "-m:1", *outputs, *source],
             timeout=1800)
-        if {path: source_snapshot(root / path, run) for path in DEPENDENCIES} != overlays:
-            raise ValueError("Governed source contents changed during verification; rerun against settled inputs")
+        if {path: source_snapshot(checkout, run, artifacts) for path, checkout in source_owners(root, run).items()} != overlays:
+            raise ValueError("Workspace source contents changed during verification; rerun against settled inputs")
         report["status"] = "passed"
         return 0
     except (ValueError, KeyError, OSError, RuntimeError) as error:

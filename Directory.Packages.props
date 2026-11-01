@@ -2,8 +2,8 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <!-- Release restores published EventStore 3.128.4. Platform.Identity has no public package, so tests use its sibling project. -->
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.128.4</HexalithEventStoreVersion>
+    <!-- Release restores published EventStore 3.129.0. Platform.Identity has no public package, so tests use its sibling project. -->
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.129.0</HexalithEventStoreVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
@@ -11,10 +11,4 @@
   <Import Project="$(Hexalith1BuildPackageProps)" Condition="Exists('$(Hexalith1BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith2BuildPackageProps)" Condition="Exists('$(Hexalith2BuildPackageProps)') And '$(HexalithVersionsLoaded)' != 'true'" />
   <Import Project="$(Hexalith3BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
-  <ItemGroup>
-    <!-- Architecture-only loader and compile surface; installed SDK supplies MSBuild at runtime. -->
-    <PackageVersion Include="Microsoft.Build.Locator" Version="1.11.2" />
-    <PackageVersion Include="Microsoft.Build" Version="18.9.6" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="18.9.6" />
-  </ItemGroup>
 </Project>

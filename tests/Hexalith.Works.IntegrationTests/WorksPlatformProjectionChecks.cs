@@ -24,6 +24,7 @@ using Hexalith.Works.Queries;
 using Hexalith.Works.Runtime;
 
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
 
 using Shouldly;
 
@@ -147,7 +148,7 @@ internal static class WorksPlatformProjectionChecks
         wrongOrigin.IsSuccessStatusCode.ShouldBeFalse();
         wrongOrigin.StatusCode.ShouldBeOneOf(HttpStatusCode.Unauthorized, HttpStatusCode.Forbidden);
         using HttpResponseMessage wrongOperation = await WorksPlatformProofRequests.PostAsync(gatewaySidecar, "works", "/project/v2", request,
-            WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceQuery]), cancellationToken).ConfigureAwait(false);
+            WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceQuery]), cancellationToken, useActualSender: false).ConfigureAwait(false);
         wrongOperation.StatusCode.ShouldBe(HttpStatusCode.Forbidden,
             "Actual Dapr refusal body: " + await ReadFailureBodyAsync(wrongOperation, cancellationToken).ConfigureAwait(false));
         // Restore a demonstrated successful protected transport after an independent denial consumed its retry policy.
@@ -421,6 +422,45 @@ internal static class WorksPlatformProjectionChecks
     internal static async Task<object> VerifyLegacyRouteAbsentAsync(DistributedApplication app, HttpClient gateway, IReadModelStore store,
         string tenant, string aggregateId, string componentPath, CancellationToken cancellationToken)
     {
+        app.ResourceNotifications.TryGetCurrentState("works", out ResourceEvent? actualWorks).ShouldBeTrue();
+        string inventoryPath = actualWorks!.Snapshot.EnvironmentVariables.Single(variable => variable.Name == WorksProofRuntimeInventoryService.PathKey).Value!;
+        using var inventoryDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        inventoryDeadline.CancelAfter(TimeSpan.FromSeconds(15));
+        while (!File.Exists(inventoryPath)) await Task.Delay(25, inventoryDeadline.Token).ConfigureAwait(false);
+        var runtime = JsonSerializer.Deserialize<WorksProofRuntimeInventory>(await WorksProofCallerProtocol.ReadAsync(inventoryPath, inventoryDeadline.Token).ConfigureAwait(false)).ShouldNotBeNull();
+        runtime.ProcessId.ShouldBeGreaterThan(0);
+        runtime.LegacyHandlers.ShouldBeEmpty("The SDK /project stub can remain mapped, but the retired Works legacy dispatcher must not be installed.");
+        runtime.NamedHandlers.ShouldBe([typeof(WorkItemSharedProjectionRebuildHandler).FullName + ":" + WorksReadModelKeys.RuntimeFamily]);
+        runtime.Targets.ShouldContain(target => target.Method == "project/v2");
+        runtime.Targets.ShouldNotContain(target => target.Method == "project");
+        runtime.Generation.Serving.ShouldBeTrue();
+        runtime.Generation.RequiredHosts.Select(host => host.HostId).Order(StringComparer.Ordinal).ShouldBe(app.Services.GetRequiredService<DistributedApplicationModel>()
+            .Resources.OfType<ProjectResource>().Where(resource => resource.Name is "eventstore" or "works" or "works-ha" or "eventstore-admin" or "eventstore-operations")
+            .Select(resource => resource.Name).Order(StringComparer.Ordinal));
+        string observationDirectory = actualWorks.Snapshot.EnvironmentVariables.Single(variable => variable.Name == "EventStore__RouteCatalog__DevelopmentBootstrap__Directory").Value!;
+        byte[] observationBytes = await WorksProofCallerProtocol.ReadAsync(Path.Combine(observationDirectory, runtime.HostId + ".observation.json"), cancellationToken).ConfigureAwait(false);
+        Convert.ToHexStringLower(SHA256.HashData(observationBytes)).ShouldBe(runtime.ObservationSha256);
+        var actualObservation = JsonSerializer.Deserialize<Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogHostObservation>(observationBytes).ShouldNotBeNull();
+        actualObservation.ExecutableOwners![typeof(WorksHost).Assembly.FullName!].ShouldBe(runtime.AssemblySha256);
+        actualObservation.Targets.ShouldBe(runtime.Targets);
+        ResourceEvent actualGateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
+        using HttpClient ownedSender = WorksAppHostTestReadiness.CreateDaprClient(actualGateway, "EventStore");
+        async Task<(string Root, string Epoch)> ServingNamedMetadataAsync()
+        {
+            using var response = await WorksPlatformProofRequests.PostAsync(ownedSender, "works", "/admin/operational-index-metadata",
+                new AdminOperationalIndexMetadata.Request(["work"]) { AppId = "works", ServiceVersion = "v1" },
+                WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceMetadata]), cancellationToken).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            var metadata = (await response.Content.ReadFromJsonAsync<AdminOperationalIndexMetadata.Response>(cancellationToken).ConfigureAwait(false)).ShouldNotBeNull();
+            var domain = metadata.Domains.Single(domain => domain.Domain == "work");
+            domain.NamedProjectionTypes.ShouldBe([WorksReadModelKeys.RuntimeFamily]);
+            domain.OrdinaryProjectionTypes.ShouldBe([WorksReadModelKeys.RuntimeFamily]);
+            (domain.LegacyProjectionOutputs?.Count ?? 0).ShouldBe(0);
+            return (response.Headers.GetValues("X-Works-Proof-Caller-Root").Single(), response.Headers.GetValues("X-Works-Proof-Caller-Epoch").Single());
+        }
+        var servingBefore = await ServingNamedMetadataAsync().ConfigureAwait(false);
+        servingBefore.Root.ShouldBe(runtime.Generation.RootDigest);
+        servingBefore.Epoch.ShouldBe(runtime.Generation.Epoch.ToString(System.Globalization.CultureInfo.InvariantCulture));
         ProjectionEventDto[] history = await ReadHistoryAsync(gateway, new ProcessSource(tenant, "work", aggregateId), cancellationToken).ConfigureAwait(false);
         var histories = new Dictionary<string, ProjectionEventDto[]>(StringComparer.Ordinal) { [aggregateId] = history };
         var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
@@ -450,9 +490,11 @@ internal static class WorksPlatformProjectionChecks
         }
 
         using HttpRequestMessage credentialed = Legacy(channel: true);
+        credentialed.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.RootHeader).ShouldBeFalse();
+        credentialed.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.EpochHeader).ShouldBeFalse();
         using HttpResponseMessage legacy = await direct.SendAsync(credentialed, cancellationToken).ConfigureAwait(false);
-        legacy.StatusCode.ShouldBe(HttpStatusCode.NotFound,
-            "Named-mode Works must not serve the retired legacy projection route. Body: " + await ReadFailureBodyAsync(legacy, cancellationToken).ConfigureAwait(false));
+        legacy.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable,
+            "The raw legacy probe has no generation binding; the active catalog must refuse it before any handler. Body: " + await ReadFailureBodyAsync(legacy, cancellationToken).ConfigureAwait(false));
         using HttpRequestMessage uncredentialed = Legacy(channel: false);
         using HttpResponseMessage missingChannel = await direct.SendAsync(uncredentialed, cancellationToken).ConfigureAwait(false);
         missingChannel.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
@@ -460,12 +502,25 @@ internal static class WorksPlatformProjectionChecks
         after.Generation.ShouldBe(before.Generation);
         after.Digest.ShouldBe(before.Digest);
         after.Checkpoints.ShouldBe(before.Checkpoints);
+        string correlation = "named-retirement-" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(8));
+        await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, tenant, aggregateId, nameof(LinkConversation),
+            new LinkConversation(new TenantId(tenant), new WorkItemId(aggregateId), new ConversationCorrelationId(correlation)), cancellationToken).ConfigureAwait(false);
+        var advanced = new SortedDictionary<string, ProjectionEventDto[]>(StringComparer.Ordinal)
+        { [aggregateId] = await ReadHistoryAsync(gateway, new ProcessSource(tenant, "work", aggregateId), cancellationToken).ConfigureAwait(false) };
+        advanced[aggregateId].Length.ShouldBe(history.Length + 1);
+        advanced[aggregateId][^1].EventTypeName.Split('.').Last().ShouldBe(nameof(ConversationLinked));
+        _ = await WaitForInitialConvergenceAsync(coordinator, scope, gateway, advanced, cancellationToken).ConfigureAwait(false);
+        var namedAfter = await SnapshotAsync(coordinator, scope, advanced, cancellationToken).ConfigureAwait(false);
+        namedAfter.Checkpoints[aggregateId].ShouldBeGreaterThan(before.Checkpoints[aggregateId]);
+        var servingAfter = await ServingNamedMetadataAsync().ConfigureAwait(false);
+        servingAfter.ShouldBe(servingBefore);
         return new
         {
             tenant, aggregateId, legacyRoute = "/project", namedRoute = "/project/v2",
             legacyRouteStatus = (int)legacy.StatusCode, missingChannelStatus = (int)missingChannel.StatusCode,
             acceptedGeneration = before.Generation, acceptedFamilySha256 = before.Digest, unchangedFamilySha256 = after.Digest,
             unchangedCheckpoints = after.Checkpoints,
+            actualRuntime = runtime, servingBefore, servingAfter, namedAfterPublicCommand = namedAfter,
         };
     }
 

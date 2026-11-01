@@ -13,6 +13,8 @@ import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
+from scripts.tests.build_policy_fixtures import add_source_root_markers
+
 ROOT = Path(__file__).resolve().parents[2]
 PIN = ET.parse(ROOT / "Directory.Packages.props").findtext(".//HexalithEventStoreVersion")
 
@@ -24,6 +26,7 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
         self.temporary = tempfile.TemporaryDirectory(prefix="works-release-policy-")
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
+        add_source_root_markers(self.root)
         shutil.copyfile(ROOT / "Directory.Build.props", self.root / "Directory.Build.props")
         shutil.copyfile(ROOT / "global.json", self.root / "global.json")
         # The guard reads the actual committed pin; the package-free fixtures need no central imports.
@@ -61,6 +64,26 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
             with self.subTest(arguments=arguments):
                 result = self.msbuild("-t:ValidateHexalithDependencyMode", "-p:Configuration=Release", *arguments)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+
+    def test_debug_source_mode_still_refuses_each_missing_root_marker(self):
+        markers = (
+            self.root / "references/Hexalith.Builds/Props/Directory.Packages.props",
+            self.root / "references/Hexalith.Commons/src/libraries/Hexalith.Commons.UniqueIds",
+            self.root / "references/Hexalith.McpCli/src/Hexalith.McpCli.Abstractions",
+        )
+        environment = {key: value for key, value in self.environment.items()
+                       if key.casefold() not in {"hexalithbuildsroot", "hexalithcommonsroot", "hexalithmcpcliroot"}}
+        for marker in markers:
+            with self.subTest(marker=str(marker.relative_to(self.root))):
+                retained = marker.with_name(marker.name + ".not-selected")
+                marker.rename(retained)
+                try:
+                    result = self.msbuild("-t:ValidateHexalithDependencyMode", "-p:Configuration=Debug", environment=environment)
+                    self.assertNotEqual(0, result.returncode)
+                    self.assertIn("HXW0001", result.stdout)
+                    self.assertIn("root-declared Builds, Commons and McpCli checkouts", result.stdout)
+                finally:
+                    retained.rename(marker)
 
     def test_restore_refuses_mixed_source_modes_before_package_resolution(self):
         self.project = self.root / "Hexalith.Works.MixedMode.csproj"

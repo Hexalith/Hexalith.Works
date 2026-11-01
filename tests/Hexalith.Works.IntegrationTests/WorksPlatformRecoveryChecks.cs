@@ -3,9 +3,6 @@ using System.Net.Http.Json;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 
-using Dapr.Actors;
-using Dapr.Actors.Client;
-
 using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Contracts.Reminders;
@@ -23,17 +20,29 @@ internal static class WorksPlatformRecoveryChecks
     internal static async Task<object> ReissueConcurrentlyAsync(DistributedApplication app, HttpClient sidecar,
         string tenant, string item, string reminderName, CancellationToken cancellationToken)
     {
-        ResourceEvent works = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", cancellationToken, cancellationToken).ConfigureAwait(false);
-        string endpoint = works.Snapshot.EnvironmentVariables.Single(variable => variable.Name == "DAPR_HTTP_ENDPOINT").Value!;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        deadline.CancelAfter(TimeSpan.FromSeconds(65));
+        await app.ResourceNotifications.WaitForResourceAsync("works", KnownResourceStates.Running, deadline.Token).ConfigureAwait(false);
+        app.ResourceNotifications.TryGetCurrentState("works", out ResourceEvent? works).ShouldBeTrue();
+        string directory = works!.Snapshot.EnvironmentVariables.Single(variable => variable.Name == WorksReminderProofProtocol.DirectoryKey).Value!;
+        string session = works.Snapshot.EnvironmentVariables.Single(variable => variable.Name == WorksReminderProofProtocol.SessionKey).Value!;
+        // Readiness correctly degrades after the intentional Scheduler loss. Repair through the actual
+        // enrolled Works registrar first; a pre-repair Healthy wait would deadlock its own recovery.
+        WorksReminderProofResult proof = await WorksReminderProofRequests.ConvergeAsync(directory, session,
+            new ReminderTarget(tenant, "work", item), deadline.Token).ConfigureAwait(false);
+        proof.Outcomes.All(outcome => outcome.Quarantined == 0 && outcome.Unresolved == 0).ShouldBeTrue();
         string actor = ReminderIdentityCodec.ComputeActorId(tenant, item);
-        IReminderActor first = ActorProxy.Create<IReminderActor>(new ActorId(actor), "WorksSdkReminderActor", new ActorProxyOptions { HttpEndpoint = endpoint });
-        IReminderActor second = ActorProxy.Create<IReminderActor>(new ActorId(actor), "WorksSdkReminderActor", new ActorProxyOptions { HttpEndpoint = endpoint });
-        var target = new ReminderTarget(tenant, "work", item);
-        ReminderConvergenceResult[] outcomes = await Task.WhenAll(first.ConvergeAsync(target), second.ConvergeAsync(target)).WaitAsync(cancellationToken).ConfigureAwait(false);
-        outcomes.All(outcome => outcome.Quarantined == 0 && outcome.Unresolved == 0).ShouldBeTrue();
-        using HttpResponseMessage reissued = await sidecar.GetAsync($"v1.0/actors/WorksSdkReminderActor/{actor}/reminders/{reminderName}", cancellationToken).ConfigureAwait(false);
+        using HttpResponseMessage reissued = await sidecar.GetAsync($"v1.0/actors/WorksSdkReminderActor/{actor}/reminders/{reminderName}", deadline.Token).ConfigureAwait(false);
         reissued.EnsureSuccessStatusCode();
-        return new { actor, reminderName, callers = outcomes.Length, outcomes, persistedSchedulerReminder = await reissued.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(cancellationToken).ConfigureAwait(false) };
+        var persisted = await reissued.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>(deadline.Token).ConfigureAwait(false);
+        try { await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", deadline.Token, cancellationToken).ConfigureAwait(false); }
+        catch (Exception) when (deadline.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            await WorksReminderHealthProjection.CapturePostRepairFailureAsync(app, cancellationToken).ConfigureAwait(false);
+            throw;
+        }
+        return new { actor, reminderName, callers = proof.Outcomes.Length, outcomes = proof.Outcomes, generation = proof.Generation,
+            persistedSchedulerReminder = persisted, healthyAfterRepair = true };
     }
 
     internal static async Task<object> RepackCandidatePagesAsync(IReadModelStore store, string tenant,

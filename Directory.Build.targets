@@ -9,7 +9,7 @@
          entries. Adding an SDK version to those edges creates duplicate builds with shared outputs.
          External source dependencies still need the selected SDK version and solution configuration. -->
     <ProjectReference Update="@(ProjectReference)">
-      <AdditionalProperties Condition="'%(ProjectReference.Filename)' != 'Hexalith.Works' and !$([System.String]::Copy('%(ProjectReference.Filename)').StartsWith('Hexalith.Works.'))">%(ProjectReference.AdditionalProperties);HexalithEventStoreVersion=$(HexalithEventStoreVersion);Configuration=$(Configuration);ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+      <AdditionalProperties Condition="'%(ProjectReference.Filename)' != 'Hexalith.Works' and !$([System.String]::Copy('%(ProjectReference.Filename)').StartsWith('Hexalith.Works.'))">%(ProjectReference.AdditionalProperties);HexalithEventStoreVersion=$(HexalithEventStoreVersion);Configuration=$(Configuration);ShouldUnsetParentConfigurationAndPlatform=false;$(_WorksUnmappedSourceForwardProperties)</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
   <!-- The SDK adds transitive project references during target execution, after the evaluation-time
@@ -17,7 +17,7 @@
   <Target Name="ForwardWorksTransitiveProjectReferenceProperties" AfterTargets="IncludeTransitiveProjectReferences">
     <ItemGroup>
       <ProjectReference Update="@(_TransitiveProjectReferences)" Condition="'%(ProjectReference.Filename)' != 'Hexalith.Works' and !$([System.String]::Copy('%(ProjectReference.Filename)').StartsWith('Hexalith.Works.')) and '%(ProjectReference.AdditionalProperties)' == ''">
-        <AdditionalProperties>HexalithEventStoreVersion=$(HexalithEventStoreVersion);Configuration=$(Configuration);ShouldUnsetParentConfigurationAndPlatform=false</AdditionalProperties>
+        <AdditionalProperties>HexalithEventStoreVersion=$(HexalithEventStoreVersion);Configuration=$(Configuration);ShouldUnsetParentConfigurationAndPlatform=false;$(_WorksUnmappedSourceForwardProperties)</AdditionalProperties>
       </ProjectReference>
     </ItemGroup>
   </Target>

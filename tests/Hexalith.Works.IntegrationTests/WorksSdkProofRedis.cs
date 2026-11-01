@@ -18,6 +18,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     private string? _schedulerInventory;
 
     internal string ComponentPath => Path.Combine(directory, "statestore.yaml");
+    internal string DevelopmentCatalogProfilePath => Path.Combine(directory, "development-catalog-profile.json");
 
     internal string RedisEndpoint { get; private set; } = string.Empty;
 
@@ -115,6 +116,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
                   - eventstore-operations
                 """;
             await File.WriteAllTextAsync(fixture.ComponentPath, yaml.Replace("BINDING", binding, StringComparison.Ordinal), cancellationToken).ConfigureAwait(false);
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(fixture.ComponentPath, UnixFileMode.UserRead | UnixFileMode.UserWrite);
             return fixture;
         }
         catch (Exception startupFailure)
@@ -141,6 +143,37 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
     }
 
+    internal async Task CaptureDevelopmentCatalogProfileAsync(string digestKey, CancellationToken cancellationToken, int replicas = 1, bool enableQuiescence = false)
+    {
+        if (!_redisStarted || Convert.FromBase64String(digestKey).Length < 32)
+            throw new InvalidOperationException("A catalog proof requires the owned isolated Redis and its actual private digest material.");
+        string platform = Environment.GetEnvironmentVariable("WORKS_PLATFORM_ROOT")
+            ?? throw new InvalidOperationException("The canonical proof must select its actual Platform source before creating its owner profile.");
+        string CaptureComponent(string name)
+        {
+            string target = Path.Combine(directory, name + ".yaml");
+            WorksSdkRecoveryPipelineSmokeTests.CaptureComponentConfiguration(Path.Combine(platform, "DaprComponents", name + ".yaml"),
+                target, RedisEndpoint, isPlatform: true);
+            if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(target, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            return target;
+        }
+        var profile = new Hexalith.Platform.Composition.WorksDevelopmentCatalogProfile(ComponentPath,
+            new Hexalith.EventStore.Aspire.DevelopmentRouteCatalogCompositionOptions(Path.Combine(directory, "catalog-custody"),
+                "routing-" + name["works-sdk415-".Length..], "works-development-authority", "story415",
+                new Dictionary<string, string> { ["story415"] = digestKey }, "story415"), replicas,
+            CaptureComponent("pubsub"), CaptureComponent("configstore"));
+        byte[] bytes = System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(profile);
+        var options = new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, Share = FileShare.None };
+        if (!OperatingSystem.IsWindows()) options.UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite;
+        var stream = new FileStream(DevelopmentCatalogProfilePath, options);
+        await using (stream.ConfigureAwait(false))
+            await stream.WriteAsync(bytes, cancellationToken).ConfigureAwait(false);
+        if (enableQuiescence)
+            await WorksProofCallerProtocol.WriteNewAsync(Path.Combine(directory, WorksFleetQuiescence.OwnerName),
+                new WorksFleetOwner(Guid.NewGuid().ToString("N"), RedisEndpoint, Convert.ToBase64String(RandomNumberGenerator.GetBytes(32)),
+                    DevelopmentCatalogProfilePath), cancellationToken).ConfigureAwait(false);
+    }
+
     internal async Task<(string SigningKey, string DigestKey)> ReadRestoredAuthorityAsync(CancellationToken cancellationToken)
     {
         string path = Path.Combine(directory, "synthetic-authority.json");
@@ -153,6 +186,78 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             throw new InvalidOperationException("Restored synthetic channel tokens differ from their captured authority binding.");
         if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(path, UnixFileMode.UserRead | UnixFileMode.UserWrite);
         return (authority["signingKey"], authority["digestKey"]);
+    }
+
+    private async Task VerifyCatalogCustodyAsync(IDatabase database, CancellationToken cancellationToken)
+    {
+        if (!File.Exists(DevelopmentCatalogProfilePath)) return;
+        var profile = System.Text.Json.JsonSerializer.Deserialize<Hexalith.Platform.Composition.WorksDevelopmentCatalogProfile>(
+            await File.ReadAllBytesAsync(DevelopmentCatalogProfilePath, cancellationToken).ConfigureAwait(false))
+            ?? throw new InvalidOperationException("The stopped fleet has no valid owner catalog profile.");
+        string custody = profile.Catalog.CustodyDirectory;
+        string current = Path.Combine(custody, "current.json");
+        if (!File.Exists(current)) throw new InvalidOperationException("The stopped fleet has no committed SDK catalog custody; Redis alone cannot qualify rollback.");
+        var inventory = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(
+            await File.ReadAllBytesAsync(current, cancellationToken).ConfigureAwait(false))!;
+        if (!inventory.TryGetValue("generation", out string? generation) || generation.Length > 128
+            || generation.Any(character => !char.IsAsciiLetterOrDigit(character) && character != '-'))
+            throw new InvalidOperationException("The stopped fleet catalog generation is invalid.");
+        string retained = Path.Combine(custody, generation);
+        foreach (string required in new[] { "catalog.json", "activation.json", "authority.backend.json", "authority.component.json", "authority.dependencies.json" })
+            if (!inventory.ContainsKey(required)) throw new InvalidOperationException("The stopped fleet catalog custody is incomplete.");
+        foreach (var item in inventory.Where(item => item.Key != "generation"))
+        {
+            if (Path.GetFileName(item.Key) != item.Key) throw new InvalidOperationException("The stopped fleet custody contains a foreign path.");
+            string file = Path.Combine(retained, item.Key);
+            if (new FileInfo(file).LinkTarget is not null
+                || Convert.ToHexStringLower(SHA256.HashData(await File.ReadAllBytesAsync(file, cancellationToken).ConfigureAwait(false))) != item.Value
+                || !OperatingSystem.IsWindows() && File.GetUnixFileMode(file) != (UnixFileMode.UserRead | UnixFileMode.UserWrite))
+                throw new InvalidOperationException("The stopped fleet catalog input or private permissions changed.");
+        }
+        var activation = System.Text.Json.JsonSerializer.Deserialize<Hexalith.EventStore.Contracts.Routing.RouteCatalogActivation>(
+            await File.ReadAllBytesAsync(Path.Combine(retained, "activation.json"), cancellationToken).ConfigureAwait(false))!;
+        byte[] bytes = await File.ReadAllBytesAsync(Path.Combine(retained, "catalog.json"), cancellationToken).ConfigureAwait(false);
+        if (!activation.CanonicalCatalog.AsSpan().SequenceEqual(bytes)
+            || activation.TrustProof != Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogActivationBinding.ComputeDigest(activation))
+            throw new InvalidOperationException("The stopped fleet activation differs from its canonical catalog.");
+        var catalog = Hexalith.EventStore.Contracts.Routing.RouteCatalogCodec.Decode(bytes, activation.RootDigest);
+        if (catalog.Idempotency.Any(entry => entry.ActiveDigestKeyGeneration != profile.Catalog.ActiveDigestKeyGeneration
+            || entry.SecretMapGeneration != profile.Catalog.SecretMapGeneration
+            || !entry.ReaderDigestKeyGenerations.Order(StringComparer.Ordinal).SequenceEqual(profile.Catalog.DigestKeys.Keys.Order(StringComparer.Ordinal), StringComparer.Ordinal)))
+            throw new InvalidOperationException("The stopped fleet catalog selected different retained digest generations.");
+        var owner = System.Text.Json.JsonSerializer.Deserialize<Hexalith.EventStore.Aspire.DevelopmentRouteCatalogCompositionOptions>(
+            await File.ReadAllBytesAsync(Path.Combine(custody, "owner.json"), cancellationToken).ConfigureAwait(false))!;
+        if (owner.DigestKeys.Count != profile.Catalog.DigestKeys.Count || owner.DigestKeys.Any(pair =>
+            !profile.Catalog.DigestKeys.TryGetValue(pair.Key, out string? value) || value != pair.Value))
+            throw new InvalidOperationException("The stopped fleet retained different private digest material.");
+        byte[] backend = await File.ReadAllBytesAsync(Path.Combine(retained, "authority.backend.json"), cancellationToken).ConfigureAwait(false);
+        WorksRetainedCatalogCustody.RequireOwnedBackend(backend, profile.Catalog.AuthorityComponentName, RedisEndpoint);
+        string authorityKey = profile.Catalog.AuthorityComponentName + "||" + profile.Catalog.AuthorityStateKey;
+        RedisValue persisted = await database.HashGetAsync(authorityKey, "data").WaitAsync(cancellationToken).ConfigureAwait(false);
+        if (persisted.IsNull) throw new InvalidOperationException("The actual stopped Redis has no retained catalog authority cell.");
+        var state = System.Text.Json.JsonSerializer.Deserialize<Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogActivationState>((byte[])persisted!, System.Text.Json.JsonSerializerOptions.Web)!;
+        if (state.Committed is null || state.Committed.RootDigest != activation.RootDigest
+            || state.Committed.TrustProof != activation.TrustProof || state.Pending is not null)
+            throw new InvalidOperationException("The actual stopped authority differs from custody.");
+        foreach (var host in activation.RequiredHosts)
+        {
+            string readyName = host.HostId + ".ready.json", committedName = host.HostId + ".committed.json";
+            if (!inventory.ContainsKey(readyName) || !inventory.ContainsKey(committedName))
+                throw new InvalidOperationException("The retained custody is missing an independently captured physical receipt.");
+            var ready = System.Text.Json.JsonSerializer.Deserialize<Hexalith.EventStore.Contracts.Routing.RouteCatalogHostAttestation>(
+                await WorksProofCallerProtocol.ReadAsync(Path.Combine(retained, readyName), cancellationToken).ConfigureAwait(false))!;
+            var committed = System.Text.Json.JsonSerializer.Deserialize<Hexalith.EventStore.Contracts.Routing.RouteCatalogGenerationReadback>(
+                await WorksProofCallerProtocol.ReadAsync(Path.Combine(retained, committedName), cancellationToken).ConfigureAwait(false))!;
+            WorksRetainedCatalogCustody.RequireReceipts(activation, catalog, state.Epoch, host, ready, committed);
+        }
+        if (state.Leases.Count > 0)
+        {
+            var fleetOwner = await WorksFleetQuiescence.ReadOwnerAsync(Path.Combine(directory, WorksFleetQuiescence.OwnerName), cancellationToken).ConfigureAwait(false);
+            var proof = System.Text.Json.JsonSerializer.Deserialize<WorksStoppedFleetDocument>(await WorksProofCallerProtocol.ReadAsync(
+                Path.Combine(directory, WorksFleetQuiescence.ProofName), cancellationToken).ConfigureAwait(false))!;
+            WorksRetainedCatalogCustody.RequireStoppedFences(fleetOwner, proof, state, backend, RedisEndpoint, DevelopmentCatalogProfilePath,
+                WorksFleetQuiescence.Boot(), WorksFleetQuiescence.PidNamespace(), WorksFleetQuiescence.Processes());
+        }
     }
 
     public async ValueTask DisposeAsync()
@@ -193,12 +298,13 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     }
 
     /// <summary>Captures every owned Redis key, offline Scheduler file, component and retained credential byte.</summary>
-    /// <remarks>A stopped Platform host has already removed its run-scoped issuer child, so its fleet retains no credentials.</remarks>
+    /// <remarks>Run-scoped workload issuer credentials are removed by Platform. Retained digest and independent app-channel material remains private.</remarks>
     internal async Task<IReadOnlyDictionary<string, string>> CaptureFleetAsync(CancellationToken cancellationToken)
     {
         await RequireStoppedFleetAsync(cancellationToken).ConfigureAwait(false);
         using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
         IDatabase database = redis.GetDatabase();
+        await VerifyCatalogCustodyAsync(database, cancellationToken).ConfigureAwait(false);
         _snapshot = new(StringComparer.Ordinal);
         _hashSnapshots.Clear();
         foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
@@ -318,6 +424,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
                 File.SetUnixFileMode(path, _fileModes[relative]);
         }
         await ArchiveSchedulerAsync(restore: true, cancellationToken).ConfigureAwait(false);
+        await VerifyCatalogCustodyAsync(database, cancellationToken).ConfigureAwait(false);
         if (await SchedulerInventoryAsync(cancellationToken).ConfigureAwait(false) != _schedulerInventory)
             throw new InvalidOperationException("Restored Scheduler file inventory differs from its stopped backup.");
     }
@@ -492,24 +599,71 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     internal const string SchedulerInventoryScript =
         "cd /fleet && find . -exec stat -c '%F|%a|%u:%g|%N' {} + | sort && find . -type f -exec sha256sum {} + | sort";
 
-    /// <summary>Re-reads every captured configuration and credential file of the running restored fleet.</summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>The relative paths whose re-read bytes equal their capture.</returns>
-    internal async Task<IReadOnlyList<string>> VerifyRestoredConfigurationAsync(CancellationToken cancellationToken)
+    /// <summary>Rechecks every persisted file; the running SDK's exact empty ownership lock must remain exclusively held.</summary>
+    internal async Task<IReadOnlyList<string>> VerifyRestoredConfigurationAsync(CancellationToken cancellationToken, bool sdkRunning = false)
     {
         if (_files is null) throw new InvalidOperationException("No fleet configuration snapshot exists.");
+        string? lockPath = CapturedCatalogPath("owner.lock");
         var verified = new List<string>();
         foreach ((string relative, byte[] bytes) in _files.OrderBy(pair => pair.Key, StringComparer.Ordinal))
         {
-            byte[] actual = await File.ReadAllBytesAsync(Path.Combine(directory, relative), cancellationToken).ConfigureAwait(false);
-            if (!actual.AsSpan().SequenceEqual(bytes))
-                throw new InvalidOperationException("The running restored fleet changed captured configuration or credential bytes: "
-                    + relative + "; expected SHA256=" + Convert.ToHexString(SHA256.HashData(bytes))
-                    + "; actual SHA256=" + Convert.ToHexString(SHA256.HashData(actual)));
+            string path = Path.Combine(directory, relative);
+            await WorksCapturedConfigurationFile.VerifyAsync(path, bytes, _fileModes?.GetValueOrDefault(relative),
+                sdkRunning && path == lockPath, cancellationToken).ConfigureAwait(false);
             verified.Add(relative);
         }
-
         return verified;
+    }
+
+    /// <summary>Verifies the SDK's genuine successor pointer/receipts after disposal while retaining all old immutable custody bytes.</summary>
+    internal async Task VerifySuccessorCustodyAsync(CancellationToken token)
+    {
+        await RequireStoppedFleetAsync(token).ConfigureAwait(false);
+        if (_files is null) throw new InvalidOperationException("No captured predecessor exists.");
+        using var redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint).ConfigureAwait(false);
+        await VerifyCatalogCustodyAsync(redis.GetDatabase(), token).ConfigureAwait(false);
+        string currentPath = CapturedCatalogPath("current.json") ?? throw new InvalidOperationException("The predecessor custody is absent.");
+        string proofPath = Path.Combine(directory, WorksFleetQuiescence.ProofName);
+        foreach ((string relative, byte[] bytes) in _files)
+        {
+            string path = Path.Combine(directory, relative);
+            if (path == currentPath || path == proofPath) continue; // Independently validated current SDK and owner records below.
+            await WorksCapturedConfigurationFile.VerifyAsync(path, bytes, _fileModes?.GetValueOrDefault(relative), false, token).ConfigureAwait(false);
+        }
+        byte[] oldCurrent = _files[Path.GetRelativePath(directory, currentPath)];
+        byte[] newCurrent = await WorksProofCallerProtocol.ReadAsync(currentPath, token).ConfigureAwait(false);
+        using var oldPointer = System.Text.Json.JsonDocument.Parse(oldCurrent);
+        using var newPointer = System.Text.Json.JsonDocument.Parse(newCurrent);
+        if (newPointer.RootElement.GetProperty("generation").GetString() == oldPointer.RootElement.GetProperty("generation").GetString())
+            throw new InvalidOperationException("The disposed successor did not retain its independently committed receipt generation.");
+        var owner = await WorksFleetQuiescence.ReadOwnerAsync(Path.Combine(directory, WorksFleetQuiescence.OwnerName), token).ConfigureAwait(false);
+        var profile = System.Text.Json.JsonSerializer.Deserialize<Hexalith.Platform.Composition.WorksDevelopmentCatalogProfile>(
+            await WorksProofCallerProtocol.ReadAsync(DevelopmentCatalogProfilePath, token).ConfigureAwait(false))!;
+        var state = await WorksFleetQuiescence.ReadStateAsync(redis, profile, token).ConfigureAwait(false);
+        var proof = System.Text.Json.JsonSerializer.Deserialize<WorksStoppedFleetDocument>(await WorksProofCallerProtocol.ReadAsync(proofPath, token).ConfigureAwait(false))!;
+        string oldGeneration = oldPointer.RootElement.GetProperty("generation").GetString()!;
+        string oldActivationPath = Path.Combine(Path.GetDirectoryName(currentPath)!, oldGeneration, "activation.json");
+        var predecessor = System.Text.Json.JsonSerializer.Deserialize<Hexalith.EventStore.Contracts.Routing.RouteCatalogActivation>(
+            _files[Path.GetRelativePath(directory, oldActivationPath)])!;
+        var previousProof = System.Text.Json.JsonSerializer.Deserialize<WorksStoppedFleetDocument>(_files[Path.GetRelativePath(directory, proofPath)])!;
+        if (state.Previous?.RootDigest != predecessor.RootDigest || state.Previous.TrustProof != predecessor.TrustProof
+            || state.Committed?.PredecessorRootDigest != predecessor.RootDigest || state.Epoch != previousProof.Scope.Epoch + 1)
+            throw new InvalidOperationException("The new custody pointer is not the actual independently committed successor of its retained predecessor.");
+        string generation = newPointer.RootElement.GetProperty("generation").GetString()!;
+        byte[] backend = await WorksProofCallerProtocol.ReadAsync(Path.Combine(Path.GetDirectoryName(currentPath)!, generation, "authority.backend.json"), token).ConfigureAwait(false);
+        WorksRetainedCatalogCustody.RequireStoppedFences(owner, proof, state, backend, RedisEndpoint, DevelopmentCatalogProfilePath,
+            WorksFleetQuiescence.Boot(), WorksFleetQuiescence.PidNamespace(), WorksFleetQuiescence.Processes());
+    }
+
+    private string? CapturedCatalogPath(string name)
+    {
+        if (_files is null || !_files.TryGetValue(Path.GetRelativePath(directory, DevelopmentCatalogProfilePath), out byte[]? bytes)) return null;
+        var profile = System.Text.Json.JsonSerializer.Deserialize<Hexalith.Platform.Composition.WorksDevelopmentCatalogProfile>(bytes)!;
+        string path = Path.Combine(profile.Catalog.CustodyDirectory, name);
+        if (!Path.GetFullPath(path).StartsWith(directory + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+            || !_files.ContainsKey(Path.GetRelativePath(directory, path)))
+            throw new InvalidOperationException("The captured SDK custody file is outside its retained owner inventory.");
+        return path;
     }
 
     private async Task RequireStoppedFleetAsync(CancellationToken cancellationToken)

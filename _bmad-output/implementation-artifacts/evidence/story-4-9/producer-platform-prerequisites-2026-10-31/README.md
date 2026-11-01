@@ -1,0 +1,15 @@
+# Story 4.9 blocked prerequisite checkpoint — 2026-10-31
+
+Story remains in progress. The migration code and historical accepted cutover are retained; this resumed qualification cannot accept the newly selected producer/Platform combination.
+
+The preserved 3.128.4 baseline fails Platform custody compilation on two APIs absent from that public producer. Its unchanged focused package-contract class passes 2/2. Official Contracts, DomainService and ServiceDefaults 3.129.0 identify producer `c02afa0fce310ccdb696232f18829df96cba088e`; the source-compatible disposable candidate binds that checkout, source manifest, fixture gitlink and current-source markers truthfully.
+
+The source-compatible candidate passes source preflight, default Debug consumer, parallel Debug solution build and 112 script controls, all without analyzer suppression. Ordinary results: unit 597/597, property 3/3 and architecture 404/404. Integration discovers 1,167: 1,089 pass, 71 fail, seven explicit facts not run, zero skipped/errors. Eleven failures are cancellation cases, 59 are protected HTTP cases and one is a separate fleet-restore stream-pending cancellation. The catalog authority directly refuses the default host with `Configuration`: `An independently bound local catalog host identity and profile are required.` Its identity is absent and profile empty.
+
+The .129 receiver filter requires committed catalog authority and exact generation headers. Works proof hosting does not enroll; its custom disposition route has no admitted path/request shape. Current Platform's separate generic bootstrap also explicitly refuses package/CI composition. No guard, assertion, test expectation or production policy was weakened. Full/actual CI were not launched on the known-unadmitted source-qualified graph. Earlier preparatory attempts are explicitly nonqualifying; two .129 runs were parent-stopped before live proof to correct source-pair/source-checkout metadata.
+
+[The proposed prerequisite delta](PREREQUISITE-DELTA.md) names owning files, missing public contracts and bootstrap/enrollment support, proof commands and acceptance checks. Scope approval is pending. The packet does not implement a catalog transport.
+
+`manifest.json` binds stored gzip bytes, decoded native bytes, byte counts, source paths and selected inputs. It includes original failures, stopped attempts, ordinary XML, source/producer/fixture provenance, actual authority refusal and the independent parent audit. The separate [3.128.4 packet](../prerequisite-2026-10-31/README.md) remains unchanged. Local disposable fixture commit `71467ba484b343fb9c23e76655b0063ac7a8a9df` has validated commitlint and is not a live workspace commit or publication. A source-only Parties fallback compatibility patch is also bound; it must not overwrite the external upgrade.
+
+No current complete parity, rollback, fresh hosted CI or production acceptance is claimed. All live external workspace edits and prior immutable packets are preserved.

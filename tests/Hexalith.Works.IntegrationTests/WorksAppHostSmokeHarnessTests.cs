@@ -122,7 +122,9 @@ public sealed class WorksAppHostSmokeHarnessTests
     [InlineData("1.18.10", true)]
     public async Task ActorReadinessRequiresTheQualifiedDaprRuntime(string runtimeVersion, bool accepted)
     {
-        using var handler = new WorksSdkHttpEvidenceHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        using var handler = new WorksSdkHttpEvidenceHandler((request, _) => Task.FromResult(request.RequestUri!.AbsolutePath == "/v1.0/healthz"
+            ? new HttpResponseMessage(HttpStatusCode.NoContent)
+            : new HttpResponseMessage(HttpStatusCode.OK)
         {
             Content = JsonContent.Create(new
             {
@@ -142,6 +144,80 @@ public sealed class WorksAppHostSmokeHarnessTests
             refusal.Message.ShouldContain("[startup/readiness]");
             refusal.Message.ShouldContain("runtime 1.18.7 or newer is required");
         }
+    }
+
+    /// <summary>Successful placement does not waste the remaining startup budget on an arbitrary sleep.</summary>
+    [Fact]
+    public async Task ReadyPlacementCompletesWithoutAProbeIntervalPaddingDelay()
+    {
+        using var handler = new WorksSdkHttpEvidenceHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = JsonContent.Create(new { results = new Dictionary<string, object> { ["dapr-actor-placement"] = new { status = "Healthy" } } }),
+        }));
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1/") };
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        deadline.CancelAfter(TimeSpan.FromSeconds(1));
+        await WorksAppHostTestReadiness.WaitForEventStoreCommandRuntimeAsync(client, deadline.Token).ConfigureAwait(true);
+    }
+
+    /// <summary>Archived liveness and an unsuccessful Healthy body never substitute for real successful readiness.</summary>
+    [Fact]
+    public async Task RetainedReadinessRequiresBothHealthyStatusAndSuccessfulHttp()
+    {
+        int probes = 0;
+        using var handler = new WorksSdkHttpEvidenceHandler((request, _) =>
+        {
+            request.RequestUri!.AbsolutePath.ShouldBe("/ready");
+            int current = Interlocked.Increment(ref probes);
+            return Task.FromResult(new HttpResponseMessage(current == 1 ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK)
+            { Content = JsonContent.Create(new { status = current == 2 ? "Degraded" : "Healthy" }) });
+        });
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1/") };
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        deadline.CancelAfter(TimeSpan.FromSeconds(2));
+        await WorksAppHostTestReadiness.WaitForRetainedWorksReadinessAsync(client, deadline.Token);
+        probes.ShouldBe(3);
+    }
+
+    /// <summary>The retained readiness wait cannot outlive the existing owner startup cancellation.</summary>
+    [Fact]
+    public async Task RetainedReadinessPreservesOwnerStartupCancellation()
+    {
+        using var handler = new WorksSdkHttpEvidenceHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.ServiceUnavailable)
+        { Content = JsonContent.Create(new { status = "Unhealthy" }) }));
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1/") };
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        deadline.CancelAfter(TimeSpan.FromMilliseconds(100));
+        await Should.ThrowAsync<OperationCanceledException>(() => WorksAppHostTestReadiness.WaitForRetainedWorksReadinessAsync(client, deadline.Token));
+    }
+
+    /// <summary>Advertised actors never substitute for actual sidecar app-channel readiness.</summary>
+    [Fact]
+    public async Task ActorMetadataAloneDoesNotPassAnUnreadySidecarAppChannel()
+    {
+        int probes = 0;
+        using var handler = new WorksSdkHttpEvidenceHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath == "/v1.0/healthz")
+            {
+                probes++;
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+            }
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(new
+                {
+                    runtimeVersion = "1.18.7", actors = new[] { new { type = "WorksSdkReminderActor" } },
+                    actorRuntime = new { runtimeStatus = "RUNNING", hostReady = true, placement = "connected" },
+                    scheduler = new { connected_addresses = new[] { "localhost:61006" } },
+                }),
+            });
+        });
+        using var client = new HttpClient(handler) { BaseAddress = new Uri("http://127.0.0.1/") };
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        deadline.CancelAfter(TimeSpan.FromMilliseconds(100));
+        await Should.ThrowAsync<OperationCanceledException>(() => WorksAppHostTestReadiness.WaitForWorksActorRuntimeAsync(client, deadline.Token)).ConfigureAwait(true);
+        probes.ShouldBeGreaterThan(0);
     }
 
     /// <summary>Real redirected pipe reads settle when the production probe terminates its child.</summary>

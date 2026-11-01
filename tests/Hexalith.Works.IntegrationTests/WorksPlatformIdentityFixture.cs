@@ -154,7 +154,7 @@ internal sealed class WorksPlatformIdentityFixture : IAsyncDisposable
             fixture.ServiceBearer = new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
             {
                 Issuer = Issuer, Audience = Audience, IssuedAt = issued, NotBefore = issued.AddSeconds(-1), Expires = issued.AddMinutes(30),
-                Claims = new Dictionary<string, object> { ["sub"] = "works-identity-reader", ["azp"] = "works" },
+                Claims = new Dictionary<string, object> { ["sub"] = "works-identity-reader", ["azp"] = "works", ["eventstore:surface"] = "service" },
                 SigningCredentials = new SigningCredentials(new RsaSecurityKey(fixture._key), SecurityAlgorithms.RsaSha256),
             });
             return fixture;

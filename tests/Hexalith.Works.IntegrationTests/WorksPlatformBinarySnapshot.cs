@@ -34,6 +34,14 @@ internal sealed class WorksPlatformBinarySnapshot : IDisposable
         catch { snapshot.Dispose(); throw; }
     }
 
+    /// <summary>Verifies every captured actual byte without replacing any selected executable.</summary>
+    internal void VerifyCopies()
+    {
+        foreach ((string source, string copy) in _copies)
+            if (Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(copy))) != Hashes[source])
+                throw new InvalidOperationException("A captured fleet binary no longer matches its actual stopped input.");
+    }
+
     internal void Restore()
     {
         foreach ((string target, string copy) in _copies)

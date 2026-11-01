@@ -86,7 +86,7 @@ context:
 - [x] `references/Hexalith.Platform/src/Hexalith.Platform.Composition/WorksPreviewModel.cs` and `tests/Hexalith.Platform.Works.Tests/WorksPreviewModelTests.cs` — replace the token-name skip with unconditional idempotent SDK registration; verify real bindings are reused and unrelated reserved names refuse, without changing the historical archive.
 - [x] `references/Hexalith.Platform/apphost.cs` — align its two existing EventStore declarations to the already selected public producer 3.128.3 and its stale Dapr adapter declaration to catalog-selected 13.6.2-beta.959; keep the catalog selection, SDK version and retained archive unchanged.
 - [x] `references/Hexalith.Platform/tests/Hexalith.Platform.Works.Tests/RecoveryRuntimeTests.cs` — repair the six demonstrated owner-build analyzer errors with one explicit claimType null check and five ConfigureAwait(true) annotations, retaining assertions, analyzer policy and the original failed build log.
-- [x] Fresh full canonical qualification followed by the actual CI entry point — require all eleven rows, 44 proofs, complete fleet rollback, all explicit facts and final source/runtime/fixture/archive/launcher closure on the same final inputs after these review patches.
+- [ ] Fresh full canonical qualification followed by the actual CI entry point — require all eleven rows, 44 proofs, complete fleet rollback, all explicit facts and final source/runtime/fixture/archive/launcher closure on the same final inputs after these review patches.
 
 **Acceptance Criteria:**
 - Given all R1–R11 rows have named producer versions, consumers, passing Platform commands, and rollback evidence, when the cutover is reviewed, then Works has no AppHost/Aspire/ServiceDefaults project and its executable uses the canonical SDK composition.
@@ -455,6 +455,22 @@ Scope: Works `6967819..HEAD` (the agreed pre-cutover cut-off), restricted to 31 
 - Acceptance-auditor: Parties linked-source count of eleven (**false**: current csproj has exactly 11 includes).
 
 ## Implementation Notes
+
+### Approved route-catalog prerequisite implementation (2026-10-31)
+
+The user approved implementing the documented producer/Platform/Works prerequisite delta by answering "yes". Work continues under the [implementation spec](spec-4-9-route-catalog-prerequisites.md) and [resolved technical context](story-4-9-route-catalog-design.md), using a fixed capture of current root-declared owners. The scope approval is settled; the earlier blocked packet retains its historical approval-pending wording. Preserve all original frozen intent, exact historical proof scope, authorization/cancellation assertions and concurrent workspace edits. Current full/CI qualification remains open until the new implementation and producer prerequisites are actually verified.
+
+### Current resumed prerequisite checkpoint (2026-10-31; blocked before new full qualification)
+
+The historical migration and prior qualifying packets remain accepted only for their exact inputs. The newly selected 3.128.4 tuple fails Platform custody compilation because its public Contracts lack `DeletionBatchCapabilityIdentity.IssueOperationId` and `IAnchoredStateTransitionAuthority.ReadCurrentOriginalAsync`. The unchanged focused Release package-contract class passes 2/2; this does not qualify the full consumer or topology.
+
+An isolated source-compatible 3.129.0 candidate binds official producer `c02afa0fce310ccdb696232f18829df96cba088e`, matching default SDK checkout, source manifest, fixture gitlink and current-source markers. Disposable fixture commit `71467ba484b343fb9c23e76655b0063ac7a8a9df` passed pinned commitlint and was never applied or pushed to the live workspace. A bounded Parties fallback condition preserves older/current catalog compatibility without suppressing NU1506; it belongs only to the preserved baseline, not the concurrent live Parties upgrade.
+
+Source preflight, default Debug/source consumer, parallel Debug solution build and 112 script controls pass with zero build warnings/errors. Ordinary suites pass 597 unit, three property and 404 architecture cases. Integration records 1,089 passes, 71 failures and seven explicit not-run facts (1,167 discovered; zero errors/skips). Eleven failures are cancellation cases and 59 are protected HTTP cases; .129 installs a committed route-catalog guard before their handlers. The actual default host authority directly refuses with Configuration: "An independently bound local catalog host identity and profile are required." Its identity is absent and profile empty. The separate fleet-restore `stream-pending` cancellation has no established cause.
+
+The missing prerequisite is a supported SDK/Platform route-catalog enrollment and custom-operation scope contract. The existing guard admits no `/work/processes/revalidate` path/request shape. WorksPreviewModel does not use current Platform's generic bootstrap, which separately refuses package/CI composition. No guard, authorization assertion, timeout, analyzer or production policy was weakened. No complete full/actual-CI run was launched on the known-unadmitted source-qualified graph. Two earlier .129 preparation attempts were parent-stopped before live proof; original failures and stopped ledgers remain nonqualifying.
+
+The [bounded blocked packet](evidence/story-4-9/producer-platform-prerequisites-2026-10-31/README.md) preserves source/producer provenance, exact commands, XML, original/stopped attempts, direct refusal and independent parent audit. Its [proposed prerequisite delta](evidence/story-4-9/producer-platform-prerequisites-2026-10-31/PREREQUISITE-DELTA.md) names owning files, missing public contracts/bootstrap/enrollment, focused proof commands and acceptance checks; scope approval is pending. The final fresh-qualification task is reopened. Story/sprint remain `in-progress`; no current parity, complete rollback, fresh hosted CI or production acceptance is claimed. All concurrent live workspace changes and frozen intent are preserved.
 
 ### Current Build resume checkpoint (2026-10-29)
 

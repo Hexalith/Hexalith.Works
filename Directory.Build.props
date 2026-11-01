@@ -2,6 +2,12 @@
 
   <PropertyGroup>
     <!-- Detect only root-declared sibling modules under references/; nested submodules are intentionally not required. -->
+    <HexalithBuildsRoot Condition="'$(HexalithBuildsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props')">$(MSBuildThisFileDirectory)references/Hexalith.Builds</HexalithBuildsRoot>
+    <HexalithBuildsRoot Condition="'$(HexalithBuildsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props')">$(MSBuildThisFileDirectory)../Hexalith.Builds</HexalithBuildsRoot>
+    <HexalithCommonsRoot Condition="'$(HexalithCommonsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references/Hexalith.Commons/src/libraries/Hexalith.Commons.UniqueIds')">$(MSBuildThisFileDirectory)references/Hexalith.Commons</HexalithCommonsRoot>
+    <HexalithCommonsRoot Condition="'$(HexalithCommonsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)../Hexalith.Commons/src/libraries/Hexalith.Commons.UniqueIds')">$(MSBuildThisFileDirectory)../Hexalith.Commons</HexalithCommonsRoot>
+    <HexalithMcpCliRoot Condition="'$(HexalithMcpCliRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references/Hexalith.McpCli/src/Hexalith.McpCli.Abstractions')">$(MSBuildThisFileDirectory)references/Hexalith.McpCli</HexalithMcpCliRoot>
+    <HexalithMcpCliRoot Condition="'$(HexalithMcpCliRoot)' == '' and Exists('$(MSBuildThisFileDirectory)../Hexalith.McpCli/src/Hexalith.McpCli.Abstractions')">$(MSBuildThisFileDirectory)../Hexalith.McpCli</HexalithMcpCliRoot>
     <HexalithEventStoreRoot Condition="'$(HexalithEventStoreRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.EventStore\src\Hexalith.EventStore.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.EventStore</HexalithEventStoreRoot>
     <HexalithTenantsRoot Condition="'$(HexalithTenantsRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Tenants\src\Hexalith.Tenants.Contracts')">$(MSBuildThisFileDirectory)references\Hexalith.Tenants</HexalithTenantsRoot>
     <HexalithPartiesRoot Condition="'$(HexalithPartiesRoot)' == '' and Exists('$(MSBuildThisFileDirectory)references\Hexalith.Parties\src\Hexalith.Parties.Client')">$(MSBuildThisFileDirectory)references\Hexalith.Parties</HexalithPartiesRoot>
@@ -39,7 +45,7 @@
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.128.4</HexalithEventStoreVersion>
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">3.129.0</HexalithEventStoreVersion>
     <WorksSdkCandidateFeed Condition="'$(WorksSdkCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
     <WorksPlatformCandidateFeed Condition="'$(WorksPlatformCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
     <!-- Candidate archives are admitted only by an explicit verification invocation. Merely leaving a
@@ -96,7 +102,20 @@
 
   <!-- Reject invalid caller values, equal mode switches (true/true or false/false), and source flags that
        disagree with the selected mode. These checks run for restore/package collection as well as compile. -->
+  <!-- Plain Debug builds use the verifier's explicit sibling selectors. Active mappings own their selectors. -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug' and '$(UseHexalithProjectReferences)' == 'true' and '$(HexalithSourceMappingMode)' != 'source' and '$(HEXALITH_SOURCE_MAPPING_HASH)' == '' and '$(HEXALITH_SOURCE_MAPPING_PATH)' == ''">
+    <_WorksUnmappedSourceBuild>true</_WorksUnmappedSourceBuild>
+    <!-- NuGet's legacy path walk drops ProjectReference.AdditionalProperties. Static graph restore retains them. -->
+    <RestoreUseStaticGraphEvaluation Condition="'$(RestoreUseStaticGraphEvaluation)' == ''">true</RestoreUseStaticGraphEvaluation>
+    <HexalithCommonsFromSource Condition="'$(HexalithCommonsFromSource)' == ''">true</HexalithCommonsFromSource>
+    <HexalithCommonsHttpFromSource Condition="'$(HexalithCommonsHttpFromSource)' == ''">true</HexalithCommonsHttpFromSource>
+    <HexalithMcpCliFromSource Condition="'$(HexalithMcpCliFromSource)' == ''">true</HexalithMcpCliFromSource>
+    <_WorksUnmappedSourceForwardProperties>UseHexalithProjectReferences=$(UseHexalithProjectReferences);UseNuGetDeps=$(UseNuGetDeps);HexalithBuildsRoot=$(HexalithBuildsRoot);HexalithEventStoreRoot=$(HexalithEventStoreRoot);HexalithEventStoreFromSource=$(HexalithEventStoreFromSource);HexalithPolymorphicSerializationsRoot=$(HexalithPolymorphicSerializationsRoot);HexalithPolymorphicSerializationsFromSource=$(HexalithPolymorphicSerializationsFromSource);HexalithCommonsRoot=$(HexalithCommonsRoot);HexalithCommonsFromSource=$(HexalithCommonsFromSource);HexalithCommonsHttpFromSource=$(HexalithCommonsHttpFromSource);HexalithMcpCliRoot=$(HexalithMcpCliRoot);HexalithMcpCliFromSource=$(HexalithMcpCliFromSource)</_WorksUnmappedSourceForwardProperties>
+  </PropertyGroup>
+
   <Target Name="ValidateHexalithDependencyMode" BeforeTargets="CollectPackageReferences;CoreCompile">
+    <Error Condition="'$(_WorksUnmappedSourceBuild)' == 'true' and ('$(HexalithBuildsRoot)' == '' or '$(HexalithCommonsRoot)' == '' or '$(HexalithMcpCliRoot)' == '')"
+           Code="HXW0001" Text="Works Debug source builds require the root-declared Builds, Commons and McpCli checkouts." />
     <Error
       Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:false'"
       Code="HXW0003"

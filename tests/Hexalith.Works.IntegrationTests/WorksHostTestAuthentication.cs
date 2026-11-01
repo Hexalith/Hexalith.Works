@@ -43,6 +43,7 @@ internal static class WorksHostTestAuthentication
             Claims = new Dictionary<string, object>
             {
                 [EventStoreWorkloadAuthenticationDefaults.CallerClaimType] = "eventstore",
+                [RouteCatalogSurfacePolicy.ClaimType] = "service",
                 [EventStoreWorkloadAuthenticationDefaults.OperationClaimType] = new[] { "domain-service:project" },
             },
             SigningCredentials = new SigningCredentials(

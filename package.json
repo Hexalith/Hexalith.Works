@@ -6,7 +6,7 @@
   "engines": {
     "node": ">=24.10.0"
   },
-  "packageManager": "npm@11.18.0",
+  "packageManager": "npm@11.21.1",
   "scripts": {
     "commitlint": "commitlint --config commitlint.config.mjs",
     "commitlint:last": "commitlint --config commitlint.config.mjs --from HEAD~1 --to HEAD",
@@ -14,11 +14,11 @@
     "release:dry-run": "semantic-release --dry-run --no-ci"
   },
   "devDependencies": {
-    "@commitlint/cli": "21.2.2",
-    "@commitlint/config-conventional": "21.2.2",
+    "@commitlint/cli": "21.2.4",
+    "@commitlint/config-conventional": "21.2.4",
     "@semantic-release/commit-analyzer": "13.0.1",
     "@semantic-release/exec": "7.1.0",
-    "@semantic-release/github": "12.0.9",
+    "@semantic-release/github": "12.0.10",
     "@semantic-release/release-notes-generator": "14.1.1",
     "semantic-release": "25.0.9"
   }
