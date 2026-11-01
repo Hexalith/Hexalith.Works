@@ -97,7 +97,9 @@ def build_contract(text: str, initialization: str, values: dict[str, str]) -> tu
     enabled(header)
     if re.search(r"(?m)^(env|defaults):|^    (env|defaults):", header):
         raise ValueError("incompatible inherited producer execution context")
-    names = ("Initialize root-declared submodules", "Initialize .NET", "Prepare package dependencies", "Restore", "Build")
+    names = (
+        "Initialize root-declared submodules", "Initialize .NET", "Prepare package dependencies", "Restore", "Build"
+    )
     positions = [text.index("- name: " + name + "\n") for name in names]
     if positions != sorted(positions):
         raise ValueError("incompatible build step order")

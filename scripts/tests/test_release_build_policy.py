@@ -78,7 +78,9 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
                 retained = marker.with_name(marker.name + ".not-selected")
                 marker.rename(retained)
                 try:
-                    result = self.msbuild("-t:ValidateHexalithDependencyMode", "-p:Configuration=Debug", environment=environment)
+                    result = self.msbuild(
+                        "-t:ValidateHexalithDependencyMode", "-p:Configuration=Debug", environment=environment
+                    )
                     self.assertNotEqual(0, result.returncode)
                     self.assertIn("HXW0001", result.stdout)
                     self.assertIn("root-declared Builds, Commons and McpCli checkouts", result.stdout)

@@ -142,7 +142,10 @@ def source_owners(root, run):
             raise ValueError(f"Invalid root-declared source owner: {path}")
         checkout = root / path
         if (checkout / ".git").exists():
-            if Path(run(["git", "-C", str(checkout), "rev-parse", "--show-toplevel"]).strip()).resolve() != checkout.resolve():
+            if (
+                Path(run(["git", "-C", str(checkout), "rev-parse", "--show-toplevel"]).strip()).resolve()
+                != checkout.resolve()
+            ):
                 raise ValueError(f"{path}: source owner inspection selected a different worktree")
             owners[path] = checkout
     if not set(DEPENDENCIES).issubset(owners):
@@ -206,7 +209,9 @@ def verify(root, artifacts, *, check_only=False):
         source += [f"-p:{value[1]}={msbuild_escape(root / path)}" for path, value in DEPENDENCIES.items()]
         if any(value and name.casefold() in {"hexalith_source_mapping_hash", "hexalithsourcemappingmode"}
                for name, value in environment.items()):
-            raise ValueError("Source verification requires an unmapped entry point; preserve the active module-tool mapping")
+            raise ValueError(
+                "Source verification requires an unmapped entry point; preserve the active module-tool mapping"
+            )
         source += [f"-p:HexalithCommonsRoot={msbuild_escape(root / 'references/Hexalith.Commons')}",
                    "-p:HexalithCommonsFromSource=true", "-p:HexalithCommonsHttpFromSource=true",
                    f"-p:HexalithMcpCliRoot={msbuild_escape(root / 'references/Hexalith.McpCli')}",
@@ -218,7 +223,10 @@ def verify(root, artifacts, *, check_only=False):
         run(["dotnet", "restore", solution, "-p:Configuration=Debug", *outputs, *source], timeout=1800)
         run(["dotnet", "build", solution, "--configuration", "Debug", "--no-restore", "-m:1", *outputs, *source],
             timeout=1800)
-        if {path: source_snapshot(checkout, run, artifacts) for path, checkout in source_owners(root, run).items()} != overlays:
+        if (
+            {path: source_snapshot(checkout, run, artifacts) for path, checkout in source_owners(root, run).items()}
+            != overlays
+        ):
             raise ValueError("Workspace source contents changed during verification; rerun against settled inputs")
         report["status"] = "passed"
         return 0

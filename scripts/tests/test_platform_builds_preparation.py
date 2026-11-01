@@ -1,11 +1,11 @@
 """Run the published-artifact hook without borrowing real publication evidence."""
 
 import os
-from pathlib import Path
 import shutil
 import subprocess
 import tempfile
 import unittest
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 

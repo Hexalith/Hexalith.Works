@@ -98,7 +98,9 @@ class SourceDebugVerificationTests(unittest.TestCase):
         (root / "tools").mkdir()
         selected_manifest = self.manifest if manifest == "default" else manifest
         (root / "tools/source-debug-dependencies.json").write_text(json.dumps(selected_manifest))
-        owners = set(MODULE.DEPENDENCIES) | {"references/Hexalith.Commons", "references/Hexalith.McpCli", "references/Hexalith.Builds"}
+        owners = set(MODULE.DEPENDENCIES) | {
+            "references/Hexalith.Commons", "references/Hexalith.McpCli", "references/Hexalith.Builds"
+        }
         for path in owners:
             checkout = root / path
             checkout.mkdir(parents=True)
@@ -129,9 +131,12 @@ class SourceDebugVerificationTests(unittest.TestCase):
                 output = "\n".join(f"submodule.{Path(path).name}.path {path}" for path in sorted(owners))
             elif command[:2] == ["dotnet", "msbuild"]:
                 output = json.dumps({"Properties": self.versions})
-            elif "diff" in command and source_changes and any(call[0][:2] == ["dotnet", "build"] for call in calls):
-                if source_changes is True or Path(command[2]).relative_to(root).as_posix() == source_changes:
-                    output = "changed source bytes"
+            elif (
+                "diff" in command and source_changes
+                and any(call[0][:2] == ["dotnet", "build"] for call in calls)
+                and (source_changes is True or Path(command[2]).relative_to(root).as_posix() == source_changes)
+            ):
+                output = "changed source bytes"
             failed = command[:2] == ["dotnet", failure]
             kwargs["stdout"].write(output.encode())
             return Mock(wait=Mock(return_value=23 if failed else 0))
@@ -151,7 +156,8 @@ class SourceDebugVerificationTests(unittest.TestCase):
             self.assertIn(str(root / "Hexalith.Works.slnx"), command)
             for flag in ("UseHexalithProjectReferences=true", "UseNuGetDeps=false",
                          "HexalithEventStoreFromSource=true", "HexalithPolymorphicSerializationsFromSource=true",
-                         "HexalithCommonsFromSource=true", "HexalithCommonsHttpFromSource=true", "HexalithMcpCliFromSource=true"):
+                         "HexalithCommonsFromSource=true", "HexalithCommonsHttpFromSource=true",
+                         "HexalithMcpCliFromSource=true"):
                 self.assertIn(f"-p:{flag}", command)
             for path, (_, property_name) in MODULE.DEPENDENCIES.items():
                 self.assertIn(f"-p:{property_name}={MODULE.msbuild_escape(root / path)}", command)
@@ -247,8 +253,12 @@ class SourceDebugVerificationTests(unittest.TestCase):
     def test_complete_source_owner_closure_includes_commons_mcpcli_builds_and_works(self):
         status, report, _, _ = self.exercise_pipeline()
         self.assertEqual(0, status)
-        self.assertEqual(set(MODULE.DEPENDENCIES) | {".", "references/Hexalith.Commons", "references/Hexalith.McpCli", "references/Hexalith.Builds"},
-                         set(report["sourceOverlays"]))
+        self.assertEqual(
+            set(MODULE.DEPENDENCIES) | {
+                ".", "references/Hexalith.Commons", "references/Hexalith.McpCli", "references/Hexalith.Builds"
+            },
+            set(report["sourceOverlays"]),
+        )
         self.assertEqual(set(MODULE.DEPENDENCIES), set(report["dependencies"]))
 
     def test_each_additional_source_owner_content_mutation_refuses(self):
@@ -265,9 +275,12 @@ class SourceDebugVerificationTests(unittest.TestCase):
             tracked = checkout / "Owner.cs"
             tracked.write_text("class Before {}\n")
             subprocess.run(["git", "-C", str(checkout), "add", "Owner.cs"], check=True)
-            subprocess.run(["git", "-C", str(checkout), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
+            subprocess.run(["git", "-C", str(checkout), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid",
                             "commit", "--quiet", "-m", "test: establish source snapshot fixture"], check=True)
-            run = lambda command: subprocess.check_output(command, text=True, env=MODULE.inspection_environment())
+            def run(command):
+                return subprocess.check_output(command, text=True, env=MODULE.inspection_environment())
+
             initial = MODULE.source_snapshot(checkout, run)
             tracked.write_text("class After_ {}\n")
             changed = MODULE.source_snapshot(checkout, run)
@@ -283,11 +296,15 @@ class SourceDebugVerificationTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             checkout = Path(temporary)
             subprocess.run(["git", "init", "--quiet", str(checkout)], check=True)
-            subprocess.run(["git", "-C", str(checkout), "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid",
-                            "commit", "--allow-empty", "--quiet", "-m", "test: establish artifact source fixture"], check=True)
+            subprocess.run(["git", "-C", str(checkout), "-c", "user.name=Fixture",
+                            "-c", "user.email=fixture@example.invalid",
+                            "commit", "--allow-empty", "--quiet", "-m",
+                            "test: establish artifact source fixture"], check=True)
             artifacts = checkout / "outputs"
             artifacts.mkdir()
-            run = lambda command: subprocess.check_output(command, text=True, env=MODULE.inspection_environment())
+            def run(command):
+                return subprocess.check_output(command, text=True, env=MODULE.inspection_environment())
+
             before = MODULE.source_snapshot(checkout, run, artifacts)
             (artifacts / "result.json").write_text("owned-result")
             (artifacts / "command-01.log").write_text("owned-log")
@@ -301,7 +318,9 @@ class SourceDebugVerificationTests(unittest.TestCase):
             build = artifacts / "build"
             build.mkdir()
             (build / "UntrackedOwner.cs").write_text("class Inner {}")
-            self.assertIn("outputs/build/UntrackedOwner.cs", MODULE.source_snapshot(checkout, run, artifacts)["untrackedFiles"])
+            self.assertIn(
+                "outputs/build/UntrackedOwner.cs", MODULE.source_snapshot(checkout, run, artifacts)["untrackedFiles"]
+            )
 
     def test_git_environment_cannot_redirect_worktrees_or_enable_replacements(self):
         with patch.dict(os.environ, {"GIT_DIR": "foreign", "GIT_WORK_TREE": "foreign",
