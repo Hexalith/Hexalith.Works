@@ -2251,3 +2251,27 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `/tmp/works-sdk-finite-compatibility-draft/sdk-prerequisite-claims-in-review.md`
   summary: The pre-existing public Development topology validator accepts noncanonical native actor path/operation pairs when supplied a self-consistent native witness.
   evidence: Parent public-entry probe accepts /not-a-native-endpoint and arbitrary-operation; baseline7f has the same omission and the current native-branch change only rejects overlapping HTTP evidence. DevelopmentNativeActorReceiver constrains the generated production geometry, so no new live receiver bypass is demonstrated. Reproduction /tmp/native-geometry-review5-z5hu__ha/Probe.csproj; report /tmp/works-sdk-review5-parent-native-geometry.log.
+
+- source_spec: `/tmp/works-sdk-finite-compatibility-draft/sdk-prerequisite-claims-in-review.md`
+  summary: Incoming SDK CI activates unsupported legacy reusable-workflow profile inputs and registry secrets.
+  evidence: Baseline-to-ba4 already adds the fields; actual Builds main4d892075 legacy domain-ci contract lacks them. V2 declares profiles/registry secrets but rejects the supplied dapr-version and dapr-runtime-version inputs. Root must perform a genuine compatible producer/caller migration preserving the pinned runtime and integration checks before acceptance; do not merely delete gates.
+
+- source_spec: `/tmp/works-sdk-finite-compatibility-draft/sdk-prerequisite-claims-in-review.md`
+  summary: Existing Platform gateway readiness plus direct Redis roundtrip is bounded infrastructure evidence, not gateway-driven EventStore persistence.
+  evidence: Incoming ba4 GatewayPersistenceTests is unchanged by this repair and explicitly describes readiness plus isolated store retention. Any broader gateway persistence acceptance needs an authenticated actual declared mutation and persisted result; retain current evidence scope and do not relabel direct Redis writes.
+
+- source_spec: `/tmp/works-sdk-finite-compatibility-draft/sdk-prerequisite-claims-in-review.md`
+  summary: The staged Platform gateway suite needs a real descriptor-authenticated successful protected request before future activation.
+  evidence: SDK review9 blind-10 traced GatewayPersistenceTests: readiness is public and the status request deliberately anonymous; the file is unchanged incoming ba4, currently staged/unqualified and no positive credential acceptance is claimed. Use the approved Platform runtime contract rather than inventing a bypass.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-migrate-timesheets-endpoint-authentication.md`
+  summary: Unsupported JSON charset values retain the original framework binder exception behavior; assess a controlled client-error contract separately.
+  evidence: Timesheets auth review1 blind-6 reproduced InvalidOperationException in both original .NET10 binder and new handler; no migration regression or weakened authority was established.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-repair-chatbot-authentication-boundary.md`
+  summary: Bound the existing default InMemoryAuditWriter authorization-failure ingestion under an explicit audit retention/storage contract.
+  evidence: The existing sink retains an unbounded list for prior denial callers, including the original anonymous path before Oct31 hardening. Restoring one required denial fact does not qualify production audit durability or change retention; capacity protection must preserve the authoritative audit contract.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-bound-tenants-bootstrap-command-transport.md`
+  summary: Bound bootstrap response-body consumption before HttpClient buffers the complete response.
+  evidence: Pre-existing TenantBootstrapHostedService.SendAsync uses ResponseContentRead before the capped rejection probe; oversized bodies can allocate beyond that probe cap. The new finite30-second command budget improves timing but not memory bounds. A separate fix must preserve genuine receipt semantics and cover oversized/stalled bodies.

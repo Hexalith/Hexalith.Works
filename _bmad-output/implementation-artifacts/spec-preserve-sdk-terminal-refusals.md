@@ -142,3 +142,8 @@ Parent then normally integrated independent upstream command-stage diagnostics `
 ## Parent Final Verification
 
 At exact combined/pushed source `990d4ee3820c88da6be0e40490ef8d8faaeba534`, both affected Release builds pass with zero warnings/errors. The complete affected routing/command/pipeline selection passes1372 cases with zero skips, workload handler passes28/28, and complete DomainService executes1356 cases with1355 passing and one pre-existing skip. No failures or not-run cases. Exact commands, timings, XML/log hashes and skip identity are retained beside review2/parent-final-combined. Implementation/review is complete; fresh hosted CI, final merge and public release remain parent orchestration gates.
+
+
+## Hosted Legacy-Schema Eligibility Correction
+
+Hosted native run41353778900/job124989363937 exposed two preserved schema-two security503 controls returning the newly added404. Individual verdict `medium`, route `patch`: the unknown-local legacy404 shortcut must be eligible only for schema-three authority; prior schema1/2 validation stays intact. Same owner applied a one-line predicate and paired authenticated schema2→503/schema3→404 control; both native line391 assertions are byte-identical. Parent read the complete two-file patch SHA256b631ce5217e25c7cd1fe930d70e953e6ba8e74009ef13477de1b8fa52b6f361a and verified current hashes.17 focused cases pass with zero skips and clean Release build. Normal pinned commitlint/hooks recorded/pushedc1952e97ac8b33b1578207e91c1c574ef69ede47. No new review loop or semantic test-expectation change; fresh hosted native/publication gates remain pending.
