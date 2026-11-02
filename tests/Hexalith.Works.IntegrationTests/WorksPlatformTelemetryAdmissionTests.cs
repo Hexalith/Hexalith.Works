@@ -63,7 +63,11 @@ public sealed class WorksPlatformTelemetryAdmissionTests
             cleanupServices.Count.ShouldBeGreaterThan(0, "Platform must register its composition workspace cleanup.");
             using ServiceProvider cleanup = cleanupServices.BuildServiceProvider();
             _ = cleanup.GetServices<IHostedService>().ToArray();
-            Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]> platform = WorksPlatformCompositionGuard.Capture(builder);
+            // This proof evaluates Works telemetry only. Other resources have catalog-owner callbacks
+            // that require Aspire to render and start the Dapr CLI before they can be evaluated.
+            Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]> platform = WorksPlatformCompositionGuard.Capture(builder)
+                .Where(entry => entry.Key.Name == "works")
+                .ToDictionary(entry => entry.Key, entry => entry.Value);
             Dictionary<string, object> baseline = await WorksPlatformCompositionGuard.VerifyAsync(
                 builder, platform, platform, TestContext.Current.CancellationToken);
             var keys = System.Text.Json.JsonSerializer.SerializeToElement(baseline["works"]).GetProperty("platformComposedKeys")
@@ -73,8 +77,11 @@ public sealed class WorksPlatformTelemetryAdmissionTests
             ProjectResource works = platform.Keys.Single(resource => resource.Name == "works");
             builder.CreateResourceBuilder(works).WithEnvironment("OTEL_EXPORTER_OTLP_ENDPOINT", "https://foreign.example:4318")
                 .WithEnvironment("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc");
+            Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]> configured = WorksPlatformCompositionGuard.Capture(builder)
+                .Where(entry => entry.Key.Name == "works")
+                .ToDictionary(entry => entry.Key, entry => entry.Value);
             (await Should.ThrowAsync<InvalidOperationException>(() => WorksPlatformCompositionGuard.VerifyAsync(
-                builder, platform, WorksPlatformCompositionGuard.Capture(builder), TestContext.Current.CancellationToken)))
+                builder, platform, configured, TestContext.Current.CancellationToken)))
                 .Message.ShouldContain("does not redirect OTLP export to an owned loopback collector");
         }
         finally
