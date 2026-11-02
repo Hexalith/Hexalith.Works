@@ -2279,3 +2279,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-fix-tenants-noncanonical-service-fixture.md`
   summary: Add direct owner-handler observation to the existing noncanonical read-authority denial regression.
   evidence: Its pre-existing HTTP200/safe-denial/zero source-read assertions can also match dispatcher binding refusal; a handler decorator should prove the rebuilt administrator hint is false while original authority remains denied. Current production source verifies the original signed query before invoking the owner handler.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-bound-tenants-api-gateway-transport.md`
+  summary: Safely bound pre-existing SDK durable catalog-lease cleanup without abandoning or expiring uncertain dispatch fences.
+  evidence: Independent edge review confirmed RouteCatalogInvocationHandler awaits RouteCatalogDispatchLease disposal and RouteCatalogAuthority.ReleaseAsync retries state-store CAS indefinitely using CancellationToken.None. This exists in public EventStore7776 and current966 source. HttpClient.Timeout is cooperative and cannot bound cleanup that ignores cancellation; the API repair documents that limit. An SDK-owned design and stalled-store/CAS tests must preserve exact lease ownership, durable quiescence and fail-closed recovery before changing it.
