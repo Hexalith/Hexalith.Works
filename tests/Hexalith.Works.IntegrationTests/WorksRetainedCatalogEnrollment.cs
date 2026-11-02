@@ -56,7 +56,7 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
         // deployment was independently qualified above and is independently observed in each child.
         var composition = builder.AddEventStoreDevelopmentRouteCatalog(gateway, [new(works, assembly, assembly)],
             [gateway.CaptureEventStoreDevelopmentReceiver(works, admin), works.CaptureEventStoreDevelopmentReceiver(gateway, operations, admin),
-                admin.CaptureEventStoreDevelopmentReceiver(), operations.CaptureEventStoreDevelopmentReceiver(admin)], statePath, options: profile.Catalog);
+                admin.CaptureEventStoreDevelopmentReceiver(), operations.CaptureEventStoreDevelopmentReceiver(admin)], statePath, profile.Catalog);
         builder.Services.AddSingleton<IHostedService>(_ => new WorksRetainedCatalogEnrollment(composition));
     }
 

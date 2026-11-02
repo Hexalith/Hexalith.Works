@@ -15,7 +15,7 @@ The script never stages files itself. The separate Architecture marker guard cha
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
 The current EventStore source is `7c93a1234d14c66f5ee85ed48caaee1d30a671f3`.
-Release pins public `3.132.1`, produced by `0ace1545c433bf234f54cef3a57ac77d62b4175f`.
+Release pins public `3.132.2`, produced by `7c93a1234d14c66f5ee85ed48caaee1d30a671f3`.
 PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
 one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
 Release pins 1.19.8. The current source markers in the API and boundary records bind the consumed
