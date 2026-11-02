@@ -1,11 +1,14 @@
 """Keep SDK-added source references in the same build context as their parent edges."""
 
+import hashlib
 import json
 import os
 import shutil
 import subprocess
 import tempfile
 import unittest
+import urllib.request
+import zipfile
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
@@ -194,3 +197,127 @@ class ParallelSolutionNodeIdentityTests(unittest.TestCase):
     def write_xml(path, element):
         path.parent.mkdir(parents=True, exist_ok=True)
         ET.ElementTree(element).write(path, encoding="utf-8", xml_declaration=False)
+
+
+class MappedProjectReferenceGlobalsTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.tools = tempfile.TemporaryDirectory(prefix="mapped-forwarding-tool-")
+        cls.addClassCleanup(cls.tools.cleanup)
+        root = Path(cls.tools.name)
+        manifest = json.loads((ROOT / "references/Hexalith.Platform/.config/dotnet-tools.json").read_text())
+        version = manifest["tools"]["hexalith.builds.module.cli"]["version"]
+        package = "hexalith.builds.module.cli"
+        archive = root / "tool.nupkg"
+        url = f"https://api.nuget.org/v3-flatcontainer/{package}/{version}/{package}.{version}.nupkg"
+        with urllib.request.urlopen(url, timeout=90) as response:
+            archive.write_bytes(response.read())
+        signature = subprocess.run(["dotnet", "nuget", "verify", str(archive), "--all"],
+                                   capture_output=True, text=True, timeout=90, check=False)
+        if signature.returncode:
+            raise AssertionError(signature.stdout + signature.stderr)
+        # Load only the exact signed tool's sibling DLL closure, never execute archive paths.
+        with zipfile.ZipFile(archive) as package:
+            tooling = next(name for name in package.namelist()
+                           if name.endswith("/Hexalith.Builds.Tooling.dll") and "/any/" in name)
+            prefix = tooling.rsplit("/", 1)[0] + "/"
+            for name in package.namelist():
+                relative = name.removeprefix(prefix)
+                if name.startswith(prefix) and "/" not in relative and relative.endswith(".dll"):
+                    (root / relative).write_bytes(package.read(name))
+        cls.tooling = root / "Hexalith.Builds.Tooling.dll"
+        if not cls.tooling.is_file():
+            raise AssertionError("The pinned signed tool must contain its source-mapping task.")
+
+    def test_each_mapping_signal_preserves_real_sdk_expansion_and_analyzer_metadata(self):
+        signals = [("HexalithSourceMappingMode", "source"),
+                   ("HEXALITH_SOURCE_MAPPING_HASH", "active-fixture"),
+                   ("HexalithSourceMappingHash", "active-fixture")]
+        for configuration in ("Debug", "Release"):
+            for name, value in signals:
+                with self.subTest(configuration=configuration, signal=name):
+                    self.verify_mapped_graph(configuration, name, value)
+
+    def test_explicit_conflicting_edge_override_still_refuses_hxw006(self):
+        self.verify_mapped_graph("Debug", "HexalithSourceMappingMode", "source", conflicting=True)
+
+    def verify_mapped_graph(self, configuration, signal, value, conflicting=False):
+        with tempfile.TemporaryDirectory(prefix="mapped-forwarding-graph-") as directory:
+            root = Path(directory)
+            owner, feed = root / "references/Hexalith.MappingProbe", root / "feed"
+            owner.mkdir(parents=True)
+            feed.mkdir()
+            shutil.copyfile(ROOT / "Directory.Build.targets", root / "Directory.Build.targets")
+            shutil.copyfile(ROOT / "global.json", root / "global.json")
+            (owner / "Directory.Build.props").write_text(
+                '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework>'
+                f'<HexalithEventStoreVersion>{PIN}</HexalithEventStoreVersion>'
+                '</PropertyGroup></Project>')
+            (root / "NuGet.Config").write_text(
+                '<configuration><packageSources><clear /><add key="offline" '
+                f'value="{feed}" /></packageSources></configuration>')
+            paths = {name: owner / name / f"Hexalith.{name}.csproj"
+                     for name in ("Probe", "Middle", "Leaf", "Analyzer")}
+            for name, path in paths.items():
+                project = ET.Element("Project", Sdk="Microsoft.NET.Sdk")
+                items = ET.SubElement(project, "ItemGroup")
+                if name == "Probe":
+                    ET.SubElement(items, "ProjectReference", Include=str(paths["Middle"]))
+                    ET.SubElement(items, "ProjectReference", Include=str(paths["Analyzer"]),
+                                  ReferenceOutputAssembly="false", PrivateAssets="all")
+                elif name == "Middle":
+                    ET.SubElement(items, "ProjectReference", Include=str(paths["Leaf"]))
+                ParallelSolutionNodeIdentityTests.write_xml(path, project)
+            mapping = {"Mode": "source", "Root": str(owner), "ActiveModule": "Hexalith.MappingProbe",
+                       "Entries": [{"Identity": "Hexalith.MappingProbe", "Origin": "source", "Path": str(owner)}],
+                       "HasGit": False, "PlatformIdentity": None, "IdentityFindings": []}
+            canonical = json.dumps(mapping, separators=(",", ":"))
+            mapping_hash = hashlib.sha256(canonical.encode()).hexdigest()
+            mapping_path = root / "mapping.json"
+            mapping_path.write_text(canonical)
+            hooks = ET.Element("Project")
+            ET.SubElement(hooks, "UsingTask", TaskName="Hexalith.Builds.Tooling.Workspace.SourceMappingReconciliationTask",
+                          AssemblyFile=str(self.tooling))
+            target = ET.SubElement(hooks, "Target", Name="CheckActualMappedReferences",
+                                   DependsOnTargets="IncludeTransitiveProjectReferences")
+            if conflicting:
+                group = ET.SubElement(target, "ItemGroup")
+                item = ET.SubElement(group, "ProjectReference", Update=str(paths["Analyzer"]))
+                ET.SubElement(item, "AdditionalProperties").text = "Configuration=Release"
+            task = ET.SubElement(target, "SourceMappingReconciliationTask", MappingFile=str(mapping_path),
+                                 MappingHash=mapping_hash, Projects="@(ProjectReference)",
+                                 Configuration="$(Configuration)", Platform="AnyCPU", TargetFramework="net10.0",
+                                 ManagePackageVersionsCentrally="true")
+            ET.SubElement(task, "Output", TaskParameter="SelectedProjects", ItemName="CheckedProjects")
+            hooks_path = root / "check.targets"
+            ParallelSolutionNodeIdentityTests.write_xml(hooks_path, hooks)
+            project = ET.parse(paths["Probe"]).getroot()
+            ET.SubElement(project, "Import", Project=str(hooks_path))
+            ParallelSolutionNodeIdentityTests.write_xml(paths["Probe"], project)
+            environment = {key: item for key, item in os.environ.items()
+                           if not key.casefold().startswith("hexalith")
+                           and key.casefold() not in {"configuration", "usehexalithprojectreferences", "usenugetdeps"}}
+            # Exercise each activation channel as an environment property, including the uppercase hash.
+            environment[signal] = value
+            common = ["dotnet", "msbuild", str(paths["Probe"]), "-nologo", "-nr:false",
+                      f"-p:Configuration={configuration}", "-p:NuGetAudit=false"]
+            restore = subprocess.run([*common, "-t:Restore"], cwd=owner, env=environment,
+                                     capture_output=True, text=True, timeout=60, check=False)
+            self.assertEqual(restore.returncode, 0, restore.stdout + restore.stderr)
+            query = subprocess.run([*common, "-t:CheckActualMappedReferences", "-getItem:ProjectReference,CheckedProjects"],
+                                   cwd=owner, env=environment, capture_output=True, text=True, timeout=60, check=False)
+            if conflicting:
+                self.assertNotEqual(query.returncode, 0)
+                self.assertIn("HXW006", query.stdout + query.stderr)
+                return
+            self.assertEqual(query.returncode, 0, query.stdout + query.stderr)
+            output = json.loads(query.stdout)["Items"]
+            references = {Path(item["FullPath"]): item for item in output["ProjectReference"]}
+            self.assertIn(paths["Leaf"], references, "The actual SDK must add the transitive leaf.")
+            for item in references.values():
+                self.assertFalse(item.get("AdditionalProperties", ""), item)
+            checked = {Path(item["FullPath"]): item for item in output["CheckedProjects"]}
+            self.assertEqual(set(checked), set(references))
+            analyzer = checked[paths["Analyzer"]]
+            self.assertEqual(analyzer["ReferenceOutputAssembly"], "false")
+            self.assertEqual(analyzer["PrivateAssets"], "all")
