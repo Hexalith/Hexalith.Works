@@ -16,7 +16,7 @@ permissions:
 
 jobs:
   commitlint:
-    uses: Hexalith/Hexalith.Builds/.github/workflows/commitlint.yml@cce084c44c365cb4b2f9f2f4ac2cb263a5406c56
+    uses: Hexalith/Hexalith.Builds/.github/workflows/commitlint.yml@68563f3453397e2ff3c035dc489fc6c2930d5d4f
     with:
       # github.event.pull_request is absent on the push trigger, so interpolating it there would send an
       # empty title and silently pass the squash-title lint. Send the title only for pull_request events.
