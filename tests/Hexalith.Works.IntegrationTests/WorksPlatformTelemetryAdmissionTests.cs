@@ -17,7 +17,9 @@ public sealed class WorksPlatformTelemetryAdmissionTests
     [Fact(Explicit = true)]
     public async Task ActualPreviewComposesExporterKeysAndRefusesForeignFixtureTelemetry()
     {
-        string worksRoot = Path.GetFullPath(Path.Combine(SchemaEvolution.GoldenCorpusFiles.SourceDirectory("Golden"), "../../../.."));
+        string worksRoot = Environment.GetEnvironmentVariable("WORKS_PLATFORM_WORKS_ROOT") is { Length: > 0 } selected
+            ? Path.GetFullPath(selected)
+            : Path.GetFullPath(Path.Combine(SchemaEvolution.GoldenCorpusFiles.SourceDirectory("Golden"), "../../../.."));
         string platformRoot = Path.Combine(worksRoot, "references", "Hexalith.Platform");
         // Composition never launches a process; use private owner inputs with an inert isolated endpoint.
         string ownerDirectory = Directory.CreateTempSubdirectory("works-telemetry-profile-").FullName;

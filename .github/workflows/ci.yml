@@ -60,7 +60,7 @@ jobs:
         id: platform-toolchain
         run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
       - name: Initialize Dapr proof prerequisites
-        uses: Hexalith/Hexalith.Builds/Github/dapr-init@81c88b34d09d34260b92d7f0928dbbc1c7446baa
+        uses: Hexalith/Hexalith.Builds/Github/dapr-init@cce084c44c365cb4b2f9f2f4ac2cb263a5406c56
         with:
           version: ${{ steps.platform-toolchain.outputs.dapr-cli }}
           runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}
@@ -94,7 +94,7 @@ jobs:
 
   ci:
     needs: platform-toolchain
-    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@81c88b34d09d34260b92d7f0928dbbc1c7446baa
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@cce084c44c365cb4b2f9f2f4ac2cb263a5406c56
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
@@ -109,6 +109,16 @@ jobs:
         tests/Hexalith.Works.PropertyTests
       integration-test-projects: |
         tests/Hexalith.Works.IntegrationTests
+      allowed-not-runnable-tests: |
+        Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process
+        Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect
+        Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart
+        Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily
+        Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness
+        Hexalith.Works.IntegrationTests.WorksPlatformRollbackBinaryTests.ActualSelectedRuntimeBinariesCaptureWithoutMutation
+        Hexalith.Works.IntegrationTests.WorksPlatformTelemetryAdmissionTests.ActualPreviewComposesExporterKeysAndRefusesForeignFixtureTelemetry
+        Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart
+        Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery
 
   scripts-lint:
     name: Lint release tooling
