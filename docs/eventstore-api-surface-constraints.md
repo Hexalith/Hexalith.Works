@@ -1,12 +1,12 @@
 # EventStore API Surface Constraints
 
-<!-- EventStore-current-source: 311d61d29ad8070ee4f6aacbcb4646332afe9ae4 -->
+<!-- EventStore-current-source: a3dbec2f8b6150a3ee33dcbfc2b6bf2fec274625 -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
 
-Current Release selects published EventStore `3.132.2` (tag `v3.132.2`, producer
-`7c93a1234d14c66f5ee85ed48caaee1d30a671f3`). The current source marker has separate scope.
+Current Release selects published EventStore `3.133.0` (tag `v3.133.0`, producer
+`6b2ef99ac55a6e548f504a81d30289bb3deff89d`). The current source marker has separate scope.
 All fourteen public archives have verified identity, repository/source metadata and signatures.
 Current identity preflight passes; full Works runtime/parity acceptance remains pending.
 Historical qualification records below retain their original package versions.
