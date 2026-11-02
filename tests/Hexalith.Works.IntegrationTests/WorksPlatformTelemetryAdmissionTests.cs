@@ -24,6 +24,9 @@ public sealed class WorksPlatformTelemetryAdmissionTests
         // Composition never launches a process; use private owner inputs with an inert isolated endpoint.
         string ownerDirectory = Directory.CreateTempSubdirectory("works-telemetry-profile-").FullName;
         if (!OperatingSystem.IsWindows()) File.SetUnixFileMode(ownerDirectory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        // The parity gate gives this proof a fresh artifacts directory; build its references there.
+        string? previousBuildProjectReferences = Environment.GetEnvironmentVariable("BuildProjectReferences");
+        Environment.SetEnvironmentVariable("BuildProjectReferences", "true");
         try
         {
             string OwnerComponent(string name)
@@ -74,6 +77,10 @@ public sealed class WorksPlatformTelemetryAdmissionTests
                 builder, platform, WorksPlatformCompositionGuard.Capture(builder), TestContext.Current.CancellationToken)))
                 .Message.ShouldContain("does not redirect OTLP export to an owned loopback collector");
         }
-        finally { Directory.Delete(ownerDirectory, recursive: true); }
+        finally
+        {
+            Environment.SetEnvironmentVariable("BuildProjectReferences", previousBuildProjectReferences);
+            Directory.Delete(ownerDirectory, recursive: true);
+        }
     }
 }
