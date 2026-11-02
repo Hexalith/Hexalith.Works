@@ -45,7 +45,7 @@ public sealed class WorksAppHostSelectionTests
     {
         string[] live = ["SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery", "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
             "PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart", "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
-            "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily", "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process", "ArchivedTopologyReachesHealthyReadiness"];
+            "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily", "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process", "ArchivedTopologyReachesHealthyReadiness", "ActualSelectedRuntimeBinariesCaptureWithoutMutation"];
         var facts = typeof(WorksAppHostSelectionTests).Assembly.GetTypes().SelectMany(type => type.GetMethods()).Select(method => (method.Name,
             Fact: method.GetCustomAttributes(typeof(FactAttribute), inherit: false).Cast<FactAttribute>().SingleOrDefault()))
             .Where(item => item.Fact is not null).ToArray();
