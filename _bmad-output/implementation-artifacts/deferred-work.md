@@ -2287,3 +2287,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `spec-qualify-platform-public-sdk-3-132-1.md`
   summary: Qualify the package-built EventStoreHost technical receiver with real activation and mismatched-inventory refusal in the separate runtime lane.
   evidence: Public3.132.1 gate and SDK APIs execute in preflight, but GatewaySeedSubscriptionTests disables CatalogPath/ReceiverProfile and committed/native proofs use structural files. PlatformAppModel still blocks package/CI runtime composition; no runtime acceptance claimed. Blind2 and verification-gap1 identify this same future regression boundary.
+
+- source_spec: `spec-qualify-platform-public-sdk-3-132-1.md`
+  summary: Execute the existing complete model/source catalog wiring test in its actual full-source qualification lane rather than package-only tuple preflight.
+  evidence: Exact CatalogBootstrapBindsActualKeysPoliciesFilesAndCohortStartWaitsAsync starts mapped Debug/source child builds and currently fails HXW006 from Works inherited edge overrides. Those builds also conflict with package-only CI preflight. Existing older cohorts omitted this full-source test too; original tuple selectors and new44 structural proof controls are preserved.

@@ -2,7 +2,7 @@
 title: 'Qualify Platform on the current public SDK cohort'
 type: 'bugfix'
 created: '2026-11-02'
-status: 'in-review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 owner_base_commit: 6064b363a8e1a3e0fdaec00443b46318abc74c75
@@ -81,3 +81,7 @@ Parent verified the full combined owner diff, exact current cohort gates/public 
 - Blind6 low/patch: exact English framework wording makes missing-model proof locale-sensitive. Assert type and missing model identity, keep source-validated/unprepared assertions.
 - Edge1 false: unchanged-fixture claim applies to this cohort unit, whose frozen intent explicitly says independent stall repair is separate. Combined review diff intentionally includes separately planned/reviewed clock unit, disclosed in notes; no hidden clock scope or production deadline change.
 - Verify1 medium/defer: independently verified duplicate of Blind2 active technical receiver regression gap; same explicit runtime qualification boundary applies. No candidate/native acceptance has been granted.
+
+Blind3 disposition update after execution: medium/defer, not a preflight patch. Existing full model/source wiring test executes actual mapped-source child builds (the original preflight already omitted it for older cohorts). It hit HXW006 from an inherited Works edge override, and its Debug/source child builds cannot be added to package-only CI preflight. Removed only the newly proposed selector; all previously required selectors and new44 proof controls remain. Keep this existing full-source test mandatory in the separate source/runtime qualification, and fix the newly proven inherited Works configuration independently. No successful runtime qualification or bypass claimed.
+
+Final reviewed fixes: gate124 real MSBuild evaluations plus checkpoint/timeout/interruption/default-mismatch controls; exact public executable13; full nonincremental owner build0warnings/errors; selected83+24+44 allpass. Native preparation15 rerun after DI assertion correction. Existing full-source wiring remains separately refused/required; no acceptance fabricated.

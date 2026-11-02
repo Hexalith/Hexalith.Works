@@ -2,7 +2,7 @@
 title: 'Coordinate the startup acquisition deadline fixture'
 type: 'bugfix'
 created: '2026-11-02'
-status: 'in-progress'
+status: 'done'
 route: 'oneshot'
 review_loop_iteration: 0
 baseline_commit: 6064b363a8e1a3e0fdaec00443b46318abc74c75
@@ -35,3 +35,5 @@ Build the actual owner Release test project with the same public package/Builds 
 After review patches: actual nonincremental full owner package Release build0warnings/errors; startup30/30 and tuple82/82, allzero failures/skips/errors/not-run. A project-only incremental invocation had an incomplete local dependency copy and could not launch xUnit; the actual full solution rebuild restored the complete runtime closure. Domain2 local check separately cannot resolve release tag because its test assumes initialized nested Builds; actual root Builds tag exists, no nested initialization performed.
 
 Full review followup Blind1 medium/patch: timed-out actual worker still needs semaphore/event beyond method scope. Those objects now dispose only after actual drain; late-drain helper has a focused real-semaphore regression. No native worker, temporary file or lifetime is falsely reported drained. Original28 plus3 controls now31 startup cases, tuple83.
+
+Final owner solution build0warnings/errors; current selected tuple group83/83 includes all original28 startup cases plus3 review controls. Final group catalog24 and committed/preparation44 also pass; no skipped/errors/not-run.
