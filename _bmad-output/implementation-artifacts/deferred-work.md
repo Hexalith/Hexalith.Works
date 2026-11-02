@@ -2283,3 +2283,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-bound-tenants-api-gateway-transport.md`
   summary: Safely bound pre-existing SDK durable catalog-lease cleanup without abandoning or expiring uncertain dispatch fences.
   evidence: Independent edge review confirmed RouteCatalogInvocationHandler awaits RouteCatalogDispatchLease disposal and RouteCatalogAuthority.ReleaseAsync retries state-store CAS indefinitely using CancellationToken.None. This exists in public EventStore7776 and current966 source. HttpClient.Timeout is cooperative and cannot bound cleanup that ignores cancellation; the API repair documents that limit. An SDK-owned design and stalled-store/CAS tests must preserve exact lease ownership, durable quiescence and fail-closed recovery before changing it.
+
+- source_spec: `spec-qualify-platform-public-sdk-3-132-1.md`
+  summary: Qualify the package-built EventStoreHost technical receiver with real activation and mismatched-inventory refusal in the separate runtime lane.
+  evidence: Public3.132.1 gate and SDK APIs execute in preflight, but GatewaySeedSubscriptionTests disables CatalogPath/ReceiverProfile and committed/native proofs use structural files. PlatformAppModel still blocks package/CI runtime composition; no runtime acceptance claimed. Blind2 and verification-gap1 identify this same future regression boundary.

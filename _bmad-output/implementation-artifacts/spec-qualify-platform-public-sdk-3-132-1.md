@@ -70,3 +70,14 @@ Build uses existing roots only: `dotnet build Hexalith.Platform.slnx --configura
 - Cohort blind finding3 — medium, patch in expanded unit: durable CI qualification omits current3.132.1 and its committed/V2 proof controls. Extend the finite matrix, immutable public-source mapping and exact positive test profile; do not count compilation as runtime acceptance.
 
 Parent verified the full combined owner diff, exact current cohort gates/public source mapping, 120 finite evaluations, genuine executable13cases, focused70cases and no production gate relaxation. Separate clock fixture is also in the frozen review diff; its original28 plus2 new controls are tracked by its independent spec.
+
+## Expanded Review Triage
+
+- Blind1 medium/patch (clock unit): retaining worker files did not retain semaphore/event lifetime. Transfer their disposal to actual ownership drain after cleanup timeout; explicitly test late drain. Original System and fake timing bounds survive.
+- Blind2 medium/defer: packaged technical receiver lacks active-host activation/inventory regression. This is a real future runtime qualification gap; explicit preflight scope and PlatformAppModel package refusal still prevent runtime acceptance. Keep machine refusal; record runtime lane work.
+- Blind3 medium/patch: existing model test checks producer BindingVersion/ReceiverProfile wiring selected by new V2 cohort. Add exact method selector and positive count, and execute it with existing declared dependency roots.
+- Blind4 medium/patch: a real MSBuild timeout loses pending case identity/output and termination can leave no partial report. Checkpoint pending/completed cases and TimeoutExpired diagnostics.
+- Blind5 medium/patch: explicit literals cannot detect current default catalog/gate disagreement. Add real-catalog no-version-override evaluations for all four projects.
+- Blind6 low/patch: exact English framework wording makes missing-model proof locale-sensitive. Assert type and missing model identity, keep source-validated/unprepared assertions.
+- Edge1 false: unchanged-fixture claim applies to this cohort unit, whose frozen intent explicitly says independent stall repair is separate. Combined review diff intentionally includes separately planned/reviewed clock unit, disclosed in notes; no hidden clock scope or production deadline change.
+- Verify1 medium/defer: independently verified duplicate of Blind2 active technical receiver regression gap; same explicit runtime qualification boundary applies. No candidate/native acceptance has been granted.
