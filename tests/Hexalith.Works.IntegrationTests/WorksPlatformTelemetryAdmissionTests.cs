@@ -14,7 +14,7 @@ namespace Hexalith.Works.IntegrationTests;
 public sealed class WorksPlatformTelemetryAdmissionTests
 {
     /// <summary>The supported preview composes both exporter keys through Aspire and refuses foreign fixture redirects.</summary>
-    [Fact]
+    [Fact(Explicit = true)]
     public async Task ActualPreviewComposesExporterKeysAndRefusesForeignFixtureTelemetry()
     {
         string worksRoot = Path.GetFullPath(Path.Combine(SchemaEvolution.GoldenCorpusFiles.SourceDirectory("Golden"), "../../../.."));

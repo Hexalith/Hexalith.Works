@@ -109,7 +109,7 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
             byte[] actual = SHA256.HashData(File.ReadAllBytes(runtime));
             byte[] expected = SHA256.HashData(File.ReadAllBytes(Path.Combine(consumerDirectory, Path.GetFileName(runtime))));
             if (!actual.SequenceEqual(expected))
-                throw new InvalidOperationException("The archived model deployment differs from its actual qualified consumer closure.");
+                throw new InvalidOperationException("The archived model deployment differs from its actual qualified consumer closure: " + Path.GetFileName(runtime));
         }
     }
 
