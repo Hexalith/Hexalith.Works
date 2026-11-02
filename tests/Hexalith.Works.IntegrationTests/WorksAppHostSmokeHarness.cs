@@ -92,12 +92,14 @@ internal static class WorksAppHostSmokeHarness
     /// <param name="platform">Whether the selected topology uses the Platform control plane.</param>
     /// <param name="controlPlanePorts">The selected Sentry, Placement and Scheduler host ports.</param>
     /// <param name="runtimePath">The qualified runtime directory, or null to retain each sidecar's runtime.</param>
+    /// <param name="preserveGatewayHttpPort">Retains the selected native owner-read listener for an enrolled retained host.</param>
     internal static void IsolateApplicationPorts(
         IDistributedApplicationBuilder builder,
         string discovery,
         bool platform,
         (int Sentry, int Placement, int Scheduler) controlPlanePorts,
-        string? runtimePath)
+        string? runtimePath,
+        bool preserveGatewayHttpPort = false)
     {
         ArgumentNullException.ThrowIfNull(builder);
         (int sentryPort, int placementPort, int schedulerPort) = controlPlanePorts;
@@ -158,7 +160,7 @@ internal static class WorksAppHostSmokeHarness
             dapr.Sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(annotation.Options with
             {
                 AppPort = null,
-                DaprHttpPort = null,
+                DaprHttpPort = preserveGatewayHttpPort && project.Name == "eventstore" ? annotation.Options.DaprHttpPort : null,
                 DaprGrpcPort = null,
                 DaprInternalGrpcPort = null,
                 MetricsPort = null,
@@ -525,7 +527,8 @@ internal static class WorksAppHostSmokeHarness
             }
             else discoveryDirectory = Directory.CreateTempSubdirectory(WorksAppHostDiscoveryIsolation.DirectoryPrefix).FullName;
             IsolateApplicationPorts(builder, discoveryDirectory, WorksAppHostSelection.IsPlatform,
-                WorksAppHostSelection.ControlPlanePorts, Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH"));
+                WorksAppHostSelection.ControlPlanePorts, Environment.GetEnvironmentVariable("WORKS_PLATFORM_DAPRD_RUNTIME_PATH"),
+                preserveGatewayHttpPort: useRetainedHost);
             Dictionary<string, string> hostingEvidence = WorksAppHostSelection.IsPlatform
                 ? AssignHostingEvidence(builder, discoveryDirectory) : [];
             if (WorksAppHostSelection.IsPlatform)

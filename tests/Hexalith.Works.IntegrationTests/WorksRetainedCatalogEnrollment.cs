@@ -1,3 +1,5 @@
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -46,6 +48,12 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
             Path.GetDirectoryName(assembly.Location)!, Path.ChangeExtension(typeof(WorksAppHostSmokeHarness).Assembly.Location, ".deps.json"));
         string statePath = RequireAuthorityComponentPath(builder.Resources.OfType<IDaprComponentResource>().Single(resource => resource.Name == "statestore"),
             profile.StateStoreComponentPath, ownedRedisEndpoint);
+        int gatewayPort = AllocateGatewayPort();
+        IDaprSidecarResource gatewaySidecar = gateway.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar;
+        DaprSidecarOptionsAnnotation gatewayOptions = gatewaySidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+        gatewaySidecar.Annotations[gatewaySidecar.Annotations.IndexOf(gatewayOptions)] =
+            new DaprSidecarOptionsAnnotation(gatewayOptions.Options with { DaprHttpPort = gatewayPort });
+        admin.WithEnvironment("AdminServer__EventStoreDaprHttpEndpoint", "http://localhost:" + gatewayPort);
         admin.WithEnvironment("EventStore__RouteCatalog__DevelopmentBootstrap__Role", "admin-receiver");
         operations.WithEnvironment("EventStore__RouteCatalog__DevelopmentBootstrap__Role", "operations-receiver");
         // The archived host predates mandatory Operations JWT validation. Reuse its actual
@@ -54,10 +62,36 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
             .Single(resource => resource.Name == "works-local-jwt-signing-key")));
         // SuppressBuild remains the archived model's actual launch metadata. The complete selected
         // deployment was independently qualified above and is independently observed in each child.
+        // The retained host restores Platform's checked receiver policy before enrollment.
+        // Capture that bounded policy directly for the current SDK's v2 technical inventory.
+        var gatewayReceiver = gateway.CaptureEventStoreDevelopmentReceiver(works, admin) with { TechnicalHttp = true };
         var composition = builder.AddEventStoreDevelopmentRouteCatalog(gateway, [new(works, assembly, assembly)],
-            [gateway.CaptureEventStoreDevelopmentReceiver(works, admin), works.CaptureEventStoreDevelopmentReceiver(gateway, operations, admin),
-                admin.CaptureEventStoreDevelopmentReceiver(), operations.CaptureEventStoreDevelopmentReceiver(admin)], statePath, profile.Catalog);
+            [gatewayReceiver,
+                works.CaptureEventStoreDevelopmentReceiver(gateway, operations, admin),
+                admin.CaptureEventStoreDevelopmentReceiver() with { TechnicalHttp = true, ActorStateOwners = [gateway] },
+                operations.CaptureEventStoreDevelopmentReceiver(admin)], statePath, profile.Catalog);
         builder.Services.AddSingleton<IHostedService>(_ => new WorksRetainedCatalogEnrollment(composition));
+    }
+
+    private static int AllocateGatewayPort()
+    {
+        // Dapr needs a fixed listener for the selected-owner handoff. Probe outside Linux's
+        // outbound ephemeral range, as the run-scoped Platform allocator does.
+        for (int attempt = 0; attempt < 64; attempt++)
+        {
+            int port = RandomNumberGenerator.GetInt32(10000, 30000);
+            using TcpListener listener = new(IPAddress.Loopback, port);
+            try
+            {
+                listener.Start();
+                return port;
+            }
+            catch (SocketException)
+            {
+                // Another process owns this candidate.
+            }
+        }
+        throw new InvalidOperationException("No free loopback port is available for the retained gateway owner.");
     }
 
     /// <summary>Uses the actual captured business component, rather than the archived SDK's original backend annotation.</summary>

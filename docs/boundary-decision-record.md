@@ -1,6 +1,6 @@
 # Works Boundary Decision Record
 
-<!-- EventStore-current-source: a3dbec2f8b6150a3ee33dcbfc2b6bf2fec274625 -->
+<!-- EventStore-current-source: 653124dced81830e932edb7738a78ee61104d55a -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.

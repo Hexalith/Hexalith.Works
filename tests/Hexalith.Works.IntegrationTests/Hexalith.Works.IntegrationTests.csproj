@@ -9,7 +9,7 @@
   <ItemGroup>
     <AssemblyMetadata Include="WorksSelectedEventStoreVersion" Value="$(HexalithEventStoreVersion)" />
     <AssemblyMetadata Include="WorksSelectedPartiesVersion" Value="$(HexalithPartiesVersion)" />
-    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="3.133.0" />
+    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="4.0.0" />
     <AssemblyMetadata Include="WorksAllowLocalEventStoreCandidate" Value="$(WorksAllowLocalEventStoreCandidate)" />
     <PackageReference Include="Aspire.Hosting.Testing" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
@@ -52,7 +52,9 @@
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/PartyIdentityAuthority.cs" Link="PartiesAuthority/PartyIdentityAuthority.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/PartyIdentityAdmissionResult.cs" Link="PartiesAuthority/PartyIdentityAdmissionResult.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Authorization/PartyIdentityOptions.cs" Link="PartiesAuthority/PartyIdentityOptions.cs" />
-    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryService.cs" Link="PartiesAuthority/PartyIdentityQueryService.cs" />
+    <!-- The published Parties 3.0.0 contracts do not expose the newer Denied/Missing outcomes. -->
+    <Compile Remove="PartiesAuthority/PartyIdentityQueryService.PublishedV3.cs" Condition="'$(UseHexalithProjectReferences)' == 'true'" />
+    <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryService.cs" Link="PartiesAuthority/PartyIdentityQueryService.cs" Condition="'$(UseHexalithProjectReferences)' == 'true'" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentitySourceFold.cs" Link="PartiesAuthority/PartyIdentitySourceFold.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryDeadline.cs" Link="PartiesAuthority/PartyIdentityQueryDeadline.cs" />
     <Compile Include="$(HexalithPartiesRoot)/src/Hexalith.Parties/Queries/PartyIdentityQueryWorkLimiter.cs" Link="PartiesAuthority/PartyIdentityQueryWorkLimiter.cs" />

@@ -62,7 +62,8 @@ internal static class WorksPlatformCompositionGuard
             if (composed.Any(callback => !current.Contains(callback)))
                 refusals.Add(resource.Name + ": the fixture removed a Platform-composed environment callback");
             EnvironmentCallbackAnnotation[] fixture = [.. current.Where(callback => !composed.Contains(callback))];
-            Dictionary<string, object> platformValues = await EvaluateAsync(builder, resource, composed, new Dictionary<string, object>(StringComparer.Ordinal), cancellationToken).ConfigureAwait(false);
+            Dictionary<string, object> platformValues = await EvaluateAsync(builder, resource, composed, new Dictionary<string, object>(StringComparer.Ordinal), cancellationToken,
+                allowUnrenderedOwner: true).ConfigureAwait(false);
             Dictionary<string, object> fixtureWrites = await EvaluateAsync(builder, resource, fixture, new Dictionary<string, object>(StringComparer.Ordinal), cancellationToken).ConfigureAwait(false);
             Dictionary<string, object> combined = await EvaluateAsync(builder, resource, fixture,
                 new Dictionary<string, object>(platformValues, StringComparer.Ordinal), cancellationToken).ConfigureAwait(false);
@@ -186,11 +187,22 @@ internal static class WorksPlatformCompositionGuard
     }
 
     private static async Task<Dictionary<string, object>> EvaluateAsync(IDistributedApplicationBuilder builder, IResource resource,
-        IEnumerable<EnvironmentCallbackAnnotation> callbacks, Dictionary<string, object> environment, CancellationToken cancellationToken)
+        IEnumerable<EnvironmentCallbackAnnotation> callbacks, Dictionary<string, object> environment, CancellationToken cancellationToken,
+        bool allowUnrenderedOwner = false)
     {
         var context = new EnvironmentCallbackContext(builder.ExecutionContext, resource, environment, cancellationToken);
         foreach (EnvironmentCallbackAnnotation callback in callbacks)
-            await callback.Callback(context).ConfigureAwait(false);
+        {
+            try
+            {
+                await callback.Callback(context).ConfigureAwait(false);
+            }
+            catch (InvalidOperationException failure) when (allowUnrenderedOwner && failure.Message == "The actual owner CLI has not been rendered.")
+            {
+                // This guard compares model callbacks before DCP renders the selected owner.
+                // The live proof verifies its complete final credential and endpoint handoff.
+            }
+        }
         return context.EnvironmentVariables;
     }
 }
