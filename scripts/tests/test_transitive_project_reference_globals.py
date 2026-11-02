@@ -276,7 +276,8 @@ class MappedProjectReferenceGlobalsTests(unittest.TestCase):
             mapping_path = root / "mapping.json"
             mapping_path.write_text(canonical)
             hooks = ET.Element("Project")
-            ET.SubElement(hooks, "UsingTask", TaskName="Hexalith.Builds.Tooling.Workspace.SourceMappingReconciliationTask",
+            ET.SubElement(hooks, "UsingTask",
+                          TaskName="Hexalith.Builds.Tooling.Workspace.SourceMappingReconciliationTask",
                           AssemblyFile=str(self.tooling))
             target = ET.SubElement(hooks, "Target", Name="CheckActualMappedReferences",
                                    DependsOnTargets="IncludeTransitiveProjectReferences")
@@ -304,7 +305,8 @@ class MappedProjectReferenceGlobalsTests(unittest.TestCase):
             restore = subprocess.run([*common, "-t:Restore"], cwd=owner, env=environment,
                                      capture_output=True, text=True, timeout=60, check=False)
             self.assertEqual(restore.returncode, 0, restore.stdout + restore.stderr)
-            query = subprocess.run([*common, "-t:CheckActualMappedReferences", "-getItem:ProjectReference,CheckedProjects"],
+            query = subprocess.run(
+                [*common, "-t:CheckActualMappedReferences", "-getItem:ProjectReference,CheckedProjects"],
                                    cwd=owner, env=environment, capture_output=True, text=True, timeout=60, check=False)
             if conflicting:
                 self.assertNotEqual(query.returncode, 0)
