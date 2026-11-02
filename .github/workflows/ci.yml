@@ -94,7 +94,7 @@ jobs:
 
   ci:
     needs: platform-toolchain
-    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@cce084c44c365cb4b2f9f2f4ac2cb263a5406c56
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@68563f3453397e2ff3c035dc489fc6c2930d5d4f
     with:
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
