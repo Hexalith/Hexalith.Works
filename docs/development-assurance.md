@@ -14,7 +14,7 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-The current EventStore source is `7c93a1234d14c66f5ee85ed48caaee1d30a671f3`.
+The current EventStore source is `311d61d29ad8070ee4f6aacbcb4646332afe9ae4`.
 Release pins public `3.132.2`, produced by `7c93a1234d14c66f5ee85ed48caaee1d30a671f3`.
 PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
 one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);

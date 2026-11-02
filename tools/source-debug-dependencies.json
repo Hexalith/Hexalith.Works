@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "dependencies": {
     "references/Hexalith.EventStore": {
-      "sourceRevision": "7c93a1234d14c66f5ee85ed48caaee1d30a671f3",
+      "sourceRevision": "311d61d29ad8070ee4f6aacbcb4646332afe9ae4",
       "releaseProperty": "HexalithEventStoreVersion",
       "releaseVersion": "3.132.2"
     },
