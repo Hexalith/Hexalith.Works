@@ -2,9 +2,10 @@
 title: 'Provide explicit model custody to Works preview tests'
 type: 'bugfix'
 created: '2026-11-02'
-status: 'ready-for-dev'
+status: 'in-review'
 route: 'dispatch'
 review_loop_iteration: 0
+baseline_commit: d521603de61d6806d4efcb733ceab2d3782bd83b
 context:
   - /home/administrator/projects/hexalith/works/AGENTS.md
   - /tmp/works-platform-package-ci-workspace-20261102/references/Hexalith.Platform/references/Hexalith.AI.Tools/hexalith-llm-instructions.md
@@ -31,10 +32,10 @@ Owner: `/tmp/works-platform-package-ci-workspace-20261102/references/Hexalith.Pl
 
 ## Tasks & Acceptance
 
-- [ ] Add model-only private custody fixture and use disposable fixture lifetimes across all original preview tests; preserve their source/credential/wait/sidecar assertions and existing refusal cases.
-- [ ] Add missing-profile refusal proving no resources or new owned hosted lifetime before refusal. Keep owner guard and actual owner preparation intact.
-- [ ] Forward exact selected build mapping to model process and nested owner using ordinary public launch/build environment; no bypass, dummy assembly, hash waiver or arbitrary new proof claim. Factor a bounded helper if needed so command/environment coupling can be exercised by regression.
-- [ ] Run actual package Release Platform.Works.Tests original147 plus new control (expected148 total, no failures/skips/errors), then source Debug using same verifier mapping and exact SDK source selected by Works. Run relevant Python verifier regressions. Retain actual child-preparation receipts and SDK hash equality; do not treat full live parity as completed by model tests.
+- [x] Add model-only private custody fixture and use disposable fixture lifetimes across all original preview tests; preserve their source/credential/wait/sidecar assertions and existing refusal cases.
+- [x] Add missing-profile refusal proving no resources or new owned hosted lifetime before refusal. Keep owner guard and actual owner preparation intact.
+- [x] Forward exact selected build mapping to model process and nested owner using ordinary public launch/build environment; no bypass, dummy assembly, hash waiver or arbitrary new proof claim. Factor a bounded helper if needed so command/environment coupling can be exercised by regression.
+- [x] Run actual package Release Platform.Works.Tests original147 plus new control (expected148 total, no failures/skips/errors), then source Debug using same verifier mapping and exact SDK source selected by Works. Run relevant Python verifier regressions. Retain actual child-preparation receipts and SDK hash equality; do not treat full live parity as completed by model tests.
 
 Given public3.132.1 and the selected actual Works source, all existing model assertions must execute through public Compose and genuine child preparation. Given absent owner profile, the original retained-state refusal must occur before resource/lifetime creation. Given source Debug, child and parent must consume exactly identical loaded SDK assembly bytes. Every model-only resource remains unstarted and every private fixture/profile/prepared owner has a bounded owned cleanup lifetime.
 
@@ -44,3 +45,5 @@ Serialize any owner builds with parent. Package Release uses existing approved r
 
 ## Implementation Notes
 
+
+Parent independently read staged full diff, including new fixture. Actual package Release148 and sourceDebug148 pass,108Pythonregressions pass, seven actual compiled owner receipts per configuration retain18declarations/18operations and identical parent/loaded/child SDK hashes. All original Compose calls and assertions remain; production guards/preparation untouched. No model profiles, prepared owners or composition workspaces remain. Evidence `/tmp/works-preview-fixture-verification-20261102/verification-summary.json`; review diff `/tmp/works-preview-model-review-20261102.patch`. Added .gitattributes only scopes CRLF whitespace handling for the two model fixture/test files.
