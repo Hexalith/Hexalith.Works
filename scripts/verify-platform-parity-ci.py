@@ -18,6 +18,8 @@ DEPENDENCIES = (
     "Hexalith.AI.Tools",
     "Hexalith.Builds",
     "Hexalith.Commons",
+    "Hexalith.McpCli",
+    "Hexalith.Memories",
     "Hexalith.EventStore",
     "Hexalith.PolymorphicSerializations",
     "Hexalith.Tenants",
@@ -84,7 +86,7 @@ def link_roots(destination, sources, declarations):
         target.symlink_to(source, target_is_directory=True)
 
 
-def bootstrap(works, artifacts):
+def bootstrap(works, artifacts, runtime_sdk_root=None):
     coordinators = coordinator_hashes()
     paths = declared(works)
     sources = {}
@@ -100,7 +102,12 @@ def bootstrap(works, artifacts):
     version = ET.parse(works / "Directory.Packages.props").findtext(".//HexalithEventStoreVersion")
     if not version or not all(part.isdecimal() for part in version.split(".")) or len(version.split(".")) != 3:
         raise ValueError("Parity requires a stable public EventStore version")
-    sdk_commit = git(sources["Hexalith.EventStore"], "rev-parse", "v" + version + "^{commit}").decode().strip()
+    sdk_origin = runtime_sdk_root.resolve() if runtime_sdk_root is not None else None
+    if sdk_origin is not None and (not (sdk_origin / "src").is_dir() or not (sdk_origin / ".gitmodules").is_file()):
+        raise ValueError("Explicit SDK export lacks its source and root dependency declarations")
+    sdk_commit = None if sdk_origin is not None else git(
+        sources["Hexalith.EventStore"], "rev-parse", "v" + version + "^{commit}"
+    ).decode().strip()
     artifacts.mkdir(parents=True, exist_ok=False)
     workspace = artifacts / "workspace"
     workspace.mkdir()
@@ -118,12 +125,25 @@ def bootstrap(works, artifacts):
         if hashlib.sha256(target.read_bytes()).hexdigest() != digest:
             raise ValueError("Platform source changed during bootstrap: " + name)
     sdk = workspace / "Hexalith.EventStore"
-    sdk.mkdir()
-    with tarfile.open(fileobj=io.BytesIO(git(sources["Hexalith.EventStore"], "archive", sdk_commit))) as archive:
-        archive.extractall(sdk, filter="data")
-    # git archive may apply export/eol attributes. Restore this known transformed file as its exact blob;
-    # the canonical verifier independently qualifies every runtime/build input against the public producer.
-    (sdk / "global.json").write_bytes(git(sources["Hexalith.EventStore"], "show", sdk_commit + ":global.json"))
+    if sdk_origin is not None:
+        # Copy only the selected export; dependency links belong to this run. This is not producer
+        # qualification: the owning verifier still requires exact official commit/tree/blob identities.
+        def ignore_export(path, names):
+            # The public producer can track src/**/.artifacts inputs. Preserve those exact bytes;
+            # only root output trees are disposable, alongside bin/obj excluded by producer inventory.
+            excluded = {"bin", "obj"}
+            if Path(path) == sdk_origin:
+                excluded |= {".git", "references", "artifacts", ".artifacts"}
+            return set(names) & excluded
+
+        shutil.copytree(sdk_origin, sdk, symlinks=True, ignore=ignore_export)
+    else:
+        sdk.mkdir()
+        with tarfile.open(fileobj=io.BytesIO(git(sources["Hexalith.EventStore"], "archive", sdk_commit))) as archive:
+            archive.extractall(sdk, filter="data")
+        # git archive may apply export/eol attributes. Restore this known transformed file as its exact blob;
+        # the canonical verifier independently qualifies every runtime/build input against the public producer.
+        (sdk / "global.json").write_bytes(git(sources["Hexalith.EventStore"], "show", sdk_commit + ":global.json"))
     selected_sources = sources | {"Hexalith.EventStore": sdk, "Hexalith.Works": works}
     link_roots(sdk, selected_sources, declared(sdk))
     link_roots(selected_platform, selected_sources, declared(selected_platform))
@@ -141,6 +161,7 @@ def bootstrap(works, artifacts):
         "platformSourceFiles": original,
         "sdkVersion": version,
         "sdkCommit": sdk_commit,
+        "sdkOriginRoot": str(sdk_origin) if sdk_origin is not None else None,
         "sdkRoot": str(sdk),
         "platformRoot": str(execution_root),
         "platformSourceBinding": str(binding),
@@ -151,6 +172,8 @@ def bootstrap(works, artifacts):
         "HexalithBuildsRoot": str(sources["Hexalith.Builds"]),
         "HexalithEventStoreRoot": str(sdk),
         "HexalithCommonsRoot": str(sources["Hexalith.Commons"]),
+        "HexalithMcpCliRoot": str(sources["Hexalith.McpCli"]),
+        "HexalithMemoriesRoot": str(sources["Hexalith.Memories"]),
         "HexalithPartiesRoot": str(sources["Hexalith.Parties"]),
         "HexalithTenantsRoot": str(sources["Hexalith.Tenants"]),
         "HexalithPolymorphicSerializationsRoot": str(sources["Hexalith.PolymorphicSerializations"]),
@@ -270,9 +293,16 @@ def main():
         action="store_true",
         help="Validate isolated inputs and canonical CLI only; never qualifies parity",
     )
+    parser.add_argument(
+        "--runtime-sdk-root", type=Path,
+        help="Exact SDK filesystem export; canonical public-producer qualification remains mandatory",
+    )
     args = parser.parse_args()
     artifacts = args.artifacts_path.resolve()
-    command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts)
+    if args.runtime_sdk_root is None:
+        command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts)
+    else:
+        command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts, args.runtime_sdk_root)
     if args.bootstrap_only:
         subprocess.run(command[:2] + ["--help"], env=environment, check=True)
         print("Bootstrap validated; parity remains incomplete.")

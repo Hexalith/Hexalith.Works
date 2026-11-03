@@ -94,6 +94,11 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             self.assertEqual((selected / "apphost.cs").read_text(), "// synthetic source overlay\n")
             self.assertEqual((selected / "references/Hexalith.Works").resolve(), works)
             self.assertEqual((selected.parent / "works").resolve(), works)
+            for name in ("Hexalith.McpCli", "Hexalith.Memories"):
+                with self.subTest(dependency=name):
+                    self.assertEqual((selected / "references" / name).resolve(), works / "references" / name)
+                    self.assertEqual(environment[name.replace("Hexalith.", "Hexalith") + "Root"],
+                                     str(works / "references" / name))
             self.assertEqual(Path(environment["HexalithEventStoreRoot"]).resolve(), Path(record["sdkRoot"]))
             self.assertEqual((Path(record["sdkRoot"]) / "global.json").read_bytes(), (sdk / "global.json").read_bytes())
             self.assertFalse((selected / "references/Not.Root.Declared").exists())
@@ -108,6 +113,64 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             self.assertFalse((artifacts / "gate").exists())
             with self.assertRaises(FileExistsError):
                 PARITY.bootstrap(works, artifacts)
+
+    def test_explicit_sdk_export_needs_no_local_tag_and_retains_unqualified_origin(self):
+        with tempfile.TemporaryDirectory() as directory:
+            works, sdk, _ = bootstrap_fixture(directory)
+            export = Path(directory) / "official-export"
+            shutil.copytree(sdk, export, ignore=shutil.ignore_patterns(".git"))
+            (export / "src").mkdir()
+            (export / "src/producer.cs").write_text("// exact official bytes are qualified by the owning verifier\n")
+            subprocess.run(["git", "-C", str(sdk), "tag", "-d", "v3.126.0"], check=True, capture_output=True)
+            command, environment, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
+            self.assertIsNone(record["sdkCommit"])
+            self.assertEqual(record["sdkOriginRoot"], str(export))
+            selected = Path(record["sdkRoot"])
+            self.assertEqual((selected / "src/producer.cs").read_bytes(), (export / "src/producer.cs").read_bytes())
+            self.assertFalse((selected / ".git").exists())
+            self.assertEqual((selected / "references/Hexalith.Builds").resolve(), works / "references/Hexalith.Builds")
+            self.assertEqual(environment["HexalithEventStoreRoot"], str(selected))
+            self.assertIn("--runtime-sdk-root", command)
+            self.assertEqual(record["status"], "bootstrap-validated; parity-incomplete")
+            self.assertFalse((export / "references").exists())
+
+    def test_incomplete_explicit_sdk_export_refuses_before_creating_evidence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            works, _, _ = bootstrap_fixture(directory)
+            export = Path(directory) / "incomplete-export"
+            export.mkdir()
+            artifacts = Path(directory) / "attempt"
+            with self.assertRaisesRegex(ValueError, "Explicit SDK export"):
+                PARITY.bootstrap(works, artifacts, export)
+            self.assertFalse(artifacts.exists())
+
+    def test_explicit_export_preserves_nested_canonical_artifacts_and_owns_output_roots(self):
+        with tempfile.TemporaryDirectory() as directory:
+            works, sdk, _ = bootstrap_fixture(directory)
+            export = Path(directory) / "official-export"
+            shutil.copytree(sdk, export, ignore=shutil.ignore_patterns(".git"))
+            canonical = "src/Hexalith.EventStore.Admin.UI/.artifacts/ui-test-obj/project.assets.json"
+            source = export / canonical
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b'{"producer":"exact tracked bytes"}\r\n')
+            for name in (".artifacts", "artifacts", "src/Hexalith.EventStore.Admin.UI/bin", "src/Hexalith.EventStore.Admin.UI/obj"):
+                output = export / name / "old-output.txt"
+                output.parent.mkdir(parents=True, exist_ok=True)
+                output.write_text("foreign output must not enter this run\n")
+            (export / "references/Hexalith.Builds").mkdir(parents=True)
+            (export / "references/Hexalith.Builds/foreign.txt").write_text("preserve original dependency\n")
+
+            _, _, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
+
+            selected = Path(record["sdkRoot"])
+            self.assertEqual((selected / canonical).read_bytes(), source.read_bytes())
+            self.assertFalse((selected / canonical).is_symlink())
+            for name in (".artifacts", "artifacts", "src/Hexalith.EventStore.Admin.UI/bin", "src/Hexalith.EventStore.Admin.UI/obj"):
+                self.assertFalse((selected / name).exists(), name)
+            self.assertEqual((selected / "references/Hexalith.Builds").resolve(), works / "references/Hexalith.Builds")
+            self.assertEqual((export / "references/Hexalith.Builds/foreign.txt").read_text(), "preserve original dependency\n")
+            (selected / canonical).write_text("run-owned copy\n")
+            self.assertEqual(source.read_bytes(), b'{"producer":"exact tracked bytes"}\r\n')
 
     def test_missing_root_dependency_refuses_before_creating_evidence(self):
         with tempfile.TemporaryDirectory() as directory:

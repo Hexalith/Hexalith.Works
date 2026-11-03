@@ -1,0 +1,18 @@
+{
+  "status": "documentation-only-scope-correction; no-new-execution-claim",
+  "scope": "Corrected candidate patch only; historical measured candidate inventory remains the original tested copy. Product/compiler inputs unchanged.",
+  "verifiedSdkArchives": 9,
+  "proposedPairIdentityPreflight": "not-run-after-proposed-pin-change",
+  "files": [
+    {
+      "path": "docs/development-assurance.md",
+      "beforeSha256": "b1c89c3a470f4575ac4a2a6791eb5fe9ffb7f66994eb10383a81003037f92212",
+      "afterSha256": "e7110c2cd6df6d8d6fe10e998616a16fe8a4fd07e04f50155e1ab8fe40d9ab4d"
+    },
+    {
+      "path": "docs/eventstore-api-surface-constraints.md",
+      "beforeSha256": "aee962dbd554065e9633305bbfc05b78f06e3cfb9d3ecd25e1cb9871bf5b2410",
+      "afterSha256": "669a5598b828c82c13fffe2b29e204e7c50b9fc4e47c009445bdcfc0509c7b31"
+    }
+  ]
+}

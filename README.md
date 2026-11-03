@@ -4,10 +4,10 @@ Hexalith.Works is the Hexalith work-item domain module. The repository is an umb
 
 ## Local Debug development
 
-Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
+Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), McpCli (contract declarations), Memories (Platform preparation contracts), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
 
 ```bash
-git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
 export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx -p:Configuration=Debug
 dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
@@ -30,8 +30,8 @@ commands as well as successful compilation. CI runs the same identity preflight 
 using Release/package evaluation without restoring or compiling the Debug graph. The local tier
 complements CI's required Release/package validation; it does not run live Platform parity or authenticate package archives.
 
-The current EventStore source is six commits beyond `v3.128.3`; PolymorphicSerializations source is
-exactly `v1.19.5`. These are explicitly reviewed development pairings, not a claim that the Debug
+The manifest records the exact current EventStore and PolymorphicSerializations source revisions
+and their selected Release versions. These development pairings do not claim that the Debug
 and Release producers have identical behavior. Re-run source characterization and the local gate
 when changing the pairings. See the [development assurance closure](docs/development-assurance.md)
 for the historical tooling retirements and validation boundaries.
@@ -50,12 +50,14 @@ The blocking `platform-parity` CI job runs Platform's canonical R1–R11 verifie
 bash scripts/verify-platform-parity-ci.sh --artifacts-path /tmp/works-platform-proof
 ```
 
+For an independently obtained official SDK source export, add `--runtime-sdk-root /absolute/path/to/export`. The bootstrap copies it into the run-owned workspace and records an unknown checkout commit; the canonical verifier still requires its exact runtime/build inputs to match the selected public package producer and official release tag. This option does not select a different package version or qualify a candidate Builds catalog.
+
 Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. Deterministic suites can exclude only the live classes whose required facts run in that same gate. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
 
 The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
 
 ```bash
-git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
 export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx
 dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1

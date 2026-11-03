@@ -1,0 +1,27 @@
+{
+  "status": "waiting-for-genuine-GitHub-codeowner-eligibility",
+  "recordedAtUtc": "2026-11-03T10:52:47.672356+00:00",
+  "userChoice": "Wait for code-owner resolution (Recommended)",
+  "ownerOrAdminExemptionAuthorized": false,
+  "allowedResume": "Normal merge only after genuinely satisfied GitHub checks/reviews; then qualify actual merged source before Platform tag and Works adoption.",
+  "preserved": {
+    "buildsVersion": "4.43.3",
+    "buildsSource": "fc743715f7d0993392dee34b2ef9c4eb85cdd399",
+    "platformPr": "https://github.com/Hexalith/Hexalith.Platform/pull/15",
+    "platformHead": "2db699c53219721ed2b9bf2860082662b73fa00d",
+    "tupleCi": 41620736259,
+    "catalogCi": 41620469841
+  },
+  "latestObservedPr": {
+    "reviewDecision": "REVIEW_REQUIRED",
+    "mergeStateStatus": "BLOCKED",
+    "reviews": []
+  },
+  "dependentActionsNotPerformed": [
+    "Platform merge",
+    "Platform source/tag publication",
+    "live Works4.0.4 pin adoption",
+    "final ordinary/full/actual-CI qualification"
+  ],
+  "storyAndSprint": "in-progress; final qualification task unchecked"
+}

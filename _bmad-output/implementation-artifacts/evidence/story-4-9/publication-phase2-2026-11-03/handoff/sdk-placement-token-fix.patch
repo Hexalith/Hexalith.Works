@@ -1,0 +1,173 @@
+diff --git a/src/Hexalith.EventStore/HealthChecks/DaprActorPlacementProbe.cs b/src/Hexalith.EventStore/HealthChecks/DaprActorPlacementProbe.cs
+index 7c91112..535d9ba 100644
+--- a/src/Hexalith.EventStore/HealthChecks/DaprActorPlacementProbe.cs
++++ b/src/Hexalith.EventStore/HealthChecks/DaprActorPlacementProbe.cs
+@@ -12,10 +12,12 @@ namespace Hexalith.EventStore.HealthChecks;
+ /// or <c>actorRuntime.placement</c> (it surfaces only the registered actor type list), so this probe
+ /// reads the raw metadata JSON over HTTP. The endpoint is resolved from the sidecar-injected
+ /// <c>DAPR_HTTP_ENDPOINT</c> / <c>DAPR_HTTP_PORT</c> environment variables (default port 3500).
++/// The configured <c>DAPR_API_TOKEN</c> authenticates this request without changing shared client headers.
+ /// </remarks>
+ public sealed class DaprActorPlacementProbe : IDaprActorPlacementProbe {
+     private readonly HttpClient _httpClient;
+     private readonly string _metadataUri;
++    private readonly string? _apiToken;
+ 
+     /// <summary>
+     /// Initializes a new instance of the <see cref="DaprActorPlacementProbe"/> class.
+@@ -32,12 +34,18 @@ public sealed class DaprActorPlacementProbe : IDaprActorPlacementProbe {
+             ? configuredEndpoint
+             : $"http://localhost:{(!string.IsNullOrWhiteSpace(configuredPort) ? configuredPort : "3500")}";
+         _metadataUri = $"{endpoint.TrimEnd('/')}/v1.0/metadata";
++        _apiToken = configuration["DAPR_API_TOKEN"];
+     }
+ 
+     /// <inheritdoc/>
+     public async Task<DaprActorPlacementStatus> CheckAsync(CancellationToken cancellationToken) {
++        using var request = new HttpRequestMessage(HttpMethod.Get, _metadataUri);
++        if (!string.IsNullOrWhiteSpace(_apiToken))
++        {
++            request.Headers.Add("dapr-api-token", _apiToken);
++        }
+         using HttpResponseMessage response = await _httpClient
+-            .GetAsync(_metadataUri, cancellationToken)
++            .SendAsync(request, cancellationToken)
+             .ConfigureAwait(false);
+         _ = response.EnsureSuccessStatusCode();
+ 
+diff --git a/tests/Hexalith.EventStore.Server.Tests/HealthChecks/DaprActorPlacementProbeAuthenticationTests.cs b/tests/Hexalith.EventStore.Server.Tests/HealthChecks/DaprActorPlacementProbeAuthenticationTests.cs
+new file mode 100644
+index 0000000..0df4ff0
+--- /dev/null
++++ b/tests/Hexalith.EventStore.Server.Tests/HealthChecks/DaprActorPlacementProbeAuthenticationTests.cs
+@@ -0,0 +1,130 @@
++using System.Net;
++using System.Text;
++
++using Hexalith.EventStore.HealthChecks;
++using Hexalith.EventStore.Server.Tests.Streams;
++
++using Microsoft.AspNetCore.Builder;
++using Microsoft.AspNetCore.Hosting;
++using Microsoft.AspNetCore.Hosting.Server;
++using Microsoft.AspNetCore.Hosting.Server.Features;
++using Microsoft.AspNetCore.Http;
++using Microsoft.Extensions.Configuration;
++using Microsoft.Extensions.DependencyInjection;
++using Microsoft.Extensions.Diagnostics.HealthChecks;
++
++using Shouldly;
++
++namespace Hexalith.EventStore.Server.Tests.HealthChecks;
++
++public class DaprActorPlacementProbeAuthenticationTests
++{
++    private const string ConnectedMetadata =
++        """{"actorRuntime":{"runtimeStatus":"RUNNING","hostReady":true,"placement":"placement: connected"}}""";
++
++    [Fact]
++    public async Task AuthenticatedMetadataRequiresTheConfiguredSidecarCredential()
++    {
++        const string sidecarToken = "synthetic-sidecar-api-token";
++        WebApplicationBuilder builder = WebApplication.CreateBuilder();
++        builder.WebHost.UseUrls("http://127.0.0.1:0");
++        await using WebApplication app = builder.Build();
++        app.MapGet("/v1.0/metadata", (HttpRequest request) =>
++            request.Headers["dapr-api-token"].ToString() == sidecarToken
++                ? Results.Content(ConnectedMetadata, "application/json")
++                : Results.StatusCode(StatusCodes.Status401Unauthorized));
++        await app.StartAsync(TestContext.Current.CancellationToken);
++        string endpoint = app.Services.GetRequiredService<IServer>().Features
++            .Get<IServerAddressesFeature>()!.Addresses.Single();
++        using var client = new HttpClient();
++
++        foreach (string? token in new[] { null, "wrong-sidecar-token", sidecarToken })
++        {
++            IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
++            {
++                ["DAPR_HTTP_ENDPOINT"] = endpoint,
++                ["DAPR_API_TOKEN"] = token,
++            }).Build();
++            var probe = new DaprActorPlacementProbe(client, configuration);
++            var healthCheck = new DaprActorPlacementHealthCheck(probe);
++
++            var context = new HealthCheckContext
++            {
++                Registration = new HealthCheckRegistration("dapr-actor-placement", healthCheck, HealthStatus.Unhealthy, ["ready"]),
++            };
++            HealthCheckResult result = await healthCheck.CheckHealthAsync(context, TestContext.Current.CancellationToken);
++
++            if (token == sidecarToken)
++            {
++                result.Status.ShouldBe(HealthStatus.Healthy);
++            }
++            else
++            {
++                result.Status.ShouldBe(HealthStatus.Unhealthy);
++                result.Exception.ShouldBeOfType<HttpRequestException>().StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
++            }
++        }
++
++        client.DefaultRequestHeaders.Contains("dapr-api-token").ShouldBeFalse();
++    }
++
++    [Fact]
++    public async Task ConfiguredCredentialOverridesClientDefaultsOnlyForTheMetadataRequest()
++    {
++        using var handler = new NativeSourceMetadataHttpHandler(Encoding.UTF8.GetBytes(ConnectedMetadata));
++        using var client = new HttpClient(handler);
++        client.DefaultRequestHeaders.Add("dapr-api-token", "unrelated-client-default");
++        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
++        {
++            ["DAPR_API_TOKEN"] = "own-sidecar-token",
++        }).Build();
++
++        DaprActorPlacementStatus status = await new DaprActorPlacementProbe(client, configuration)
++            .CheckAsync(TestContext.Current.CancellationToken);
++
++        status.HostReady.ShouldBeTrue();
++        handler.ApiToken.ShouldBe("own-sidecar-token");
++        client.DefaultRequestHeaders.GetValues("dapr-api-token").ShouldBe(["unrelated-client-default"]);
++    }
++
++    [Theory]
++    [InlineData("http://127.0.0.1:4800/", "4801", "http://127.0.0.1:4800/v1.0/metadata")]
++    [InlineData(null, "4801", "http://localhost:4801/v1.0/metadata")]
++    [InlineData(null, null, "http://localhost:3500/v1.0/metadata")]
++    public async Task CredentialUsesOnlyTheConfiguredMetadataEndpoint(string? endpoint, string? port, string expected)
++    {
++        using var handler = new NativeSourceMetadataHttpHandler(Encoding.UTF8.GetBytes(ConnectedMetadata));
++        using var client = new HttpClient(handler);
++        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
++        {
++            ["DAPR_HTTP_ENDPOINT"] = endpoint,
++            ["DAPR_HTTP_PORT"] = port,
++            ["DAPR_API_TOKEN"] = "own-sidecar-token",
++        }).Build();
++
++        await new DaprActorPlacementProbe(client, configuration).CheckAsync(TestContext.Current.CancellationToken);
++
++        handler.LastUri.ShouldBe(new Uri(expected));
++        handler.ApiToken.ShouldBe("own-sidecar-token");
++    }
++
++    [Theory]
++    [InlineData(null)]
++    [InlineData("")]
++    [InlineData(" ")]
++    public async Task MissingCredentialLeavesUnauthenticatedSidecarRequestsUnchanged(string? token)
++    {
++        using var handler = new NativeSourceMetadataHttpHandler(Encoding.UTF8.GetBytes(ConnectedMetadata));
++        using var client = new HttpClient(handler);
++        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
++        {
++            ["DAPR_API_TOKEN"] = token,
++        }).Build();
++
++        DaprActorPlacementStatus status = await new DaprActorPlacementProbe(client, configuration)
++            .CheckAsync(TestContext.Current.CancellationToken);
++
++        status.HostReady.ShouldBeTrue();
++        handler.ApiToken.ShouldBeNull();
++    }
++}

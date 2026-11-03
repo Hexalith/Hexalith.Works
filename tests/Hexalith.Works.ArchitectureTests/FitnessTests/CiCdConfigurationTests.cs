@@ -45,7 +45,7 @@ public sealed class CiCdConfigurationTests
         job.ShouldNotContain("--recursive", Case.Sensitive);
         job.ShouldNotContain("--remote", Case.Sensitive);
         job.ShouldNotMatch(@"(?m)^    if:");
-        foreach (string dependency in new[] { "AI.Tools", "Builds", "Commons", "EventStore", "PolymorphicSerializations", "Tenants", "Parties", "Platform" })
+        foreach (string dependency in new[] { "AI.Tools", "Builds", "Commons", "McpCli", "Memories", "EventStore", "PolymorphicSerializations", "Tenants", "Parties", "Platform" })
             job.ShouldContain("references/Hexalith." + dependency, Case.Sensitive);
         string bootstrap = Read(root, "scripts/verify-platform-parity-ci.py");
         bootstrap.ShouldContain("eng/verify-works-host.sh", Case.Sensitive);

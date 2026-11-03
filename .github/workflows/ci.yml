@@ -51,6 +51,7 @@ jobs:
         run: >-
           git submodule update --init --
           references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons
+          references/Hexalith.McpCli references/Hexalith.Memories
           references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
           references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0

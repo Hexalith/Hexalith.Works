@@ -1,0 +1,2320 @@
+{
+  "status": "phase1-complete; external merge-eligibility decision pending",
+  "createdAtUtc": "2026-11-03T10:47:34.866925+00:00",
+  "scope": "genuine Builds publication and fully green Platform PR; no final Platform publication or Works qualification",
+  "files": [
+    {
+      "path": "continuation/build-phase1-packet.py.gz",
+      "sha256": "92af1e87d9debfa7aa86fc17cf8cc3213632191463d12520524d0a3e8f0660ab",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/build-phase1-packet.py",
+      "nativeSha256": "803757e888431eb1a807beb5b2bfe832f1bc92d4e5b65ffe89b23ee360c59901",
+      "nativeBytes": 3643
+    },
+    {
+      "path": "continuation/builds-concurrent-source.json.gz",
+      "sha256": "e613a4f32ce57a0f4a268e4a6c66a1f047c586bf81ae35ee8ddd1c53863411f4",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-concurrent-source.json",
+      "nativeSha256": "501e2d54b82bbee073abc79655b2eaa4f24b2975f31649ef1c7862dd49c391c9",
+      "nativeBytes": 360639
+    },
+    {
+      "path": "continuation/builds-current-push-ci.json.gz",
+      "sha256": "e168ca78baa03321defe8471e29d7e947b9c2d5d6caa5434163a359cdca9feeb",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-current-push-ci.json",
+      "nativeSha256": "eb4353dc56c01aebd7acb90578c721103fe66ad2eeb772aeba3247701e5ed007",
+      "nativeBytes": 10860
+    },
+    {
+      "path": "continuation/builds-derived-next-tag-current.json.gz",
+      "sha256": "52ecbbf6518320d7ec8277cf79b8e9c69ecdb7aa51d8e68da74db493ca00537b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-derived-next-tag-current.json",
+      "nativeSha256": "82a706940bd6180e38fcafcfbb75c9b4915e640515a694456a200fcff7b636ca",
+      "nativeBytes": 353
+    },
+    {
+      "path": "continuation/builds-exact-source-guard.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-exact-source-guard.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "continuation/builds-next-tag-probe.json.gz",
+      "sha256": "310e0d1b19a6f39920a861e2c6a11fd714c9d3f0cb901c5a8044a8d487891a9c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-next-tag-probe.json",
+      "nativeSha256": "e2e3c64edab172132f77ce89a0e8c190db1cd30936a096344f45893bd5b75f8a",
+      "nativeBytes": 114
+    },
+    {
+      "path": "continuation/builds-pending-deployments.json.gz",
+      "sha256": "090e038d72055a6511011b48d6c9bdf315d3ca96436a55d6c0887765d4b100d6",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-pending-deployments.json",
+      "nativeSha256": "4f45e368d1621e30cf44a569eb3893c662b348726374a532f9818377147c8eb3",
+      "nativeBytes": 1373
+    },
+    {
+      "path": "continuation/builds-production-review-response.json.gz",
+      "sha256": "9783ebffa245dc5dfb6b2857cc2bc8b4f40758978e87485ee466a323d02e3b7f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-production-review-response.json",
+      "nativeSha256": "54d929a89e25a515ef3df12694d9ee65794499e5df4e7473026d99b6e973fbe0",
+      "nativeBytes": 3826
+    },
+    {
+      "path": "continuation/builds-production-review.json.gz",
+      "sha256": "e001e2bf2c271925dffd46d4d8d7b0fd0b5e897cf1b8b1035a3ee8c3cc249194",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-production-review.json",
+      "nativeSha256": "8be02d0801d39d3f9357ad916bb5569b568661563e37a03a8b77de976564dd08",
+      "nativeBytes": 303
+    },
+    {
+      "path": "continuation/builds-release-annotations-current.json.gz",
+      "sha256": "64406e753d82e11c6bd63d1d04bb6aa083eefa0a46949bbfce994d556b989f0f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-annotations-current.json",
+      "nativeSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "nativeBytes": 2
+    },
+    {
+      "path": "continuation/builds-release-bounded-progress.json.gz",
+      "sha256": "72538b74c3017b1566754a6e9b23f317d3a1bfda7883840c230d8da64cd2d593",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-bounded-progress.json",
+      "nativeSha256": "a6355d2437f85841562cf55e5822fac3b22fc52ff63c6a969b5f7c21635e55b5",
+      "nativeBytes": 9717
+    },
+    {
+      "path": "continuation/builds-release-check-current.json.gz",
+      "sha256": "9e1bceb675bb5f1a1921dda26fe52447e5379b00701523c8a875a258d034829b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-check-current.json",
+      "nativeSha256": "b79a4405395ad83a7d52a57655f6ede0390f5b34e03ffe8c31f657738c379fe5",
+      "nativeBytes": 3552
+    },
+    {
+      "path": "continuation/builds-release-complete.json.gz",
+      "sha256": "0cec534ade4a401da40db0d8f8c0cd02eade584043d58b37ed6696de20068b23",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-complete.json",
+      "nativeSha256": "426afcbabb92948f9e99c30c0620c450aee91599f3d886f0a98617bafbd8b6fd",
+      "nativeBytes": 5804
+    },
+    {
+      "path": "continuation/builds-release-complete.log.gz",
+      "sha256": "da712316fcb0f5246aa30572a6ac928e952dab79f98911d1d236b5b58dc97871",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-complete.log",
+      "nativeSha256": "cfbdde320d4317797973d8930c15e168d37d4b38d9ed72151dc3a06b27634afa",
+      "nativeBytes": 382579
+    },
+    {
+      "path": "continuation/builds-release-current.json.gz",
+      "sha256": "40c52b160a27939cf809e4d1dd04fd1d91ff1cde2f3694e9b9031c7ccdea2fe7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-current.json",
+      "nativeSha256": "a2c2fc9bfa04cc38fd98e4d98248664a86938095b45e11e872763c2b7ca67ef8",
+      "nativeBytes": 712
+    },
+    {
+      "path": "continuation/builds-release-jobs-current.json.gz",
+      "sha256": "645f356d3359fe8a4a6785ff8f0045ae67a0d79267c1daf95a2c51e3852349e3",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-jobs-current.json",
+      "nativeSha256": "d9eff458a36a3ed384a364b37fb945676128300ed1305f22d0e743f19a76721c",
+      "nativeBytes": 9459
+    },
+    {
+      "path": "continuation/builds-release-run.json.gz",
+      "sha256": "112b73a0426eae7c5f04b184f6b5a020e6402447352573a2f7e8179e8a37eac3",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds-release-run.json",
+      "nativeSha256": "61a35dab485786f3afecefa91e198a27bd50e01c1854ef292c9737045066d635",
+      "nativeBytes": 12570
+    },
+    {
+      "path": "continuation/builds4433-public-availability.json.gz",
+      "sha256": "96b48e004914e709bb90550e8d54607c5e8c763ac1d2e6df0219a76b2e4885cf",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/builds4433-public-availability.json",
+      "nativeSha256": "0d0f3589517bd612b3c8161c77fb30f2d8b0108047540129a54051c9c866fb39",
+      "nativeBytes": 549
+    },
+    {
+      "path": "continuation/continuation.json.gz",
+      "sha256": "8f14cf49ad16a01552546cd333d94294c95bba91f43b7f26f3e65c45d60f6857",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/continuation.json",
+      "nativeSha256": "540e0c8c2af9100e685ed3080bf66807b2334430c6e62a6de3abbb2d8101bd53",
+      "nativeBytes": 658
+    },
+    {
+      "path": "continuation/observe-published-builds.log.gz",
+      "sha256": "729677f8b8055c7c7db34a54dbe5d527f50c7168417edd1000e0f75b8bf5dc88",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/observe-published-builds.log",
+      "nativeSha256": "ea21d42877df908a7d3520a7e2144495753bcd508e1834d1cbec9c45baf9898a",
+      "nativeBytes": 1050
+    },
+    {
+      "path": "continuation/observe-published-builds.py.gz",
+      "sha256": "f2649e888a5edd2524162df32e2891343348e47418198209699c133bb906d7ff",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/observe-published-builds.py",
+      "nativeSha256": "0f282076e875fd40af03723b3c24705ab1029a08bad694d00b4010467dec92a9",
+      "nativeBytes": 5623
+    },
+    {
+      "path": "continuation/original-platform-overlay-sha256.json.gz",
+      "sha256": "c6e48bec6a65b4d98ecfe53b256a8e96309b545fdf1dfcede20b357f6a3fd58a",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/original-platform-overlay-sha256.json",
+      "nativeSha256": "b903b818341e58de78e3e29a0f90290edf4cb2106348055e8583023e9e466f61",
+      "nativeBytes": 1145
+    },
+    {
+      "path": "continuation/original-platform-overlay.diff.gz",
+      "sha256": "98b3ad660b091eb2a884964861f181676202212f3e1c3ffe70d4eb5b8cd59a6a",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/original-platform-overlay.diff",
+      "nativeSha256": "7e7bbec179539b51f37469accb68028d9d7ffffa00a2b99a164942fb8af220a8",
+      "nativeBytes": 31625
+    },
+    {
+      "path": "continuation/platform-commit-message.txt.gz",
+      "sha256": "e7fa12c93d8944c5f8a57d4a5d47c790532a85322529a91842167d0d7d121132",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-commit-message.txt",
+      "nativeSha256": "86e141ab84dff8c8acc0839a4e5a5a90e33801f514bfc23d403010c824533c8b",
+      "nativeBytes": 221
+    },
+    {
+      "path": "continuation/platform-commitlint-version.log.gz",
+      "sha256": "dc50072e53bbc39332fe611a0eb6ede7846918c2da1677ae17604096d6c3abf0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-commitlint-version.log",
+      "nativeSha256": "abd13a154d14b9421771a1d96b65e1af17ac2453ff1a8e52f6621c4e9135b3af",
+      "nativeBytes": 23
+    },
+    {
+      "path": "continuation/platform-commitlint.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-commitlint.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "continuation/platform-concurrent-source.json.gz",
+      "sha256": "a99b306301ec753a75843b630b6adcc3ecaa96bd22396d96e6ab62b9afc02878",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-concurrent-source.json",
+      "nativeSha256": "d8e3edc486e1b020e6601317c3d6bd41a0a5759c8591402c09af532a67350d2c",
+      "nativeBytes": 39831
+    },
+    {
+      "path": "continuation/platform-effective-main-rules.json.gz",
+      "sha256": "d24900412304d2e43df8314c561cf76f20d11ac03487d7460997a66bf2cfe574",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-effective-main-rules.json",
+      "nativeSha256": "83cbcad39e18915b3b82ce864e3e7e8a8629289dbe052476895f337149de036c",
+      "nativeBytes": 774
+    },
+    {
+      "path": "continuation/platform-existing-release-convention.json.gz",
+      "sha256": "f8849ff90019461615b4811d42697b40c8d8e21891d01bd4bc5cb64eec3669bf",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-existing-release-convention.json",
+      "nativeSha256": "7042b6373c2e0c8a985d5b0c53ccba15dacac8cfad57cd899a05f7e06d6455e5",
+      "nativeBytes": 468
+    },
+    {
+      "path": "continuation/platform-final-commitlint.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-final-commitlint.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "continuation/platform-history-doc-commit-message.txt.gz",
+      "sha256": "47b3d1583408c2b7e3634031a77e25411cb1ffc567a6f921c1c9ed32bec28c8e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-history-doc-commit-message.txt",
+      "nativeSha256": "934a0781dc305d2ff0507bcbf69b70fe2462742ac927700d11ec889771c98dee",
+      "nativeBytes": 57
+    },
+    {
+      "path": "continuation/platform-history-doc-commitlint.log.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-history-doc-commitlint.log",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "continuation/platform-main-force-push-activity.json.gz",
+      "sha256": "d14dad37734eefe8fc90073c1718bba91d602398c9e60384a62b43e793cfaf28",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-main-force-push-activity.json",
+      "nativeSha256": "977b3bbd8fbb1103a46f6354bab6b7ff2cc7c4ef7bc0571fbc6ddcda175ebf74",
+      "nativeBytes": 1178
+    },
+    {
+      "path": "continuation/platform-new-host-resolution-controls.log.gz",
+      "sha256": "cd4e9bcb2ab1726db0d48d1cf22fca877d8313f7a66a9dd8e18b94921d89364c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-new-host-resolution-controls.log",
+      "nativeSha256": "a02b9fa5a432a7f5ae1cf35e794a54f54a2bfc2f68c5e8c7ed17216f763fc04f",
+      "nativeBytes": 114
+    },
+    {
+      "path": "continuation/platform-new-tuple-controls.log.gz",
+      "sha256": "ba1ed0a8b0a4c906496a435d37f4a43cb41431eae24d25ef2454962f80aca162",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-new-tuple-controls.log",
+      "nativeSha256": "615f5329b9b3c647c1d6980691279b1ca2d3035a28c5c3317c562275f2cdf7b6",
+      "nativeBytes": 118
+    },
+    {
+      "path": "continuation/platform-npm-ci.log.gz",
+      "sha256": "ce1b2f9877035c3d3e6f9ac0c9210c94083708fc81bd1e4e7853514bef99551f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-npm-ci.log",
+      "nativeSha256": "d9eca7a391a148c64bfc378cce874179887ef796cbfc858793d0b370d826d2f7",
+      "nativeBytes": 141
+    },
+    {
+      "path": "continuation/platform-owner-helper-controls-with-root.log.gz",
+      "sha256": "4d191b69247421df342d9e45931dece969cd9f2cae7a6e23b9577829e8ffee38",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-owner-helper-controls-with-root.log",
+      "nativeSha256": "5ac9054ad66e003eb7e7144ec5bf5c248102e8c87b126f857f5dd51759a0e22d",
+      "nativeBytes": 36459
+    },
+    {
+      "path": "continuation/platform-owner-helper-controls.log.gz",
+      "sha256": "b2724292fa884f29c4e06bf248c89531efc10215ebf08854713fb9ffb3e698f1",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-owner-helper-controls.log",
+      "nativeSha256": "6073ad6d52bac84a851027e7e7c15be60526460eccb87bd111e3e79b9b54ca6e",
+      "nativeBytes": 38708
+    },
+    {
+      "path": "continuation/platform-pr-body.md.gz",
+      "sha256": "c42dd033a4c3d02904df782ad35d021068b1b59f4f701d5b1444027e17b6fb4f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-body.md",
+      "nativeSha256": "8038e8307c10a31a57e0254bbc54351e6d61d556b68c491077fb56f7bc58673b",
+      "nativeBytes": 1341
+    },
+    {
+      "path": "continuation/platform-pr-catalog-complete.json.gz",
+      "sha256": "4fcfa0c4f6893b36a431e88dea979d21faaa22f9f05a29bb5021a009912b49db",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-complete.json",
+      "nativeSha256": "95febd7e8a8cb4bc85b0edd3c5efac66824be4d071a1f1e79047a9cfea9adc6b",
+      "nativeBytes": 6496
+    },
+    {
+      "path": "continuation/platform-pr-created.txt.gz",
+      "sha256": "5d2de3951fd6ad1554dc85ddf14b76af128873e1ff5f4b9ff0e86989912e3fe8",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-created.txt",
+      "nativeSha256": "6bc8aea2bce5e1547718b10398f91194a585ba9cf5e86e7665d3ad3654a9085b",
+      "nativeBytes": 54
+    },
+    {
+      "path": "continuation/platform-pr-current.json.gz",
+      "sha256": "881f71cc43ed1ef2f6dd7c3c381b7263a98cb5e49ca6261c627cfb5779dbb841",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-current.json",
+      "nativeSha256": "3cd53b3573ef01a680c3f2be1b9c46d98430f25475e90a08f30850654ce25fd4",
+      "nativeBytes": 920
+    },
+    {
+      "path": "continuation/platform-pr-green-review-pending.json.gz",
+      "sha256": "1ddbf8016a7e7920ffe60e97aac2ab03dfc5afb70aabf961daf41ad775cb0e79",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-green-review-pending.json",
+      "nativeSha256": "c55abf14c32e4f5ec8a0b8e7a81bc025c81f7c7eca17dfa88665fc00ab0d395e",
+      "nativeBytes": 2409
+    },
+    {
+      "path": "continuation/platform-pr-tuple-complete.json.gz",
+      "sha256": "9f7b61dc3d89dc416d089745c3975023e228536a882d0c1936ce27a4dad25a86",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-tuple-complete.json",
+      "nativeSha256": "8813321ed2b3e2d45b02d446b302dc03981ae3ca6e61f84625654cb9439c35f0",
+      "nativeBytes": 1787
+    },
+    {
+      "path": "continuation/platform-published-artifact-identity.log.gz",
+      "sha256": "58c6f123b212807c1059033f1277c06a1002fb01e14cdbd1ec9c8064917af9c0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-published-artifact-identity.log",
+      "nativeSha256": "bedbf4e75a4a97ea169a0f314b1861c935973838df7934e90aa989c14965e14a",
+      "nativeBytes": 87
+    },
+    {
+      "path": "continuation/platform-push-server-notice.json.gz",
+      "sha256": "a532553d3eb71643971ec43b0d20d8dc5bfd91e3cfcc9fd831cf976eb70c4b31",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-push-server-notice.json",
+      "nativeSha256": "03ad6bbf8855602312d6e8b800981a2404bb2ef8478db58fdbe1ac272ecc0771",
+      "nativeBytes": 553
+    },
+    {
+      "path": "continuation/platform-pushed-source.json.gz",
+      "sha256": "531090482cbc8d84b4e8fe8b276fd64a2d1884f8ae60196b92daf15336979eb2",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pushed-source.json",
+      "nativeSha256": "18f55e6da8ca454a63b9ee5ac21ba5d77fea53b165917485f2dbd6ebd697b084",
+      "nativeBytes": 339
+    },
+    {
+      "path": "continuation/platform-sdk-gates.json.gz",
+      "sha256": "f9c771fe9690f89fe3468d74d64e9f9aa77d53bf02e260b3a8ed0ad55fa15398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-sdk-gates.json",
+      "nativeSha256": "56f8df2f9f822c54db146beb85e1bb939320eef3012bb1e49d17b28d5c4b6b22",
+      "nativeBytes": 243202
+    },
+    {
+      "path": "continuation/platform-sdk-gates.log.gz",
+      "sha256": "fe98a6081b1a3a3b8ea629fbe6aaf51a03d5481073dac501167b31bd554f529c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-sdk-gates.log",
+      "nativeSha256": "9e00b30f4a7524d59dfc12c2143572d41b82c74a5a95766e70835e2fdb757bb3",
+      "nativeBytes": 63
+    },
+    {
+      "path": "continuation/platform-to-publish.diff.gz",
+      "sha256": "2920dcdce11e131d62325471ea0379bf336285372b4b0e32041c70e08c3f21f5",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-to-publish.diff",
+      "nativeSha256": "ae54761ba4a9298b6a3fc6bbdacb36ef53dc1fc0efc36b45f9ba91b1ba289361",
+      "nativeBytes": 25929
+    },
+    {
+      "path": "continuation/platform-tuple-ci-current.json.gz",
+      "sha256": "2a34ecb212ff07839d80448ab8cde94a0c61ffbc4b3ac3dac1dbd8f77b7b453b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-tuple-ci-current.json",
+      "nativeSha256": "86ce6f32421ed1c0c13056697f8b3dd7ad669fa8a0f12ff7ebf94ebff30f6116",
+      "nativeBytes": 1509
+    },
+    {
+      "path": "continuation/platform404-before-publication-invocation.json.gz",
+      "sha256": "44b960341cfdd543e86d9767f1d593607512094948349c2a5301fa94bad759f4",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform404-before-publication-invocation.json",
+      "nativeSha256": "5065a86047cd3603e80d403ac76d0ec8eda8181e3599ee702d42c933a6a3619c",
+      "nativeBytes": 1021
+    },
+    {
+      "path": "continuation/platform404-before-publication.log.gz",
+      "sha256": "f14e065b5fbc8b6021b31bc1eb502babe9cf8ba1d5cfe995b4453154aa4aa165",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform404-before-publication.log",
+      "nativeSha256": "bf5d6738fd955fa5053d478244edd5c5ecdfa43c6db85c06cd5ad1727ec76b12",
+      "nativeBytes": 2644
+    },
+    {
+      "path": "continuation/platform404-before-publication.xml.gz",
+      "sha256": "e45aa6a97c600a35f29bd697219d46644b38727b9399a7733d24ca4ed4f94ebd",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform404-before-publication.xml",
+      "nativeSha256": "ecce2cb8ea8cd7f6fe6e4955fb71a3c64026f1385093b45e95a60e6cccaf7205",
+      "nativeBytes": 95469
+    },
+    {
+      "path": "continuation/platform404-published-tooling-invocation.json.gz",
+      "sha256": "43fae1aa595e501f2c2b82e6112b1d603ff3dffa129f6f997193b1ec9169face",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform404-published-tooling-invocation.json",
+      "nativeSha256": "46e70675d9152030c50c5e5fa153623771317e8380ff0fbdf947418657de4ab4",
+      "nativeBytes": 1041
+    },
+    {
+      "path": "continuation/platform404-published-tooling.log.gz",
+      "sha256": "861e7e1a4c91994475bb3cd4a584a7f27868eaca8e816c79415e8a4c7af86dcf",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform404-published-tooling.log",
+      "nativeSha256": "929ea7bb250edbfd360d4cf1e4757b2e6c983da5377d58a70021a138538b34ba",
+      "nativeBytes": 2628
+    },
+    {
+      "path": "continuation/platform404-published-tooling.xml.gz",
+      "sha256": "3fa05a7e5c3eb9a0f8899714e34d34dbe0e51b9b4200aa6f91ac48232ffb6f9f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform404-published-tooling.xml",
+      "nativeSha256": "bc3c71646dde5ccfe7a8494de68df549708718687a06da65a1f99e088531668c",
+      "nativeBytes": 95476
+    },
+    {
+      "path": "continuation/public-sdk404-compiled-annotation.json.gz",
+      "sha256": "5454a63673dcf5cf8b9fb68639e2d1a97aee7ea4542e2af486e5842ecfd2da93",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/public-sdk404-compiled-annotation.json",
+      "nativeSha256": "0ca89916d2f31f5d4b59c5bac07f6e68ced4a626648fffc10c6df1e0f519ca38",
+      "nativeBytes": 5739
+    },
+    {
+      "path": "continuation/public-sdk404-qualification.log.gz",
+      "sha256": "75533d4f53f415b796af099b04e70e499bbba06aa52baedbb64a002e11d3ee69",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/public-sdk404-qualification.log",
+      "nativeSha256": "177068f9032ab78d2732290783e595e1ac53950ecdf89347837c99b5c85dd802",
+      "nativeBytes": 243
+    },
+    {
+      "path": "continuation/public-sdk404-signatures.log.gz",
+      "sha256": "5756d9ae7ea67395ddcdfb1430a1f9f1d4e24a30221ba266edc425073fb0eef0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/public-sdk404-signatures.log",
+      "nativeSha256": "ff617c7831ba0947a6286cc3bef01f62966bd44a9a791ab4a7af0c817f096368",
+      "nativeBytes": 3930
+    },
+    {
+      "path": "continuation/sdk-dapr-grant-implementation-comparison.json.gz",
+      "sha256": "8cc0adee288b0112805a289940787d83725f958d9248f843a29ea274c1e9752e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/sdk-dapr-grant-implementation-comparison.json",
+      "nativeSha256": "d9608b6f6a87eba3318ce151796bd30c2e21b873b4efc937b3a8dc7e0d4498ca",
+      "nativeBytes": 317
+    },
+    {
+      "path": "continuation/state.json.gz",
+      "sha256": "3579fdea1b30aad613b53695052d4c7dbe1f163ab3d51f3f3a0342407bcb00f5",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/state.json",
+      "nativeSha256": "542bb022f6988a26a7617b852cc7ada044183e34769e17ed4e9ebcb2e0900663",
+      "nativeBytes": 4270
+    },
+    {
+      "path": "continuation/verify-platform404-before-publication.py.gz",
+      "sha256": "6799ddeaa7fcc54bfd69180e6464ac5260faeb44dc65b1eb30f393a53f4d6494",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/verify-platform404-before-publication.py",
+      "nativeSha256": "1d4e4a6ca9c87a4e7e4ff9a992bb862254274bbbb0857c658440b8ae6b1346be",
+      "nativeBytes": 1931
+    },
+    {
+      "path": "continuation/verify-platform404-published-tooling.py.gz",
+      "sha256": "cfcd3fe8fd826d5a5cf12a09bd6926b65dba20a93779c2f2ee2d39b4e481c6b1",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/verify-platform404-published-tooling.py",
+      "nativeSha256": "f6a0626e239fe7707b369b1e88cb62e90b4452282b5f9225cf7d9b48b27bcd27",
+      "nativeBytes": 1964
+    },
+    {
+      "path": "continuation/verify-published-embedded-catalog.ps1.gz",
+      "sha256": "f1ab16ec1c76ee3d70464de914d659cb6388e2dd70223734c7181e7048f6bc5c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/verify-published-embedded-catalog.ps1",
+      "nativeSha256": "4d8cee6828048247b1c5c9557419469a7b99d3ab7d15b575fbe6c3cd13ec92c3",
+      "nativeBytes": 1163
+    },
+    {
+      "path": "continuation/verify-works404-before-publication.py.gz",
+      "sha256": "3cb992856166d801d31794e4b748791d4c49f03fc93318537e15a6bd0dd5dd45",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/verify-works404-before-publication.py",
+      "nativeSha256": "c9ba5a5f8929f52c2d9d1be04c6f978caa382b7161c303460b402bd5fe82a3cf",
+      "nativeBytes": 2920
+    },
+    {
+      "path": "continuation/works-pin-candidate-scope.json.gz",
+      "sha256": "5b938ea0b217ffaf8756d5fbac0063ceccd2448017f29f4cb1681980405b684a",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-pin-candidate-scope.json",
+      "nativeSha256": "551b7b01831a107c4b0a1709039f346b4f3c0b0b5d0282dd095191b99ac0f867",
+      "nativeBytes": 541
+    },
+    {
+      "path": "continuation/works-sdk404-pins-pending-platform-publication.patch.gz",
+      "sha256": "a538bedabf6e1715828edc1456b9ae5762353546730e6c843943e7cf8f85ac1d",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-sdk404-pins-pending-platform-publication.patch",
+      "nativeSha256": "b97c67b2b8d4254c5f53ae3406c5e0f3183b893f1dc51dd47158e576dc727fc0",
+      "nativeBytes": 6980
+    },
+    {
+      "path": "continuation/works-sdk404-pins-status.json.gz",
+      "sha256": "87260a779eb484fec5040e8919060d268bb92334196fcc6b31aa6319702fa6ce",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-sdk404-pins-status.json",
+      "nativeSha256": "2a91b4a284b3edaf33d5e836829350d36d800c61addce2f704c0b921203fdfae",
+      "nativeBytes": 597
+    },
+    {
+      "path": "continuation/works404-before-publication-invocation.json.gz",
+      "sha256": "734e21fef5a9e416aad40b2a4820964ad19100d9ce25f7022358ff928f9b6204",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works404-before-publication-invocation.json",
+      "nativeSha256": "93cffb6845b887a91932c36043ba1ac2ad2c08565739ae321e05f161a7e1506d",
+      "nativeBytes": 1479
+    },
+    {
+      "path": "continuation/works404-before-publication.log.gz",
+      "sha256": "260fd9e5cf44ff4455adae6e8083c836251528a8142ffc560cf824b613fa4c45",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works404-before-publication.log",
+      "nativeSha256": "91a24e8dd51d5e513563468222bf921e2baba470788862ca5f0027320927f1a1",
+      "nativeBytes": 52182
+    },
+    {
+      "path": "continuation/works404-before-publication.xml.gz",
+      "sha256": "1284d4fadeb6460866e10adcbe33382e425900bb0f463d07a41f0d85b481c9da",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works404-before-publication.xml",
+      "nativeSha256": "c3aacdb7d68010f87b710e6435cf0c76946e3153f76b7bd9b2f45d145e0ba40b",
+      "nativeBytes": 121007
+    },
+    {
+      "path": "continuation/works404-executed-producers-before-publication.json.gz",
+      "sha256": "3fdd2d73703dc159c764e78fbb94ca1c12449c8d993f1abadab7b86fb732fcf7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works404-executed-producers-before-publication.json",
+      "nativeSha256": "359cf07d0dce72d86bbca5303e1388a9b045efe96b04e4a075e8a1ffad1333ff",
+      "nativeBytes": 8458
+    },
+    {
+      "path": "continuation/works404-pair-identity-preflight.log.gz",
+      "sha256": "74b86d1427e0fc9dc58beec14cd5ceea89fe5d034fe554568c38ffdf5b9e7280",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works404-pair-identity-preflight.log",
+      "nativeSha256": "89a45c13109287811312ef34dc4c6664669d13b2605ff80b4849dff195bf737c",
+      "nativeBytes": 77
+    },
+    {
+      "path": "sdk404/official-package-source-record.json.gz",
+      "sha256": "7b14781eb3d4428a1d52b7a9c83b95cb81498e0526bcb4908795f761067683da",
+      "nativePath": "/tmp/story49-public404-20261103-09lkkd9x/record.json",
+      "nativeSha256": "f4fce231ec4cf0b0a459cac412bda25767ae9a06052635d794b449f1598eb8ff",
+      "nativeBytes": 7144
+    },
+    {
+      "path": "published-builds/archive-inventory.json.gz",
+      "sha256": "247f0a5ffd92d7b635d1298db2b16337532efde8cd01ac59ec8f1461aacd6369",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/archive-inventory.json",
+      "nativeSha256": "51732a5e985cb1b136ecb941fa48ddefe7afb1c2f76ff8ce4abb50b3120ea9d5",
+      "nativeBytes": 44340
+    },
+    {
+      "path": "published-builds/catalog-generation.log.gz",
+      "sha256": "40ccefbc8eb379c95b9b7edc225ad4e1b5c6cc17efe7329f798c6fbaa52997ea",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/catalog-generation.log",
+      "nativeSha256": "fb6dad9fcd2dcfe3b6750e951a53a3027b93944210116c0bda4ad6704d0fe4db",
+      "nativeBytes": 168
+    },
+    {
+      "path": "published-builds/embedded-catalog-verification.log.gz",
+      "sha256": "30a5fbc238d5f56da29feb6e5984869f4366c14ed8fdc5a597dde86a64fce01b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/embedded-catalog-verification.log",
+      "nativeSha256": "d9e7261d3788c8fa835a882b27716edb54cdc0a0733627bf0e1fbbcc1499eead",
+      "nativeBytes": 95
+    },
+    {
+      "path": "published-builds/expected-platform-version-catalog.json.gz",
+      "sha256": "6193079f7433b449241d031cc6e747cf6c198aab026a8893037e6958d39d1656",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/expected-platform-version-catalog.json",
+      "nativeSha256": "2aec69b63712653ecd4a927c8a8a9656c71a6604d0ba9a6d41ae2d95fb65ded4",
+      "nativeBytes": 536
+    },
+    {
+      "path": "published-builds/g4-tool-package-inventory.json.gz",
+      "sha256": "6df4c8dff50aaded9ff6d91c6f7c0cd39356d4af0df1eed392eaec7498e85e22",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/g4-tool-package-inventory.json",
+      "nativeSha256": "c6a0276b2195208fb298eb1d3d58b24eb983e6fff9d0119f9206311566bc9839",
+      "nativeBytes": 75113
+    },
+    {
+      "path": "published-builds/g4-tool-qualification-evidence.zip.gz",
+      "sha256": "8f1ba653ff40713ff12c12211d5d854fab4f22cbf3278a5c16195bfa23a5e9ed",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/g4-tool-qualification-evidence.zip",
+      "nativeSha256": "d049181edc516201bb12c49f0be2ee90cfe4df2ace9d4ef089c3ea5bf43e50f6",
+      "nativeBytes": 60975
+    },
+    {
+      "path": "published-builds/observed-binding.json.gz",
+      "sha256": "729677f8b8055c7c7db34a54dbe5d527f50c7168417edd1000e0f75b8bf5dc88",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/observed-binding.json",
+      "nativeSha256": "ea21d42877df908a7d3520a7e2144495753bcd508e1834d1cbec9c45baf9898a",
+      "nativeBytes": 1050
+    },
+    {
+      "path": "published-builds/observed-platform-version-catalog.json.gz",
+      "sha256": "6193079f7433b449241d031cc6e747cf6c198aab026a8893037e6958d39d1656",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/observed-platform-version-catalog.json",
+      "nativeSha256": "2aec69b63712653ecd4a927c8a8a9656c71a6604d0ba9a6d41ae2d95fb65ded4",
+      "nativeBytes": 536
+    },
+    {
+      "path": "published-builds/producer-run.json.gz",
+      "sha256": "2c71e35f2be62f6b803b5e7eea0862f93dca63256f2a5d4b815e06533de9516c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/producer-run.json",
+      "nativeSha256": "48079fdaa38820c23fc9260c8a1d8d2b7b05bfa198a9b01112c7513b9e9835c2",
+      "nativeBytes": 647
+    },
+    {
+      "path": "published-builds/release-run.json.gz",
+      "sha256": "31016da9a11e3964bb79f065307e641c6d3c27f98bf712c04ae7223256eaac0c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/release-run.json",
+      "nativeSha256": "80e7d27356687fee851435dd4091f4c4242a83e365f94debc0bf55495d1aee9b",
+      "nativeBytes": 13918
+    },
+    {
+      "path": "published-builds/release.json.gz",
+      "sha256": "0ff67b19143fb2a4d3768d39d9f47520f4b040cec87770357b504a14bcf0ffab",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/release.json",
+      "nativeSha256": "c334c83c98e725e9f5853f1b71dcd919ab7f9a83d9011b05a6c081935a342bc7",
+      "nativeBytes": 6987
+    },
+    {
+      "path": "published-builds/signature.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/signature.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "published-builds/signature.stdout.gz",
+      "sha256": "67eee5375ad3f287736011c4c9d46258e7d96c77d1b8b1da853b11f83936cde7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/signature.stdout",
+      "nativeSha256": "d76bfa4fe3cdde74329a8080ad1ff335ee38a5209776581d75b22a6a4da050b6",
+      "nativeBytes": 434
+    },
+    {
+      "path": "published-builds/tag.json.gz",
+      "sha256": "09337cb4f4cea52abfc04a985e601a8b9f393daffe35fb06931f7eba67541d87",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/published-builds-observation/tag.json",
+      "nativeSha256": "69162d6cfaf0b306f4bd2a96b9d642cd5149cdae20a99803740742b7097eaee2",
+      "nativeBytes": 392
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stderr.gz",
+      "sha256": "b3f37159db82b2d96ee3354cee2571b43bf3adb89a55dbe467902c9cf39b1f41",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stderr",
+      "nativeSha256": "383e753d9df8c35c03e5cbffba1d2dd042cd9e47fbc8b9065798e1d7105d76dd",
+      "nativeBytes": 115
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stdout.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stdout",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stdout.gz",
+      "sha256": "073909bd377c3aa7fad618d59a794707afd87ec3c1ae3cc7f6fcec3205a393a8",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stdout",
+      "nativeSha256": "95dbed31ce3df7b0c02cb447505fd5e3517e930b943f3ee29ad3c41ea714d558",
+      "nativeBytes": 6160
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/artifact-identity.json.gz",
+      "sha256": "ec5efc4ecd062f967ef61310bd0e0260338f0c74811f717f3837d2b3dbbb8cc3",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/artifact-identity.json",
+      "nativeSha256": "c24ad0f8edaacdbac2278fcb774f0c3d94d99891ee1149917d607795c19edb6d",
+      "nativeBytes": 3465668
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stdout.gz",
+      "sha256": "44e85d85967db97106b3c612cd1eba73e3d0f399d9431cb7d88e2c721f1fd3ca",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stdout",
+      "nativeSha256": "f8dbaba433167aa5568c4f975ca087a842527512b0211bb52b71cb4dd7781117",
+      "nativeBytes": 434
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stdout.gz",
+      "sha256": "291a566d3924dbcab38d16e5a4929c0b2a220bb3289f53c8a8acdc7ac4c6e8db",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stdout",
+      "nativeSha256": "5df09f3e080f3284d3094902e5390a9effd0e4b2441f208131d4a0d7bf450574",
+      "nativeBytes": 41
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stdout.gz",
+      "sha256": "4631b92facc8200b80117ec0b274b367b2045ead3af0f756d2c6e07857f7d8c7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stdout",
+      "nativeSha256": "8fb6d8ed66945c44e651a4406e6bde818d3134d94fe0d161f633b7a45f43d6a6",
+      "nativeBytes": 2806
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stdout.gz",
+      "sha256": "f71ad4ac3b0f85af61e9c68f8369d1fb039af0be7e401638c6a7f8bc2c0f5c41",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stdout",
+      "nativeSha256": "dc55370c032766b6d732fddcc1d69403a0e692f5022b8c56f074c5f941f239b4",
+      "nativeBytes": 4667
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stdout.gz",
+      "sha256": "6d325b8eafc5b5f707919249ddb5df9e2ea558f8b20fc184d327a503a9b5aff7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stdout",
+      "nativeSha256": "98c48107c07593ff924297fbe1fe822be8384a84fd64e914001a9ac29128da53",
+      "nativeBytes": 2533
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stdout.gz",
+      "sha256": "7480ccdbc34d1f3965ea7a347c321bb65c2dcd3294bc14bf61bab06e75ef731e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stdout",
+      "nativeSha256": "436354d33d5bf47ed6509ef63a104b8ab7a7ebd70d4699bf8aa1c99c541d75f0",
+      "nativeBytes": 2433
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stdout.gz",
+      "sha256": "94dab0cd06389435e368545f91e55c52519e04509c05d4f9b12888c2c348338b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stdout",
+      "nativeSha256": "2a70d9af01003b39780349a558ce2aa9d41da4c20caa1b5f4f13f5721243c315",
+      "nativeBytes": 3574
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stdout.gz",
+      "sha256": "6d2b01c45d042b8a3c7c2044672ba119b12063a46894cf953c7b3b4c02169be4",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stdout",
+      "nativeSha256": "e0722573ae8f56050841c157fc923c9e0c038f208df2a786d34ee2e54ad4a642",
+      "nativeBytes": 1369
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stdout.gz",
+      "sha256": "4921a8d009f1e25263a1b04efe7c46c9c3a48e60f8ecfc7b9ec248c006e42337",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stdout",
+      "nativeSha256": "83c54ac9d732d908acc244184c2570c0ad8475fe14756a11348f18da865c376b",
+      "nativeBytes": 1361
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stdout.gz",
+      "sha256": "987e2fb036fa041bd5f9bda42272fb70135327c358f110be756bc342f4d7dd33",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stdout",
+      "nativeSha256": "7c8b8e37182e56d3766d0efd884b104cfc9fa5cebd701fc9b922c823a8cff1ad",
+      "nativeBytes": 1361
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stdout.gz",
+      "sha256": "b67908f6d4ddd0ed4d8da9aa4414bff8d1f94419f79fda073895687d42afba7e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stdout",
+      "nativeSha256": "46b6bda09e5d973c65e21ac5361a5f0e369700289aa9e3a0b4cd1ede238b6951",
+      "nativeBytes": 1348
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stdout.gz",
+      "sha256": "8d3a3679ef9e6efeb77f2c5ceec4f6f94856a687bca532febffb85c88245e6f0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stdout",
+      "nativeSha256": "c09ab6ee1e24534f2b07daee02b77a8dd799beef46232f05387032faa867dacd",
+      "nativeBytes": 9149
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stdout.gz",
+      "sha256": "e1aad6a60bc6010d38986cb6bf0fe43c2943699302e5f5bbb0c111c48a978ed9",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stdout",
+      "nativeSha256": "36ee61423aaa163f3da7f72fbfe4f58d5cdd0432160c6ef4522f36e7274b3e5b",
+      "nativeBytes": 3721
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stdout.gz",
+      "sha256": "e796567b9cda5bda5b8be5e840f38c2b4efd3a61e52f916bd90017eb319c7375",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stdout",
+      "nativeSha256": "d0d997aee2e9968d0a8bd8bf2586b5f8cb5a4f4e7c427c24fb9d690b859da68e",
+      "nativeBytes": 1344
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stdout.gz",
+      "sha256": "0eab4b8eea16939d243f1666aeba0ce595d22b3a5d5cde39c06f72c6d5d79a62",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stdout",
+      "nativeSha256": "c9f78897340d1d03700c0832114f12f7b696b6acc1266bcb79b38fc9a43fe911",
+      "nativeBytes": 6116
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stdout.gz",
+      "sha256": "7b90ebe6ed278b50a59193a3dc8cf5749fbd125f6185ac3330e2c74447313834",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stdout",
+      "nativeSha256": "7d781e7eebba90dee84250619d204c4f36239ed11e4fdeee0d65f7d418389030",
+      "nativeBytes": 1338
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stdout.gz",
+      "sha256": "0b566aa3c97487e7100630a79c5c0c181507777a00627c475ecf515156417001",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stdout",
+      "nativeSha256": "184acd50218dc61cad5262e89bd87230f7571fbce989cf3f3b6717847e90cfab",
+      "nativeBytes": 1280
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stdout.gz",
+      "sha256": "81e0c928b4fe7b1fd85440a9261562b5fc6453f106d78c76a8700d09dc55de62",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stdout",
+      "nativeSha256": "f149fdb394950f4280d94591bac9a7f064bbd0bef6606abf7cccee5e9e4f506b",
+      "nativeBytes": 1288
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stdout.gz",
+      "sha256": "d0e6761d8d66977790ccc092a2d716f73bb219b8e8e772f79f1dea7f24bc8414",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stdout",
+      "nativeSha256": "42af6007473275f790869aca43107d9537200cb3762d7f265fe23cdef85d629a",
+      "nativeBytes": 2603
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stdout.gz",
+      "sha256": "8a16f34a231b31776c22a0920a8f1a3786dee057c928c367856d1c03955a0353",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stdout",
+      "nativeSha256": "efda2b90722eb0d77ce4bcdb8b526f8258cdb83efbe3f6e1f949b7246f1dc3b9",
+      "nativeBytes": 1350
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stdout.gz",
+      "sha256": "daab9c367d533bbc38c8237c4fb305df85a884911c8535aa3c5e76105948954a",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stdout",
+      "nativeSha256": "bbd75a65f6c1586593c3e6c4971023960bc7ba16a7d5e6463eabc5721abb2330",
+      "nativeBytes": 1316
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stdout.gz",
+      "sha256": "128c77ab83b7a5ba9e2ccd1b642e43a65e728ac17929a92a34439977135abc70",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stdout",
+      "nativeSha256": "470d7b1f08c0b98d9b8b759412e9b72842d4440f21c4456b8a33c16ece2ccb00",
+      "nativeBytes": 1311
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stdout.gz",
+      "sha256": "b0be57d941748eec3e5f05c12bbfdafadedd189a94526c82615284b974600592",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stdout",
+      "nativeSha256": "51b6a0ef170d8bc8f89d3f23909dea615d703e3364848a3b3b0afcf5943ae54d",
+      "nativeBytes": 1311
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stdout.gz",
+      "sha256": "5408678af4d78bd1e2eb0385dc3accd395cafc094a7b25da4c16c840a0e633aa",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stdout",
+      "nativeSha256": "d90812f4856e6f969cf7fd5c7e9e53e634c7f8bd3d97f6297e1e6932ad19f0a4",
+      "nativeBytes": 1319
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stdout.gz",
+      "sha256": "4bdd564b99ec340a3748f61541c7383a522b0d3d9e85e059559880d034158a94",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stdout",
+      "nativeSha256": "ac3a65aeb810c93230ef63a06f7634bafced0c4a1f121f349c66bfcb5cd9fb8b",
+      "nativeBytes": 2437
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stdout.gz",
+      "sha256": "e24d8ff1eea0e6024ba786d23900ed63b013ca7c9f59f5ec2e850b505780ac51",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stdout",
+      "nativeSha256": "2a8cb982dc692f01dcaa2998778f2d7dc4cb874c89b4ee842caba396d222b051",
+      "nativeBytes": 2507
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stdout.gz",
+      "sha256": "2001cd141b2e4f8429b81cbf84825309b2b05abe6f26dd267fd5571f5dd31fa3",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stdout",
+      "nativeSha256": "bbc07db5a2fcdcbee28cbfb1e45ba17118dca2170c9857ccd6e9172a42fcc60b",
+      "nativeBytes": 1239
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stdout.gz",
+      "sha256": "fcb15b142ae561eef1d9180ca22825d7a838e7aed035b4edece3696306c53e39",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stdout",
+      "nativeSha256": "22fb966e343a7792c69e248a4d9fd3892518beb9cd96a25fd9f6e18f23aec341",
+      "nativeBytes": 1226
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stdout.gz",
+      "sha256": "bcb0aded135e1efcc6d1c619593e632dfa68e1772561e247b90792ceba210a36",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stdout",
+      "nativeSha256": "e5e4f11f03f6fc168ca05902e149957593a021338a4c5d5de3d3e805a58b79d2",
+      "nativeBytes": 1228
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stdout.gz",
+      "sha256": "7ffe70904e7890722a6b2a3a2c45b4b74ed054cd09996e07301886ee33943447",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stdout",
+      "nativeSha256": "b998d16b9d5dc095ddff622405b935827576bd2fbab510f840fb7b79453ead57",
+      "nativeBytes": 92
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stdout.gz",
+      "sha256": "c56434f102ced2b86af62882fd0fd805a4acf233c7f498d88cf3122e53234670",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stdout",
+      "nativeSha256": "113ec753f051d8ca33205a577918590558e3a547d65611944e35a3a62b8600f2",
+      "nativeBytes": 108
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-0.xml.gz",
+      "sha256": "da26e02963224f9160fcc49da6934fef541958891dfb5c5d7f9f9fbb96a58199",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-0.xml",
+      "nativeSha256": "47c66deedf9150575d68dfb3f37d5013ba454f099b26e318d2fe6b68945681e0",
+      "nativeBytes": 62697
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-1.xml.gz",
+      "sha256": "a720ad4c089dccc5a89924c51a6412fe4020844ed273471e0fd7c3fa8f02aac2",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-1.xml",
+      "nativeSha256": "3e61aa888b7fbc51524cbf3db35477a0818f128c23b89641a005ee0b8882414a",
+      "nativeBytes": 2407
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-2.xml.gz",
+      "sha256": "801b5f808aaca7e3706b381f710b781e4fd7ca6bcec0b8c6b11d1767dae5d8d0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-2.xml",
+      "nativeSha256": "dbb882e32d32080f5a8edaac4296de23f84ee57767aa523d267d72dcfabfa098",
+      "nativeBytes": 17805
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-3.xml.gz",
+      "sha256": "88cd4c463077dcd2497bd325ef82a563cd7b8971b8a968838ee374bcddf39c40",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-3.xml",
+      "nativeSha256": "024e762d3913023835d92549d39fdcdebcdbc547e43a20b4f4d99df2b1640526",
+      "nativeBytes": 30719
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stdout.gz",
+      "sha256": "adc7ee372cf54ed7ba25bdc502fda7307d7545a98a4b202d4ed9ce1dbf582e91",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stdout",
+      "nativeSha256": "8f3f6d4aa35c3b3c1a70ff391c11ae394b88a4a5523a8da646e291f11199ae5e",
+      "nativeBytes": 5032
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stdout.gz",
+      "sha256": "28dbbad2af8e4600e53cd41ece36a03119bd95f1d8f884a6e3f35fed816ddbff",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stdout",
+      "nativeSha256": "c7a701a5a57c53bba9abdb6a5f3d04ed40b875e9beef2467f521519352a547c6",
+      "nativeBytes": 41
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stdout.gz",
+      "sha256": "124237d1e4ebadade02a3dff000826fe88c67cb6b43246f763c59dbfad45c604",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stdout",
+      "nativeSha256": "8a57c3cce98f582b50fadc7f2dff9e2874d498427be5e55c01e401704a94e17d",
+      "nativeBytes": 42678
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stdout.gz",
+      "sha256": "617937ff4ddf6b8e901daa0fd3594c866d95029921706f64c64f2cd35e123b0f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stdout",
+      "nativeSha256": "4d9947b5930b693348afc39f43ceb20da48030ea781b1e8d5b412bdb15448f3e",
+      "nativeBytes": 547
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stdout.gz",
+      "sha256": "3e76e32d9015578b1d5cdd227e1456bac54b16c7bd61ce60c2ba5e6968ed48a8",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stdout",
+      "nativeSha256": "032b492edc24cd897136d40995e21f68f6d9154362a8849cccde302faa1900d1",
+      "nativeBytes": 548
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stdout.gz",
+      "sha256": "e982c311d74f42fd679ba318644560ff231fe0b89eb6c020c45122e9521b1621",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stdout",
+      "nativeSha256": "a96bc12b20bce0fed75cbb1b54aaa3180078eae96f9ff3ef642f0c4df43f5240",
+      "nativeBytes": 548
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stderr.gz",
+      "sha256": "8ebbddebe924ec5bb95e8391b205d5b3acbca856fa4cbc64c210d38d0e0d9482",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stderr",
+      "nativeSha256": "e2d42f6ec7548e3c9c69dd14889f758377662693ffb196decc03b112c3a37678",
+      "nativeBytes": 118
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stdout.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stdout",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-ci-result.json.gz",
+      "sha256": "6803cce320de49c9555d90c4a21b37a1251cf17bf1f3b541ab969e78db72390f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-ci-result.json",
+      "nativeSha256": "d1ccf2fbc989eb3a1203c527897ddac5db70b44089baa904bcc44930e44d5fd2",
+      "nativeBytes": 3465547
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/_temp/platform-tuple-bootstrap/bootstrap.json.gz",
+      "sha256": "2a0889ee3e434a01e317c40f359247cf029f8aded7a77e7dcfad46c2ce5c2d05",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/_temp/platform-tuple-bootstrap/bootstrap.json",
+      "nativeSha256": "b0a7778ee7d66295fde630295ef4957213c4da3e645d577d1eb5859f9ad6f3ff",
+      "nativeBytes": 549
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stderr.gz",
+      "sha256": "edf14ebc4ea6f068619e64af60c797374c2cecaf9fb9ab4e3b92ba7ed657a73c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stderr",
+      "nativeSha256": "a60ad46fb764f0508afa1d8b3cf5c7784b5e24f073f73d7b4efb7e9bfa5a3834",
+      "nativeBytes": 4233
+    },
+    {
+      "path": "platform-original-candidate-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stdout.gz",
+      "sha256": "adfc3a81a96c8ccb08555083fd0cb0f0fe2f865d1617f98ae160219251115687",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-original-candidate-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stdout",
+      "nativeSha256": "032fc074a4f504b8dfb5a65799ca7271e6411301d883d6ed75b8a9313d73fc0f",
+      "nativeBytes": 1751
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stderr.gz",
+      "sha256": "bcfe35cefabb080186a58c462b34379d634839e2b6f5db4af43287fbfbd8c616",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stderr",
+      "nativeSha256": "34dcb452deb3fb248a1373d76e8eff6f27b95dfbad3de601486b5e20f537dbff",
+      "nativeBytes": 114
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stdout.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/binding-regressions.stdout",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stdout.gz",
+      "sha256": "affcdc2ce89741a21fd840f412958fdb2f43ea3fba092f2e5996ffdd01c75220",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/build.stdout",
+      "nativeSha256": "07f0102d3b84aec22e7fa1b0d3e0985a00210fcb16d46784c3b48d9e8eedfa1e",
+      "nativeBytes": 6160
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/artifact-identity.json.gz",
+      "sha256": "d0f6108007cdb7a3ca88c33a4b846ee579e4603bbdbb0e146c9575eca820bb72",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/artifact-identity.json",
+      "nativeSha256": "76a4972f7a93aca8edacc17194eeba61187fcaa9ae9fb8b1f18f4f94f790a26c",
+      "nativeBytes": 3465668
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stdout.gz",
+      "sha256": "44e85d85967db97106b3c612cd1eba73e3d0f399d9431cb7d88e2c721f1fd3ca",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds/signature.stdout",
+      "nativeSha256": "f8dbaba433167aa5568c4f975ca087a842527512b0211bb52b71cb4dd7781117",
+      "nativeBytes": 434
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stdout.gz",
+      "sha256": "291a566d3924dbcab38d16e5a4929c0b2a220bb3289f53c8a8acdc7ac4c6e8db",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/builds-pin.stdout",
+      "nativeSha256": "5df09f3e080f3284d3094902e5390a9effd0e4b2441f208131d4a0d7bf450574",
+      "nativeBytes": 41
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stdout.gz",
+      "sha256": "4631b92facc8200b80117ec0b274b367b2045ead3af0f756d2c6e07857f7d8c7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/dotnet-info.stdout",
+      "nativeSha256": "8fb6d8ed66945c44e651a4406e6bde818d3134d94fe0d161f633b7a45f43d6a6",
+      "nativeBytes": 2806
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stdout.gz",
+      "sha256": "f71ad4ac3b0f85af61e9c68f8369d1fb039af0be7e401638c6a7f8bc2c0f5c41",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-0.stdout",
+      "nativeSha256": "dc55370c032766b6d732fddcc1d69403a0e692f5022b8c56f074c5f941f239b4",
+      "nativeBytes": 4667
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-1.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stdout.gz",
+      "sha256": "6d325b8eafc5b5f707919249ddb5df9e2ea558f8b20fc184d327a503a9b5aff7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-10.stdout",
+      "nativeSha256": "98c48107c07593ff924297fbe1fe822be8384a84fd64e914001a9ac29128da53",
+      "nativeBytes": 2533
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stdout.gz",
+      "sha256": "7480ccdbc34d1f3965ea7a347c321bb65c2dcd3294bc14bf61bab06e75ef731e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-11.stdout",
+      "nativeSha256": "436354d33d5bf47ed6509ef63a104b8ab7a7ebd70d4699bf8aa1c99c541d75f0",
+      "nativeBytes": 2433
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stdout.gz",
+      "sha256": "94dab0cd06389435e368545f91e55c52519e04509c05d4f9b12888c2c348338b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-12.stdout",
+      "nativeSha256": "2a70d9af01003b39780349a558ce2aa9d41da4c20caa1b5f4f13f5721243c315",
+      "nativeBytes": 3574
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stdout.gz",
+      "sha256": "6d2b01c45d042b8a3c7c2044672ba119b12063a46894cf953c7b3b4c02169be4",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-13.stdout",
+      "nativeSha256": "e0722573ae8f56050841c157fc923c9e0c038f208df2a786d34ee2e54ad4a642",
+      "nativeBytes": 1369
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stdout.gz",
+      "sha256": "4921a8d009f1e25263a1b04efe7c46c9c3a48e60f8ecfc7b9ec248c006e42337",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-14.stdout",
+      "nativeSha256": "83c54ac9d732d908acc244184c2570c0ad8475fe14756a11348f18da865c376b",
+      "nativeBytes": 1361
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stdout.gz",
+      "sha256": "987e2fb036fa041bd5f9bda42272fb70135327c358f110be756bc342f4d7dd33",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-15.stdout",
+      "nativeSha256": "7c8b8e37182e56d3766d0efd884b104cfc9fa5cebd701fc9b922c823a8cff1ad",
+      "nativeBytes": 1361
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stdout.gz",
+      "sha256": "b67908f6d4ddd0ed4d8da9aa4414bff8d1f94419f79fda073895687d42afba7e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-16.stdout",
+      "nativeSha256": "46b6bda09e5d973c65e21ac5361a5f0e369700289aa9e3a0b4cd1ede238b6951",
+      "nativeBytes": 1348
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stdout.gz",
+      "sha256": "8d3a3679ef9e6efeb77f2c5ceec4f6f94856a687bca532febffb85c88245e6f0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-17.stdout",
+      "nativeSha256": "c09ab6ee1e24534f2b07daee02b77a8dd799beef46232f05387032faa867dacd",
+      "nativeBytes": 9149
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stdout.gz",
+      "sha256": "e1aad6a60bc6010d38986cb6bf0fe43c2943699302e5f5bbb0c111c48a978ed9",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-18.stdout",
+      "nativeSha256": "36ee61423aaa163f3da7f72fbfe4f58d5cdd0432160c6ef4522f36e7274b3e5b",
+      "nativeBytes": 3721
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stdout.gz",
+      "sha256": "e796567b9cda5bda5b8be5e840f38c2b4efd3a61e52f916bd90017eb319c7375",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-19.stdout",
+      "nativeSha256": "d0d997aee2e9968d0a8bd8bf2586b5f8cb5a4f4e7c427c24fb9d690b859da68e",
+      "nativeBytes": 1344
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stdout.gz",
+      "sha256": "0eab4b8eea16939d243f1666aeba0ce595d22b3a5d5cde39c06f72c6d5d79a62",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-2.stdout",
+      "nativeSha256": "c9f78897340d1d03700c0832114f12f7b696b6acc1266bcb79b38fc9a43fe911",
+      "nativeBytes": 6116
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-20.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stdout.gz",
+      "sha256": "7b90ebe6ed278b50a59193a3dc8cf5749fbd125f6185ac3330e2c74447313834",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-21.stdout",
+      "nativeSha256": "7d781e7eebba90dee84250619d204c4f36239ed11e4fdeee0d65f7d418389030",
+      "nativeBytes": 1338
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stdout.gz",
+      "sha256": "0b566aa3c97487e7100630a79c5c0c181507777a00627c475ecf515156417001",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-22.stdout",
+      "nativeSha256": "184acd50218dc61cad5262e89bd87230f7571fbce989cf3f3b6717847e90cfab",
+      "nativeBytes": 1280
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stdout.gz",
+      "sha256": "81e0c928b4fe7b1fd85440a9261562b5fc6453f106d78c76a8700d09dc55de62",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-23.stdout",
+      "nativeSha256": "f149fdb394950f4280d94591bac9a7f064bbd0bef6606abf7cccee5e9e4f506b",
+      "nativeBytes": 1288
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stdout.gz",
+      "sha256": "d0e6761d8d66977790ccc092a2d716f73bb219b8e8e772f79f1dea7f24bc8414",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-24.stdout",
+      "nativeSha256": "42af6007473275f790869aca43107d9537200cb3762d7f265fe23cdef85d629a",
+      "nativeBytes": 2603
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stdout.gz",
+      "sha256": "8a16f34a231b31776c22a0920a8f1a3786dee057c928c367856d1c03955a0353",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-25.stdout",
+      "nativeSha256": "efda2b90722eb0d77ce4bcdb8b526f8258cdb83efbe3f6e1f949b7246f1dc3b9",
+      "nativeBytes": 1350
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stdout.gz",
+      "sha256": "daab9c367d533bbc38c8237c4fb305df85a884911c8535aa3c5e76105948954a",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-26.stdout",
+      "nativeSha256": "bbd75a65f6c1586593c3e6c4971023960bc7ba16a7d5e6463eabc5721abb2330",
+      "nativeBytes": 1316
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stdout.gz",
+      "sha256": "128c77ab83b7a5ba9e2ccd1b642e43a65e728ac17929a92a34439977135abc70",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-27.stdout",
+      "nativeSha256": "470d7b1f08c0b98d9b8b759412e9b72842d4440f21c4456b8a33c16ece2ccb00",
+      "nativeBytes": 1311
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stdout.gz",
+      "sha256": "b0be57d941748eec3e5f05c12bbfdafadedd189a94526c82615284b974600592",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-28.stdout",
+      "nativeSha256": "51b6a0ef170d8bc8f89d3f23909dea615d703e3364848a3b3b0afcf5943ae54d",
+      "nativeBytes": 1311
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stdout.gz",
+      "sha256": "5408678af4d78bd1e2eb0385dc3accd395cafc094a7b25da4c16c840a0e633aa",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-29.stdout",
+      "nativeSha256": "d90812f4856e6f969cf7fd5c7e9e53e634c7f8bd3d97f6297e1e6932ad19f0a4",
+      "nativeBytes": 1319
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stdout.gz",
+      "sha256": "4bdd564b99ec340a3748f61541c7383a522b0d3d9e85e059559880d034158a94",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-3.stdout",
+      "nativeSha256": "ac3a65aeb810c93230ef63a06f7634bafced0c4a1f121f349c66bfcb5cd9fb8b",
+      "nativeBytes": 2437
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-4.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stdout.gz",
+      "sha256": "e24d8ff1eea0e6024ba786d23900ed63b013ca7c9f59f5ec2e850b505780ac51",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-5.stdout",
+      "nativeSha256": "2a8cb982dc692f01dcaa2998778f2d7dc4cb874c89b4ee842caba396d222b051",
+      "nativeBytes": 2507
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stdout.gz",
+      "sha256": "2001cd141b2e4f8429b81cbf84825309b2b05abe6f26dd267fd5571f5dd31fa3",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-6.stdout",
+      "nativeSha256": "bbc07db5a2fcdcbee28cbfb1e45ba17118dca2170c9857ccd6e9172a42fcc60b",
+      "nativeBytes": 1239
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stdout.gz",
+      "sha256": "064749e0dcff9fe8e83e203e67a95df7a0ec71ee54766351e78a41a673e04366",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-7.stdout",
+      "nativeSha256": "98bb8fb029e2d45913b6bf1e40a9118fd08a9fb31b3cba553bc9a11e503cb266",
+      "nativeBytes": 69
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stdout.gz",
+      "sha256": "fcb15b142ae561eef1d9180ca22825d7a838e7aed035b4edece3696306c53e39",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-8.stdout",
+      "nativeSha256": "22fb966e343a7792c69e248a4d9fd3892518beb9cd96a25fd9f6e18f23aec341",
+      "nativeBytes": 1226
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stdout.gz",
+      "sha256": "bcb0aded135e1efcc6d1c619593e632dfa68e1772561e247b90792ceba210a36",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/graph-9.stdout",
+      "nativeSha256": "e5e4f11f03f6fc168ca05902e149957593a021338a4c5d5de3d3e805a58b79d2",
+      "nativeBytes": 1228
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stdout.gz",
+      "sha256": "7ffe70904e7890722a6b2a3a2c45b4b74ed054cd09996e07301886ee33943447",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/pin-alignment.stdout",
+      "nativeSha256": "b998d16b9d5dc095ddff622405b935827576bd2fbab510f840fb7b79453ead57",
+      "nativeBytes": 92
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stdout.gz",
+      "sha256": "c56434f102ced2b86af62882fd0fd805a4acf233c7f498d88cf3122e53234670",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/published-artifacts.stdout",
+      "nativeSha256": "113ec753f051d8ca33205a577918590558e3a547d65611944e35a3a62b8600f2",
+      "nativeBytes": 108
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-0.xml.gz",
+      "sha256": "d2cdbae65d35f4a1578f660419f2512b8a1ea126289bb37b606194ba2da1e0c6",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-0.xml",
+      "nativeSha256": "48a7a51be426af5c0fed30e87d3db0f8b4197200cf83da6b16a4bacc8a6c531b",
+      "nativeBytes": 62685
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-1.xml.gz",
+      "sha256": "cbfc394a9f8524884a0ff8990f1fd986b416b1dedf8dcba80317e6c43ccf4d10",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-1.xml",
+      "nativeSha256": "9b4a93e986870014432c2e83aee0dbb16972408bc06da8d85dd45042a6678955",
+      "nativeBytes": 2407
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-2.xml.gz",
+      "sha256": "ef3c4f028b6dee4439c42e03095284d1862fe2d36eee967a7f089b61371050e7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-2.xml",
+      "nativeSha256": "5e54a3e1feeb2c1e4cf53e74f93d633b69c8aee388b888d28e69d05a4d084f81",
+      "nativeBytes": 17801
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-3.xml.gz",
+      "sha256": "74489783140ee9d7362d2be35b7a729e8fdd651bead9d004dc5b378c73a0dea8",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/required-3.xml",
+      "nativeSha256": "8462105c02196b40793553480962da3217a4227f3bf69fc5e3cb204351fe7f4c",
+      "nativeBytes": 30725
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stdout.gz",
+      "sha256": "011be68a006e91a23582676706abd9b7ff75d6acbb592e9d2c08088bc6a2c91b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/restore.stdout",
+      "nativeSha256": "f20092cf42614443065f17d5321dceefc9f04f354b4971b290f63ddb44b9c3b9",
+      "nativeBytes": 5016
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stdout.gz",
+      "sha256": "584079ec74bdf183aae7994dd9c558adf98728f24ad419fb4d7d0107839dcd09",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/revision.stdout",
+      "nativeSha256": "5bb377a274200c95c7420f343a38c82912e3d0afa69684ef408b125d4edcb8fc",
+      "nativeBytes": 41
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stdout.gz",
+      "sha256": "c50a733cbc05df1bf581cfe15b8c45432dfef71591df31b6041c60c724b0402c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-0.stdout",
+      "nativeSha256": "8d2c2507c46ddd506d537ff4fdb126afd418199e187168027b983e8628aa0d95",
+      "nativeBytes": 42678
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stdout.gz",
+      "sha256": "b5b108f54ce888754f5853482c464c00104b110bc6e84ce9a8f4b199dfe48c0f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-1.stdout",
+      "nativeSha256": "6edd8f86d924f2a68ef18515331f8e1e4689ef41efc022dc3ef14cca9464d765",
+      "nativeBytes": 547
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stdout.gz",
+      "sha256": "af1fd21942c11e08a8c1ad6c50f26f0d444f10c95bf6dbcc56e99739fcbee79b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-2.stdout",
+      "nativeSha256": "5c60c36d142d21e1b8db6e748a3d48c931f48b90c7bbb39a42b1649c9f5cfa63",
+      "nativeBytes": 548
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stdout.gz",
+      "sha256": "55fdbeb12c01efad185a2c2d82b3230a9b1b63814c777079b0be94e9a2e98574",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-3.stdout",
+      "nativeSha256": "6a3700575b5b36e045e49671a5dc2d88e6291fd704de949137b0de44ee025831",
+      "nativeBytes": 548
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-0.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-1.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-2.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stderr.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stderr",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stdout.gz",
+      "sha256": "cd388a34ef68fcb672da4496483f75c23125273180acf09ed3575e1f4631d398",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/test-path-3.stdout",
+      "nativeSha256": "9c0f04c9ae19680707fb5ba10a5dfe09e8abd32b195a271571022a3cebdb6781",
+      "nativeBytes": 156
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stderr.gz",
+      "sha256": "05f054180e767432871e57ce5a255c7e98a7b5b1d709aec06843c1c0833a8aa6",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stderr",
+      "nativeSha256": "6d735ae94287905d8f298b962fc8479f6e0c534b34bba820e7eef1bdeff00128",
+      "nativeBytes": 118
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stdout.gz",
+      "sha256": "9ceffb7310338057cfe71a4ae1e2c98d2c485d81cdef906532a801f457a38d64",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-binding-controls.stdout",
+      "nativeSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "nativeBytes": 0
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-ci-result.json.gz",
+      "sha256": "1ae45b064a89591493a3ef5992722474012802d3c32e91b9f3c1142a04f79d2d",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/Hexalith.Platform/Hexalith.Platform/artifacts/tuple-ci/tuple-ci-result.json",
+      "nativeSha256": "52d6d36d5895a818b926af40f7804fa3b89e49747f4d6d47ba32c60e6a500807",
+      "nativeBytes": 3465547
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/_temp/platform-tuple-bootstrap/bootstrap.json.gz",
+      "sha256": "7ea0130e4ff6a78b5e05d6a0da2c937615b834b466b4cbe261895b08957d713e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/_temp/platform-tuple-bootstrap/bootstrap.json",
+      "nativeSha256": "7ac9ea728c1dd0176bb6d28a0f5847b5d4890a64c060194e1a04e3f03ddd01d3",
+      "nativeBytes": 549
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stderr.gz",
+      "sha256": "edf14ebc4ea6f068619e64af60c797374c2cecaf9fb9ab4e3b92ba7ed657a73c",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stderr",
+      "nativeSha256": "a60ad46fb764f0508afa1d8b3cf5c7784b5e24f073f73d7b4efb7e9bfa5a3834",
+      "nativeBytes": 4233
+    },
+    {
+      "path": "platform-pr-head-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stdout.gz",
+      "sha256": "adfc3a81a96c8ccb08555083fd0cb0f0fe2f865d1617f98ae160219251115687",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-head-tuple-artifact/_temp/platform-tuple-bootstrap/initialize.stdout",
+      "nativeSha256": "032fc074a4f504b8dfb5a65799ca7271e6411301d883d6ed75b8a9313d73fc0f",
+      "nativeBytes": 1751
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/actual-1-receipt.json.gz",
+      "sha256": "beb9a09b90f552e69f8d18598b43cc1ba21fdf101eb953285b88458825e49f61",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/actual-1-receipt.json",
+      "nativeSha256": "325e1175b15a9034daa5de9e54ee43807ef3fc3f591ea69479e47c78a0fa4838",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/actual-2-receipt.json.gz",
+      "sha256": "ff3745394ca44d31cc9a052342fb84c34d20ab2dd2dba7d7436d936b773552a0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/actual-2-receipt.json",
+      "nativeSha256": "88a3e25635ac717382c7e0b5a1615e4672bd3310ec3d77b4d05a83b1a4f94905",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/baseline-0-receipt.json.gz",
+      "sha256": "5d63466e3eaf46ac62a6a503000891eb279b8df48fa50ade93b1b2bf03fab6cd",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/baseline-0-receipt.json",
+      "nativeSha256": "3d9889efac4856bec805488bc30a7a07aa72cfb29a7f23dfb1922a07df8eda5f",
+      "nativeBytes": 537
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/default-consumer-3-receipt.json.gz",
+      "sha256": "b0de6a6cf1ec3446c60689af8d46b59a1c52d9ea898a6897106139a7ec40f1a9",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/default-consumer-3-receipt.json",
+      "nativeSha256": "6bd90a6e93179c546a8f2d1abbeee7b243b9a57539743468cc166906beb4e2fe",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/foreign-consumer-4-receipt.json.gz",
+      "sha256": "fc3ba165179feda0b8d756c5e480957f7b0cdd88858a2db01876affc40088c90",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/foreign-consumer-4-receipt.json",
+      "nativeSha256": "d951d320b32ddf8ef097d296228e6a4d8bd7e517342d497a8f55c888b5225618",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/result.json.gz",
+      "sha256": "f9e6c148760f4582be9ea03800261eaa0a51ea456aecd95c0059eb2f7136c7aa",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.0/catalog-builder-evidence/result.json",
+      "nativeSha256": "96a4a95051ce2644b26a8e52d3d4ec5e03de38e972a7a4e6579fe5d5a4617ca9",
+      "nativeBytes": 54461
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/actual-1-receipt.json.gz",
+      "sha256": "c3134b2cbd4e1ae52ffa754643837b63f6c9ad777c67118247bb78c1ca5b6cc7",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/actual-1-receipt.json",
+      "nativeSha256": "40f471c4288c94054e2246395c18dec8fbae19c01e221a1c633234a9897cffed",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/actual-2-receipt.json.gz",
+      "sha256": "6e4e4a8694aa3c6979164811cbd4a33c16b53484667b662911477548995853ff",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/actual-2-receipt.json",
+      "nativeSha256": "ae8c39d039ff91b7d8168d3fc7abead2974e717c256677c7db22b1cc4287c712",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/baseline-0-receipt.json.gz",
+      "sha256": "d14f13f14f6b446472b24022b8d2e5a9d44e08f60023ddd0cb2aa050b173fcff",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/baseline-0-receipt.json",
+      "nativeSha256": "701d36a409bdd10f53b7ec6edb0cfa81e535244e04e2457ce8c29bbef4775c7b",
+      "nativeBytes": 537
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/default-consumer-3-receipt.json.gz",
+      "sha256": "4d298b3b2523e5551a9cb2e8a020e4a2e0b3245f0ab754c2a6adbc833f6173d0",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/default-consumer-3-receipt.json",
+      "nativeSha256": "312c340413ca440ed65f0bc17d837de451d8343e55acb681143c46d6bd527156",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/foreign-consumer-4-receipt.json.gz",
+      "sha256": "e3a44effbcf823c7fd13dc95a7da406002cb418a963ffbbb9f5f5dd10ee34a7f",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/foreign-consumer-4-receipt.json",
+      "nativeSha256": "942e6e552b4e0c957524e24ee69f5c4f69cf64249980fb8d523f12301551fb8b",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/result.json.gz",
+      "sha256": "524290bc9546f72baa2f2f07d22bec3903cca6b07c72e6b063bfc6aae68070af",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.1/catalog-builder-evidence/result.json",
+      "nativeSha256": "eb5a9f4e53996f8a95deb19ea668f85ed70615f90d564df898e6406fe0c2564a",
+      "nativeBytes": 54461
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/actual-1-receipt.json.gz",
+      "sha256": "68663d0f3bd1b95e6b9fc4ff97647ffcb3e8e0a09326b5226ea2a532c3d70bcb",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/actual-1-receipt.json",
+      "nativeSha256": "86ee6393ff3241b4c66bdb9761d250f90f7a721879ef0e978d2ec4c95f64ed6e",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/actual-2-receipt.json.gz",
+      "sha256": "9162820bab7ae4ff1b0b026855402b2bbe34857e3377815adb51b56de9188882",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/actual-2-receipt.json",
+      "nativeSha256": "575d45145a7f74f2d68c9b40cc346bf217a1b5f6e6943aed2c1d7e740650869b",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/baseline-0-receipt.json.gz",
+      "sha256": "82e66bdf89a01bf879330522fc924a27f0231afbb771557559116a3dcdb75b89",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/baseline-0-receipt.json",
+      "nativeSha256": "2c127bd32a3741bed3ad079bcda7e93e51835e9fc220126c685fabacb21a2b55",
+      "nativeBytes": 537
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/default-consumer-3-receipt.json.gz",
+      "sha256": "e855b0363bb7c151a0f9dfe7c74a8595d214c07ed5e50a7936c26a6e5d873729",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/default-consumer-3-receipt.json",
+      "nativeSha256": "744713e95a7999d661fd0b85d2af10a0e4017cc044cef8f1bca172cf9fca47f6",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/foreign-consumer-4-receipt.json.gz",
+      "sha256": "59221e0ef26865b2a2bebcc0dba4fd07a1693ee4218d3aca331b93ba10a431eb",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/foreign-consumer-4-receipt.json",
+      "nativeSha256": "4ab7eed28e2320c30c390c875ddbb691e7f79cfa837351043d2d1148f54cc477",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/result.json.gz",
+      "sha256": "17d7335a257368ae1fa4a260ffb00601c9d8967cdae009ddca2ee7170d99a5e6",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.130.2/catalog-builder-evidence/result.json",
+      "nativeSha256": "a8fe46c483fd379a4e0ab89304f3e7e6776ebb1fa8ec6643e7e09704de60c696",
+      "nativeBytes": 54461
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/actual-1-receipt.json.gz",
+      "sha256": "c71ae27cba011dd3cf143fb3b7c5c83dab25326912b03d326668d5ac98635da1",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/actual-1-receipt.json",
+      "nativeSha256": "373c2979b6116893c6b0089f2f1978bfbd9f2c2364c91e5d524c5c08d3ac5608",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/actual-2-receipt.json.gz",
+      "sha256": "f4279db457290b3bb78835b05aa5c28ba025ab6a8a352e119ac5d396bb539717",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/actual-2-receipt.json",
+      "nativeSha256": "55eebf74a19fbe53cfa475337094daa1406a0c45e4dde2651c7938095c808512",
+      "nativeBytes": 4052
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/baseline-0-receipt.json.gz",
+      "sha256": "0aeaeaf36d1c411c57d17cac0daec514e0b0ffd85819d62d826f884c1c38fa0e",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/baseline-0-receipt.json",
+      "nativeSha256": "327132f5b1ce29a4257acdaec1c7c19d769c6a4360eac9cab602c3b74675a9df",
+      "nativeBytes": 537
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/default-consumer-3-receipt.json.gz",
+      "sha256": "2596c1ea8ff71fb39cdc9fb6f9c084dc6c3e41a164f190d3cc7e97d5bc1c5046",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/default-consumer-3-receipt.json",
+      "nativeSha256": "e3baac501d8514dd19b166da86ece024088244f048194c8ffa52754ae34ccfb5",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/foreign-consumer-4-receipt.json.gz",
+      "sha256": "b08da503425e1179e9f10146cca23a5eda3fdbaf1eba63e795c0e09a295aba21",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/foreign-consumer-4-receipt.json",
+      "nativeSha256": "1ed6d965aab1ad2252ce569cb447d0cd49b8282ba52db022e599fa5ec6b84af7",
+      "nativeBytes": 4192
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/result.json.gz",
+      "sha256": "cc237f49f1c7d90dd1918ec32cfcf3baa5083cd33cdf3394440b50687291dc28",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-builder-evidence/result.json",
+      "nativeSha256": "924872a878b37af12a6ee695d8e91928bb7683875bc5ed4c056e5e5d109e267a",
+      "nativeBytes": 54461
+    },
+    {
+      "path": "platform-pr-catalog/catalog-builder-consumer-binding-3.132.1/catalog-sdk-gates.json.gz",
+      "sha256": "5c4d4be52e2e5b91ade1adefe57c6ef49d8539a6d470f950d8ffcb2490a8aa21",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/platform-pr-catalog-artifacts/catalog-builder-consumer-binding-3.132.1/catalog-sdk-gates.json",
+      "nativeSha256": "7b81187c8f406a6f66b2527078178c6180c975cd89b96f958e8b39616a431c0d",
+      "nativeBytes": 221986
+    },
+    {
+      "path": "candidate-pair-preflight-refusal/command-01.log.gz",
+      "sha256": "1c0f141a49c48abb635f9a221b365db8a0169030e9e34feb0e2142c35f73eb7a",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-pair-preflight/.artifacts/sdk404-pair-identity/command-01.log",
+      "nativeSha256": "f596e37561ad9d8f0b49b1afd6fd16ff5f7fab2a3b76f6d9703be014dcacdaba",
+      "nativeBytes": 64
+    },
+    {
+      "path": "candidate-pair-preflight-refusal/command-02.log.gz",
+      "sha256": "d3867a180adbdf94dd1f55b426f4ab0385968ed90bb499eeb39357f014ddb67b",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-pair-preflight/.artifacts/sdk404-pair-identity/command-02.log",
+      "nativeSha256": "206fae28e63c9b76fdf5c1a669bc639e55624d379504e09982ddcb0766e8c326",
+      "nativeBytes": 81
+    },
+    {
+      "path": "candidate-pair-preflight-refusal/command-03.log.gz",
+      "sha256": "665aeb92d6b6534e894a5f8f1fa4a6151bd0c791a3219dc7fd54b6edaf58d679",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-pair-preflight/.artifacts/sdk404-pair-identity/command-03.log",
+      "nativeSha256": "e8bc762682ba04c5bebad5e9ee1ec716e553a1d824709082ed39d4d6b603bfa2",
+      "nativeBytes": 75
+    },
+    {
+      "path": "candidate-pair-preflight-refusal/result.json.gz",
+      "sha256": "ee0890b5d7a6c03493da2b47237c70cfd6572f5f2e3d39885d23c6b86bdb0112",
+      "nativePath": "/tmp/story49-publication-20261103-evyasum6/works-pair-preflight/.artifacts/sdk404-pair-identity/result.json",
+      "nativeSha256": "21929f6c8d64aa705758ecf33bce71a6770d7dfe79e1fe4b709d939334e30246",
+      "nativeBytes": 902
+    }
+  ],
+  "documents": [
+    {
+      "path": "README.md",
+      "sha256": "c2c8c1d235fdf4ec896688095ad49b637143b8f13d225af476fa7b7bf152bd21",
+      "bytes": 11744
+    },
+    {
+      "path": "handoff/platform-pr-source.diff",
+      "sha256": "e325126b0701f0f8667924aaf69a4f29803ffd5d03115ea8ddc0a7be6ef3f4bc",
+      "bytes": 29933
+    },
+    {
+      "path": "handoff/works-sdk404-pins-unapplied.patch",
+      "sha256": "b97c67b2b8d4254c5f53ae3406c5e0f3183b893f1dc51dd47158e576dc727fc0",
+      "bytes": 6980
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+--- a/Directory.Build.props
++++ b/Directory.Build.props
+@@ -45,7 +45,7 @@
+     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
+     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
+     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
+-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">4.0.0</HexalithEventStoreVersion>
++    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">4.0.4</HexalithEventStoreVersion>
+     <WorksSdkCandidateFeed Condition="'$(WorksSdkCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
+     <WorksPlatformCandidateFeed Condition="'$(WorksPlatformCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
+     <!-- Candidate archives are admitted only by an explicit verification invocation. Merely leaving a
+--- a/Directory.Packages.props
++++ b/Directory.Packages.props
+@@ -2,8 +2,8 @@
+   <PropertyGroup>
+     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
+-    <!-- Release restores published EventStore 4.0.0. Platform.Identity has no public package, so tests use its sibling project. -->
+-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">4.0.0</HexalithEventStoreVersion>
++    <!-- Release restores published EventStore 4.0.4. Platform.Identity has no public package, so tests use its sibling project. -->
++    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">4.0.4</HexalithEventStoreVersion>
+     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
+     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
+     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
+--- a/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj
++++ b/tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj
+@@ -9,7 +9,7 @@
+   <ItemGroup>
+     <AssemblyMetadata Include="WorksSelectedEventStoreVersion" Value="$(HexalithEventStoreVersion)" />
+     <AssemblyMetadata Include="WorksSelectedPartiesVersion" Value="$(HexalithPartiesVersion)" />
+-    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="4.0.0" />
++    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="4.0.4" />
+     <AssemblyMetadata Include="WorksAllowLocalEventStoreCandidate" Value="$(WorksAllowLocalEventStoreCandidate)" />
+     <PackageReference Include="Aspire.Hosting.Testing" />
+     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+--- a/tools/source-debug-dependencies.json
++++ b/tools/source-debug-dependencies.json
+@@ -4,7 +4,7 @@
+     "references/Hexalith.EventStore": {
+       "sourceRevision": "98a298a084ec6dedecf99e0abefd649051038376",
+       "releaseProperty": "HexalithEventStoreVersion",
+-      "releaseVersion": "4.0.0"
++      "releaseVersion": "4.0.4"
+     },
+     "references/Hexalith.PolymorphicSerializations": {
+       "sourceRevision": "bce4eb9f45c6b131b960ab4fa39e50ff01e51960",
+--- a/docs/development-assurance.md
++++ b/docs/development-assurance.md
+@@ -15,13 +15,16 @@
+ revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
+ 
+ The current EventStore source is `98a298a084ec6dedecf99e0abefd649051038376`.
+-Release pins public `4.0.0`, produced by `653124dced81830e932edb7738a78ee61104d55a`.
++Release pins public `4.0.4`, produced by `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`.
+ PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
+ one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
+ Release pins 1.19.8. The current source markers in the API and boundary records bind the consumed
+-EventStore checkout. All fourteen EventStore and both PolymorphicSerializations public archives
+-have verified exact version, owning repository/source metadata and signatures. Current source/package
+-identity preflight passes; full current Works source/runtime/parity acceptance remains pending.
++EventStore checkout. The nine EventStore 4.0.4 archives consumed by the candidate have verified
++exact versions, official repository/source metadata and signatures; their executed consumer DLLs
++match those archives. This does not extend the prior fourteen-archive 4.0.0 verification to 4.0.4.
++Both PolymorphicSerializations archives retain their separately verified 1.19.8 scope.
++The proposed 4.0.4 source/package pairing has not run the identity preflight after these pin changes;
++rerun it on final owner-published inputs. Full current Works source/runtime/parity acceptance remains pending.
+ Historical public-producer and live-proof revisions retain their original scope.
+ 
+ The unmapped source entry point explicitly selects Commons (including Http) and McpCli
+--- a/docs/eventstore-api-surface-constraints.md
++++ b/docs/eventstore-api-surface-constraints.md
+@@ -5,10 +5,13 @@
+ Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
+ The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
+ 
+-Current Release selects published EventStore `4.0.0` (tag `v4.0.0`, producer
+-`653124dced81830e932edb7738a78ee61104d55a`). The current source marker has separate scope.
+-All fourteen public archives have verified identity, repository/source metadata and signatures.
+-Current identity preflight passes; full Works runtime/parity acceptance remains pending.
++Current Release selects published EventStore `4.0.4` (tag `v4.0.4`, producer
++`326bfef884543cdbcaf96de7f4c4ad378dbad6d7`). The current source marker has separate scope.
++The nine 4.0.4 archives consumed by the candidate have verified exact identity, official
++repository/source metadata and signatures, with executed consumer DLLs matching their archives.
++This does not carry forward the prior fourteen-archive 4.0.0 verification. Identity preflight for
++the proposed 4.0.4 source/package pair has not run after these pin changes and remains required
++on final owner-published inputs; full Works runtime/parity acceptance remains pending.
+ Historical qualification records below retain their original package versions.
+ 
+ ## Story 4.14 published SDK consumer surface

@@ -1,0 +1,31 @@
+{
+  "status": "pending-official-owner-publication; no-tuple-acceptance",
+  "sdk": {
+    "version": "4.0.2",
+    "producer": "f06abada8dc3aab4a5fd240847fd680d515c98a5",
+    "alreadyPublic": true
+  },
+  "newBuildsPublication": null,
+  "requiredObservedFields": [
+    "producer.sourceRevision",
+    "producer.catalog.blob",
+    "producer.catalog.sha256",
+    "publication.version",
+    "publication.sourceRevision",
+    "publication.releaseTag",
+    "publication.catalogSha256",
+    "publication.archiveSha256",
+    "publication.toolingSha256",
+    "publication.inventorySha256",
+    "publication.inventoryUrl"
+  ],
+  "platformSelectionFiles": [
+    "eng/builds-tuple.json",
+    ".config/dotnet-tools.json",
+    "hexalith-platform.json"
+  ],
+  "liveAcceptedTupleUnchanged": true,
+  "liveWorksReleasePin": "4.0.0",
+  "canonicalFullPending": true,
+  "actualCiPending": true
+}

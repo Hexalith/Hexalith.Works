@@ -1,0 +1,506 @@
+diff --git a/.github/workflows/ci.yml b/.github/workflows/ci.yml
+index 0987285..6af9c61 100644
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ -51,6 +51,7 @@ jobs:
+         run: >-
+           git submodule update --init --
+           references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons
++          references/Hexalith.McpCli references/Hexalith.Memories
+           references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
+           references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+diff --git a/README.md b/README.md
+index 33d91df..1913f22 100644
+--- a/README.md
++++ b/README.md
+@@ -1,129 +1,131 @@
+-# Hexalith.Works
+-
+-Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform.
+-
+-## Local Debug development
+-
+-Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
+-
+-```bash
+-git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+-export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
+-dotnet restore Hexalith.Works.slnx -p:Configuration=Debug
+-dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
+-```
+-
+-Do not use recursive submodule initialization.
+-
+-Run the local source verification tier after initializing these dependencies:
+-
+-```bash
+-python3 scripts/verify-source-debug.py --artifacts-path /tmp/works-source-debug
+-```
+-
+-It checks the reviewed EventStore and PolymorphicSerializations source/Release-version pairs in
+-`tools/source-debug-dependencies.json`, then restores and compiles the full solution in explicit
+-Debug/source mode. A changed package pin, gitlink or checkout requires reviewing that pairing; the
+-gate never updates dependencies. It hashes Git-visible tracked/untracked source edits and checks their contents again after compilation,
+-so changed inputs cannot retain a passing result. Logs and `result.json` retain failed
+-commands as well as successful compilation. CI runs the same identity preflight with `--check-only`,
+-using Release/package evaluation without restoring or compiling the Debug graph. The local tier
+-complements CI's required Release/package validation; it does not run live Platform parity or authenticate package archives.
+-
+-The current EventStore source is six commits beyond `v3.128.3`; PolymorphicSerializations source is
+-exactly `v1.19.5`. These are explicitly reviewed development pairings, not a claim that the Debug
+-and Release producers have identical behavior. Re-run source characterization and the local gate
+-when changing the pairings. See the [development assurance closure](docs/development-assurance.md)
+-for the historical tooling retirements and validation boundaries.
+-
+-The deterministic certificate-refusal integration controls require Linux and the `openssl` executable
+-on `PATH`. Other providers remain inconclusive in the live proof; the native tests explicitly report
+-unsupported runners, and the repository's `failSkips` setting keeps those runs from qualifying.
+-
+-## CI Release validation
+-
+-CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
+-
+-The blocking `platform-parity` CI job runs Platform's canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. Run the same CI profile locally after initializing the dependencies above:
+-
+-```bash
+-bash scripts/verify-platform-parity-ci.sh --artifacts-path /tmp/works-platform-proof
+-```
+-
+-Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. Deterministic suites can exclude only the live classes whose required facts run in that same gate. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
+-
+-The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
+-
+-```bash
+-git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+-export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
+-dotnet restore Hexalith.Works.slnx
+-dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1
+-python3 scripts/pack-release-packages.py ./nupkgs 0.0.0-ci-test
+-python3 scripts/validate-nuget-packages.py ./nupkgs
+-python3 scripts/validate-consumer-package-references.py ./nupkgs
+-python3 -m unittest discover -s scripts/tests
+-
+-for project in \
+-  tests/Hexalith.Works.UnitTests \
+-  tests/Hexalith.Works.ArchitectureTests \
+-  tests/Hexalith.Works.PropertyTests \
+-  tests/Hexalith.Works.IntegrationTests; do
+-  dotnet test "$project" --configuration Release --no-build
+-done
+-```
+-
+-NuGet audit is enabled in all restore modes with `NuGetAuditMode=all`, so advisories of every severity are reported in the build log. Per the Hexalith.Builds CI/CD standard, `NU1901`-`NU1904` are exempt from the repository-wide warnings-as-errors policy: an advisory warns and does not fail the build, so a transitive advisory that cannot be upgraded immediately never blocks CI. Acknowledge or waive an individual advisory with `<NuGetAuditSuppress>` rather than disabling the audit.
+-
+-Release restore and compilation require the committed `HexalithEventStoreVersion` in `Directory.Packages.props`. An ambient environment variable or command-line override selecting a different SDK fails with `HXW0003`. Builds without restore also check resolved SDK versions and reject assets still using the default candidate cache. For isolated candidate verification, pass `-p:WorksAllowLocalEventStoreCandidate=true` explicitly with the intended version and feed configuration. The existing integration contract requires a `-story415.` candidate version; build admission alone does not qualify a producer. The opt-in admits the historical `.artifacts/story-4-14/feed` and `.artifacts/story-4-15/feed` directories when present and defaults to the separate `.artifacts/sdk-candidate-packages` cache. Ordinary restores ignore those feeds and that cache. Explicitly supplied NuGet sources and `RestorePackagesPath` overrides remain the caller's isolation responsibility; admission does not authenticate arbitrary pre-existing global-cache contents. Source Debug builds retain their existing version behavior.
+-
+-The release-tooling tests execute package-free `Build,Pack` solution targets and fresh-cache restore controls. They also compare the effective initialization, SDK selection and restore/build steps from the exact Builds commits selected by CI and release preparation. Initialize the root Builds submodule with its Git history before running `python3 -m unittest discover -s scripts/tests`; missing producer objects fail the compatibility check. With the Node.js version required by `package.json`, run `npm ci --ignore-scripts` first: the release-permission regression executes the locked GitHub plugin's success/failure hooks against an offline client that refuses issue and pull-request operations. The tooling CI job installs those same locked dependencies before running the suite.
+-
+-## Release packages
+-
+-`tools/release-packages.json` is the authoritative inventory. One semantic version publishes exactly these five packages:
+-
+-| Package ID | Purpose |
+-| --- | --- |
+-| `Hexalith.Works.Contracts` | Commands, events, models, ports, and value objects |
+-| `Hexalith.Works.Server` | Pure work-item decision core |
+-| `Hexalith.Works.Projections` | Read-model projection strategies |
+-| `Hexalith.Works.Reactor` | Pure cascade and resume translators |
+-| `Hexalith.Works.Testing` | Infrastructure-free test builders and markers |
+-
+-Hosts, AppHost resources, samples, service defaults, and test runners are never published.
+-
+-As checked against the NuGet.org flat-container indexes on 2026-09-20, all five package IDs are currently unpublished: `Hexalith.Works.Contracts` (HTTP 404), `Hexalith.Works.Server` (HTTP 404), `Hexalith.Works.Projections` (HTTP 404), `Hexalith.Works.Reactor` (HTTP 404), and `Hexalith.Works.Testing` (HTTP 404). Registry absence is status only; it is not publication authority.
+-
+-## Manual release prerequisites
+-
+-Release is operator-only through the `Release` workflow. Before an authorized dispatch, repository owners must configure all of the following:
+-
+-- A protected `production` environment with required reviewers and a `main`-only deployment policy. Both the
+-  publishing job and the post-publication verification job reference this environment. Verification always runs
+-  after the release job starts and does not re-read the mutable publication-freeze variable, so a later variable
+-  edit cannot suppress checks for an already-started publication. With required reviewers configured, expect
+-  **two** approval prompts in one release run: one before publication and one before verification.
+-- A repository-scoped `NUGET_USER` variable naming the NuGet.org publishing account, with a NuGet
+-  trusted-publisher policy matching this GitHub repository, the `release.yml` workflow, and the
+-  `production` environment. The workflow uses GitHub OIDC through `NuGet/login` to obtain its temporary
+-  `NUGET_API_KEY`; repository owners do not provision a long-lived API-key secret for this workflow.
+-- A repository-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` variable set to the exact string `true`.
+-- A successful push `CI` run for the exact current `main` commit.
+-
+-The workflow rejects a non-`main` or stale dispatch before requesting environment approval, fails before any NuGet write if any one of the five ID/version pairs already exists, and verifies that the release tag resolves to the dispatched commit and all five exact packages become readable afterward. Publication is never triggered by a push.
+-
+-Publication pushes exactly the manifest packages and their `.snupkg` symbol packages through
+-`scripts/push-release-packages.sh`, never a `*.nupkg` glob, so an unvalidated archive left in the output directory
+-can never be published. Packing first freezes the SHA-256 of all ten candidate archives in
+-`nupkgs/release-artifacts.sha256`; publication refuses any changed or extra candidate. `--skip-duplicate` is
+-deliberately absent: an ordinary version collision must fail loudly.
+-
+-**Partial-publication recovery.** NuGet has no transaction, so a failure part-way can leave some packages live and
+-immutable. The publisher retries an unchanged ledger-verified artifact up to three times in the same invocation
+-only after a fail-closed classifier recognizes a bounded transport failure, HTTP 408/429, or HTTP 5xx response.
+-Every 409 Conflict is a collision and fails, including one after an ambiguous attempt: local runner history cannot
+-authenticate the bytes stored remotely. The hosted runner and its candidate ledger are ephemeral, so retry
+-exhaustion or any 409 is not recoverable by rerunning the workflow or by reusing a local ledger. Do not delete
+-published packages or push different content at the incomplete version. Publish a new patch version that contains
+-all five packages, and leave the incomplete version unlisted so consumers never resolve it.
++# Hexalith.Works
++
++Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform.
++
++## Local Debug development
++
++Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), McpCli (contract declarations), Memories (Platform preparation contracts), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
++
++```bash
++git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
++export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
++dotnet restore Hexalith.Works.slnx -p:Configuration=Debug
++dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
++```
++
++Do not use recursive submodule initialization.
++
++Run the local source verification tier after initializing these dependencies:
++
++```bash
++python3 scripts/verify-source-debug.py --artifacts-path /tmp/works-source-debug
++```
++
++It checks the reviewed EventStore and PolymorphicSerializations source/Release-version pairs in
++`tools/source-debug-dependencies.json`, then restores and compiles the full solution in explicit
++Debug/source mode. A changed package pin, gitlink or checkout requires reviewing that pairing; the
++gate never updates dependencies. It hashes Git-visible tracked/untracked source edits and checks their contents again after compilation,
++so changed inputs cannot retain a passing result. Logs and `result.json` retain failed
++commands as well as successful compilation. CI runs the same identity preflight with `--check-only`,
++using Release/package evaluation without restoring or compiling the Debug graph. The local tier
++complements CI's required Release/package validation; it does not run live Platform parity or authenticate package archives.
++
++The manifest records the exact current EventStore and PolymorphicSerializations source revisions
++and their selected Release versions. These development pairings do not claim that the Debug
++and Release producers have identical behavior. Re-run source characterization and the local gate
++when changing the pairings. See the [development assurance closure](docs/development-assurance.md)
++for the historical tooling retirements and validation boundaries.
++
++The deterministic certificate-refusal integration controls require Linux and the `openssl` executable
++on `PATH`. Other providers remain inconclusive in the live proof; the native tests explicitly report
++unsupported runners, and the repository's `failSkips` setting keeps those runs from qualifying.
++
++## CI Release validation
++
++CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
++
++The blocking `platform-parity` CI job runs Platform's canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. Run the same CI profile locally after initializing the dependencies above:
++
++```bash
++bash scripts/verify-platform-parity-ci.sh --artifacts-path /tmp/works-platform-proof
++```
++
++For an independently obtained official SDK source export, add `--runtime-sdk-root /absolute/path/to/export`. The bootstrap copies it into the run-owned workspace and records an unknown checkout commit; the canonical verifier still requires its exact runtime/build inputs to match the selected public package producer and official release tag. This option does not select a different package version or qualify a candidate Builds catalog.
++
++Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. Deterministic suites can exclude only the live classes whose required facts run in that same gate. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
++
++The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
++
++```bash
++git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
++export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
++dotnet restore Hexalith.Works.slnx
++dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1
++python3 scripts/pack-release-packages.py ./nupkgs 0.0.0-ci-test
++python3 scripts/validate-nuget-packages.py ./nupkgs
++python3 scripts/validate-consumer-package-references.py ./nupkgs
++python3 -m unittest discover -s scripts/tests
++
++for project in \
++  tests/Hexalith.Works.UnitTests \
++  tests/Hexalith.Works.ArchitectureTests \
++  tests/Hexalith.Works.PropertyTests \
++  tests/Hexalith.Works.IntegrationTests; do
++  dotnet test "$project" --configuration Release --no-build
++done
++```
++
++NuGet audit is enabled in all restore modes with `NuGetAuditMode=all`, so advisories of every severity are reported in the build log. Per the Hexalith.Builds CI/CD standard, `NU1901`-`NU1904` are exempt from the repository-wide warnings-as-errors policy: an advisory warns and does not fail the build, so a transitive advisory that cannot be upgraded immediately never blocks CI. Acknowledge or waive an individual advisory with `<NuGetAuditSuppress>` rather than disabling the audit.
++
++Release restore and compilation require the committed `HexalithEventStoreVersion` in `Directory.Packages.props`. An ambient environment variable or command-line override selecting a different SDK fails with `HXW0003`. Builds without restore also check resolved SDK versions and reject assets still using the default candidate cache. For isolated candidate verification, pass `-p:WorksAllowLocalEventStoreCandidate=true` explicitly with the intended version and feed configuration. The existing integration contract requires a `-story415.` candidate version; build admission alone does not qualify a producer. The opt-in admits the historical `.artifacts/story-4-14/feed` and `.artifacts/story-4-15/feed` directories when present and defaults to the separate `.artifacts/sdk-candidate-packages` cache. Ordinary restores ignore those feeds and that cache. Explicitly supplied NuGet sources and `RestorePackagesPath` overrides remain the caller's isolation responsibility; admission does not authenticate arbitrary pre-existing global-cache contents. Source Debug builds retain their existing version behavior.
++
++The release-tooling tests execute package-free `Build,Pack` solution targets and fresh-cache restore controls. They also compare the effective initialization, SDK selection and restore/build steps from the exact Builds commits selected by CI and release preparation. Initialize the root Builds submodule with its Git history before running `python3 -m unittest discover -s scripts/tests`; missing producer objects fail the compatibility check. With the Node.js version required by `package.json`, run `npm ci --ignore-scripts` first: the release-permission regression executes the locked GitHub plugin's success/failure hooks against an offline client that refuses issue and pull-request operations. The tooling CI job installs those same locked dependencies before running the suite.
++
++## Release packages
++
++`tools/release-packages.json` is the authoritative inventory. One semantic version publishes exactly these five packages:
++
++| Package ID | Purpose |
++| --- | --- |
++| `Hexalith.Works.Contracts` | Commands, events, models, ports, and value objects |
++| `Hexalith.Works.Server` | Pure work-item decision core |
++| `Hexalith.Works.Projections` | Read-model projection strategies |
++| `Hexalith.Works.Reactor` | Pure cascade and resume translators |
++| `Hexalith.Works.Testing` | Infrastructure-free test builders and markers |
++
++Hosts, AppHost resources, samples, service defaults, and test runners are never published.
++
++As checked against the NuGet.org flat-container indexes on 2026-09-20, all five package IDs are currently unpublished: `Hexalith.Works.Contracts` (HTTP 404), `Hexalith.Works.Server` (HTTP 404), `Hexalith.Works.Projections` (HTTP 404), `Hexalith.Works.Reactor` (HTTP 404), and `Hexalith.Works.Testing` (HTTP 404). Registry absence is status only; it is not publication authority.
++
++## Manual release prerequisites
++
++Release is operator-only through the `Release` workflow. Before an authorized dispatch, repository owners must configure all of the following:
++
++- A protected `production` environment with required reviewers and a `main`-only deployment policy. Both the
++  publishing job and the post-publication verification job reference this environment. Verification always runs
++  after the release job starts and does not re-read the mutable publication-freeze variable, so a later variable
++  edit cannot suppress checks for an already-started publication. With required reviewers configured, expect
++  **two** approval prompts in one release run: one before publication and one before verification.
++- A repository-scoped `NUGET_USER` variable naming the NuGet.org publishing account, with a NuGet
++  trusted-publisher policy matching this GitHub repository, the `release.yml` workflow, and the
++  `production` environment. The workflow uses GitHub OIDC through `NuGet/login` to obtain its temporary
++  `NUGET_API_KEY`; repository owners do not provision a long-lived API-key secret for this workflow.
++- A repository-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` variable set to the exact string `true`.
++- A successful push `CI` run for the exact current `main` commit.
++
++The workflow rejects a non-`main` or stale dispatch before requesting environment approval, fails before any NuGet write if any one of the five ID/version pairs already exists, and verifies that the release tag resolves to the dispatched commit and all five exact packages become readable afterward. Publication is never triggered by a push.
++
++Publication pushes exactly the manifest packages and their `.snupkg` symbol packages through
++`scripts/push-release-packages.sh`, never a `*.nupkg` glob, so an unvalidated archive left in the output directory
++can never be published. Packing first freezes the SHA-256 of all ten candidate archives in
++`nupkgs/release-artifacts.sha256`; publication refuses any changed or extra candidate. `--skip-duplicate` is
++deliberately absent: an ordinary version collision must fail loudly.
++
++**Partial-publication recovery.** NuGet has no transaction, so a failure part-way can leave some packages live and
++immutable. The publisher retries an unchanged ledger-verified artifact up to three times in the same invocation
++only after a fail-closed classifier recognizes a bounded transport failure, HTTP 408/429, or HTTP 5xx response.
++Every 409 Conflict is a collision and fails, including one after an ambiguous attempt: local runner history cannot
++authenticate the bytes stored remotely. The hosted runner and its candidate ledger are ephemeral, so retry
++exhaustion or any 409 is not recoverable by rerunning the workflow or by reusing a local ledger. Do not delete
++published packages or push different content at the incomplete version. Publish a new patch version that contains
++all five packages, and leave the incomplete version unlisted so consumers never resolve it.
+diff --git a/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md b/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md
+index 5e2a4dd..a8e5121 100644
+--- a/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md
++++ b/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md
+@@ -894,3 +894,7 @@ No cutover checks or live parity lanes ran in that historical attempt: its prere
+ **Review pass 1 completed verification, 2026-10-21:** The complete full4 gate exited 0 at 12:40:16 UTC and the actual CI4 entry point exited 0 at 13:39:19 UTC. Each binds 32 persisted phases, eleven fleet starts and 439 runtime artifacts, with 110 Python checks, 255 supporting facts, retained readiness 1/1, recovery 4/4, historical 1/1, HA 1/1, mTLS 1/1 and shared rebuild 1/1; full passes both 114-test Platform suites and CI passes the 114-test Release suite. Every required lane has zero failures, skips or unexecuted tests. The actual future-date callback and all four frozen scenarios are mapped to named executed methods in the [matrix audit](evidence/story-4-9/verification/matrix-and-frozen-row-audit.json). The [retired-test audit](evidence/story-4-9/verification/retired-test-replacements.json) retains all 35 groups and maps 28 methods to durable compressed XML and hashes. Ordinary suites pass 589 unit, 3 property (300 generated cases), 275 architecture and 728 ordinary integration facts; all seven ordinary explicit exclusions passed in both complete gates. Focused checks pass 27 architecture/CI, 47 ownership/cancellation and fourteen restore cases both before and with the local adapter. Platform is based on `7b5548f0d308d27af9d5fda5b68c6b959c053185` plus seven executable overlays, public EventStore 3.126.0 producer is `fcf78d6cafb6c0c9f52dc350a9a09aff54ded288`, and Builds is `17d0c6ffec5fb3c8d8058e67cb85644460cb5256`. The pre-cutover and earlier attempt7 packets were rehashed unchanged. Agents Full remains expected-unavailable and is not counted as Works proof. Final independent review follows this acceptance audit.
+ 
+ **Hosted correction verification, 2026-10-21:** User-authorized commit `f8ad13632610348702c5157e8df3170e000c85cc` passed [push CI run 39674116771](https://github.com/Hexalith/Hexalith.Works/actions/runs/39674116771): ordinary Release build/tests, lint, toolchain and canonical parity are successful. Ordinary TRX records 589 unit, 3 property, 287 architecture and 749 integration passes, with exactly the seven explicit exclusions independently matched to executed passing hosted gate facts. The canonical coordinator accepts all eleven rows, all 44 proofs, complete rollback, required Release-only lanes and source/runtime/archive/launcher closure. The downloaded ordinary ZIP digest is `b536c9eeea83cb39987057799cda943c9fd1bafbfbd9ea37d000613ac13035ca`; parity ZIP digest is `3599ef630b435aa6b376afbd8abd86aacfa547129d648bc31947944de3a76cc8`. All 401 Works, 669 Platform, 114 fixture and 67 normalized linked fixture inputs match the fresh local full qualification. The local full run records base revision `6ef86e36eaeb9af0f306e3923cbde533d66e3872` plus the four exact corrections; hosted CI records their committed revision `f8ad13632610348702c5157e8df3170e000c85cc`. These recorded revisions differ; consumed source-file hashes match. The [packet](evidence/story-4-9/review-corrections-3-2026-10-21/README.md) preserves both original hosted ZIPs, logs, all TRX/XML, canonical acceptance, source equivalence and frozen-matrix audits. The implementation task is complete; final independent review remains.
++
++### Resumed qualification 2026-11-03
++
++The bounded [resumed qualification and publication handoff](evidence/story-4-9/resume-2026-11-03/README.md) retains the six nonqualifying full attempts, final focused controls, public SDK 4.0.2 candidate preparation and exact remaining owner publication steps. The accepted Builds tuple and Works Release pin remain unchanged. Story/sprint stay in progress and the final full/CI qualification task stays unchecked.
+diff --git a/docs/boundary-decision-record.md b/docs/boundary-decision-record.md
+index b07320d..3ab9fa4 100644
+--- a/docs/boundary-decision-record.md
++++ b/docs/boundary-decision-record.md
+@@ -1,6 +1,6 @@
+ # Works Boundary Decision Record
+ 
+-<!-- EventStore-current-source: 653124dced81830e932edb7738a78ee61104d55a -->
++<!-- EventStore-current-source: 98a298a084ec6dedecf99e0abefd649051038376 -->
+ 
+ Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
+ The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
+diff --git a/docs/development-assurance.md b/docs/development-assurance.md
+index e8c2845..7ddb3e0 100644
+--- a/docs/development-assurance.md
++++ b/docs/development-assurance.md
+@@ -14,7 +14,7 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
+ The script never stages files itself. The separate Architecture marker guard characterizes committed
+ revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
+ 
+-The current EventStore source is `653124dced81830e932edb7738a78ee61104d55a`.
++The current EventStore source is `98a298a084ec6dedecf99e0abefd649051038376`.
+ Release pins public `4.0.0`, produced by `653124dced81830e932edb7738a78ee61104d55a`.
+ PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
+ one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
+diff --git a/docs/eventstore-api-surface-constraints.md b/docs/eventstore-api-surface-constraints.md
+index 34a4806..1488151 100644
+--- a/docs/eventstore-api-surface-constraints.md
++++ b/docs/eventstore-api-surface-constraints.md
+@@ -1,6 +1,6 @@
+ # EventStore API Surface Constraints
+ 
+-<!-- EventStore-current-source: 653124dced81830e932edb7738a78ee61104d55a -->
++<!-- EventStore-current-source: 98a298a084ec6dedecf99e0abefd649051038376 -->
+ 
+ Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
+ The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
+diff --git a/scripts/tests/test_platform_parity_ci.py b/scripts/tests/test_platform_parity_ci.py
+index efc0698..babb65c 100644
+--- a/scripts/tests/test_platform_parity_ci.py
++++ b/scripts/tests/test_platform_parity_ci.py
+@@ -94,6 +94,11 @@ class PlatformParityBootstrapTests(unittest.TestCase):
+             self.assertEqual((selected / "apphost.cs").read_text(), "// synthetic source overlay\n")
+             self.assertEqual((selected / "references/Hexalith.Works").resolve(), works)
+             self.assertEqual((selected.parent / "works").resolve(), works)
++            for name in ("Hexalith.McpCli", "Hexalith.Memories"):
++                with self.subTest(dependency=name):
++                    self.assertEqual((selected / "references" / name).resolve(), works / "references" / name)
++                    self.assertEqual(environment[name.replace("Hexalith.", "Hexalith") + "Root"],
++                                     str(works / "references" / name))
+             self.assertEqual(Path(environment["HexalithEventStoreRoot"]).resolve(), Path(record["sdkRoot"]))
+             self.assertEqual((Path(record["sdkRoot"]) / "global.json").read_bytes(), (sdk / "global.json").read_bytes())
+             self.assertFalse((selected / "references/Not.Root.Declared").exists())
+@@ -109,6 +114,36 @@ class PlatformParityBootstrapTests(unittest.TestCase):
+             with self.assertRaises(FileExistsError):
+                 PARITY.bootstrap(works, artifacts)
+ 
++    def test_explicit_sdk_export_needs_no_local_tag_and_retains_unqualified_origin(self):
++        with tempfile.TemporaryDirectory() as directory:
++            works, sdk, _ = bootstrap_fixture(directory)
++            export = Path(directory) / "official-export"
++            shutil.copytree(sdk, export, ignore=shutil.ignore_patterns(".git"))
++            (export / "src").mkdir()
++            (export / "src/producer.cs").write_text("// exact official bytes are qualified by the owning verifier\n")
++            subprocess.run(["git", "-C", str(sdk), "tag", "-d", "v3.126.0"], check=True, capture_output=True)
++            command, environment, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
++            self.assertIsNone(record["sdkCommit"])
++            self.assertEqual(record["sdkOriginRoot"], str(export))
++            selected = Path(record["sdkRoot"])
++            self.assertEqual((selected / "src/producer.cs").read_bytes(), (export / "src/producer.cs").read_bytes())
++            self.assertFalse((selected / ".git").exists())
++            self.assertEqual((selected / "references/Hexalith.Builds").resolve(), works / "references/Hexalith.Builds")
++            self.assertEqual(environment["HexalithEventStoreRoot"], str(selected))
++            self.assertIn("--runtime-sdk-root", command)
++            self.assertEqual(record["status"], "bootstrap-validated; parity-incomplete")
++            self.assertFalse((export / "references").exists())
++
++    def test_incomplete_explicit_sdk_export_refuses_before_creating_evidence(self):
++        with tempfile.TemporaryDirectory() as directory:
++            works, _, _ = bootstrap_fixture(directory)
++            export = Path(directory) / "incomplete-export"
++            export.mkdir()
++            artifacts = Path(directory) / "attempt"
++            with self.assertRaisesRegex(ValueError, "Explicit SDK export"):
++                PARITY.bootstrap(works, artifacts, export)
++            self.assertFalse(artifacts.exists())
++
+     def test_missing_root_dependency_refuses_before_creating_evidence(self):
+         with tempfile.TemporaryDirectory() as directory:
+             root = Path(directory)
+diff --git a/scripts/verify-platform-parity-ci.py b/scripts/verify-platform-parity-ci.py
+index 0a626de..7e0a6b8 100644
+--- a/scripts/verify-platform-parity-ci.py
++++ b/scripts/verify-platform-parity-ci.py
+@@ -18,6 +18,8 @@ DEPENDENCIES = (
+     "Hexalith.AI.Tools",
+     "Hexalith.Builds",
+     "Hexalith.Commons",
++    "Hexalith.McpCli",
++    "Hexalith.Memories",
+     "Hexalith.EventStore",
+     "Hexalith.PolymorphicSerializations",
+     "Hexalith.Tenants",
+@@ -84,7 +86,7 @@ def link_roots(destination, sources, declarations):
+         target.symlink_to(source, target_is_directory=True)
+ 
+ 
+-def bootstrap(works, artifacts):
++def bootstrap(works, artifacts, runtime_sdk_root=None):
+     coordinators = coordinator_hashes()
+     paths = declared(works)
+     sources = {}
+@@ -100,7 +102,12 @@ def bootstrap(works, artifacts):
+     version = ET.parse(works / "Directory.Packages.props").findtext(".//HexalithEventStoreVersion")
+     if not version or not all(part.isdecimal() for part in version.split(".")) or len(version.split(".")) != 3:
+         raise ValueError("Parity requires a stable public EventStore version")
+-    sdk_commit = git(sources["Hexalith.EventStore"], "rev-parse", "v" + version + "^{commit}").decode().strip()
++    sdk_origin = runtime_sdk_root.resolve() if runtime_sdk_root is not None else None
++    if sdk_origin is not None and (not (sdk_origin / "src").is_dir() or not (sdk_origin / ".gitmodules").is_file()):
++        raise ValueError("Explicit SDK export lacks its source and root dependency declarations")
++    sdk_commit = None if sdk_origin is not None else git(
++        sources["Hexalith.EventStore"], "rev-parse", "v" + version + "^{commit}"
++    ).decode().strip()
+     artifacts.mkdir(parents=True, exist_ok=False)
+     workspace = artifacts / "workspace"
+     workspace.mkdir()
+@@ -118,12 +125,23 @@ def bootstrap(works, artifacts):
+         if hashlib.sha256(target.read_bytes()).hexdigest() != digest:
+             raise ValueError("Platform source changed during bootstrap: " + name)
+     sdk = workspace / "Hexalith.EventStore"
+-    sdk.mkdir()
+-    with tarfile.open(fileobj=io.BytesIO(git(sources["Hexalith.EventStore"], "archive", sdk_commit))) as archive:
+-        archive.extractall(sdk, filter="data")
+-    # git archive may apply export/eol attributes. Restore this known transformed file as its exact blob;
+-    # the canonical verifier independently qualifies every runtime/build input against the public producer.
+-    (sdk / "global.json").write_bytes(git(sources["Hexalith.EventStore"], "show", sdk_commit + ":global.json"))
++    if sdk_origin is not None:
++        # Copy only the selected export; dependency links belong to this run. This is not producer
++        # qualification: the owning verifier still requires exact official commit/tree/blob identities.
++        def ignore_export(path, names):
++            excluded = {"bin", "obj", "artifacts", ".artifacts"}
++            if Path(path) == sdk_origin:
++                excluded |= {".git", "references"}
++            return set(names) & excluded
++
++        shutil.copytree(sdk_origin, sdk, symlinks=True, ignore=ignore_export)
++    else:
++        sdk.mkdir()
++        with tarfile.open(fileobj=io.BytesIO(git(sources["Hexalith.EventStore"], "archive", sdk_commit))) as archive:
++            archive.extractall(sdk, filter="data")
++        # git archive may apply export/eol attributes. Restore this known transformed file as its exact blob;
++        # the canonical verifier independently qualifies every runtime/build input against the public producer.
++        (sdk / "global.json").write_bytes(git(sources["Hexalith.EventStore"], "show", sdk_commit + ":global.json"))
+     selected_sources = sources | {"Hexalith.EventStore": sdk, "Hexalith.Works": works}
+     link_roots(sdk, selected_sources, declared(sdk))
+     link_roots(selected_platform, selected_sources, declared(selected_platform))
+@@ -141,6 +159,7 @@ def bootstrap(works, artifacts):
+         "platformSourceFiles": original,
+         "sdkVersion": version,
+         "sdkCommit": sdk_commit,
++        "sdkOriginRoot": str(sdk_origin) if sdk_origin is not None else None,
+         "sdkRoot": str(sdk),
+         "platformRoot": str(execution_root),
+         "platformSourceBinding": str(binding),
+@@ -151,6 +170,8 @@ def bootstrap(works, artifacts):
+         "HexalithBuildsRoot": str(sources["Hexalith.Builds"]),
+         "HexalithEventStoreRoot": str(sdk),
+         "HexalithCommonsRoot": str(sources["Hexalith.Commons"]),
++        "HexalithMcpCliRoot": str(sources["Hexalith.McpCli"]),
++        "HexalithMemoriesRoot": str(sources["Hexalith.Memories"]),
+         "HexalithPartiesRoot": str(sources["Hexalith.Parties"]),
+         "HexalithTenantsRoot": str(sources["Hexalith.Tenants"]),
+         "HexalithPolymorphicSerializationsRoot": str(sources["Hexalith.PolymorphicSerializations"]),
+@@ -270,9 +291,16 @@ def main():
+         action="store_true",
+         help="Validate isolated inputs and canonical CLI only; never qualifies parity",
+     )
++    parser.add_argument(
++        "--runtime-sdk-root", type=Path,
++        help="Exact SDK filesystem export; canonical public-producer qualification remains mandatory",
++    )
+     args = parser.parse_args()
+     artifacts = args.artifacts_path.resolve()
+-    command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts)
++    if args.runtime_sdk_root is None:
++        command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts)
++    else:
++        command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts, args.runtime_sdk_root)
+     if args.bootstrap_only:
+         subprocess.run(command[:2] + ["--help"], env=environment, check=True)
+         print("Bootstrap validated; parity remains incomplete.")
+diff --git a/tests/Hexalith.Works.ArchitectureTests/FitnessTests/CiCdConfigurationTests.cs b/tests/Hexalith.Works.ArchitectureTests/FitnessTests/CiCdConfigurationTests.cs
+index 3748aea..cf5c53b 100644
+--- a/tests/Hexalith.Works.ArchitectureTests/FitnessTests/CiCdConfigurationTests.cs
++++ b/tests/Hexalith.Works.ArchitectureTests/FitnessTests/CiCdConfigurationTests.cs
+@@ -45,7 +45,7 @@ public sealed class CiCdConfigurationTests
+         job.ShouldNotContain("--recursive", Case.Sensitive);
+         job.ShouldNotContain("--remote", Case.Sensitive);
+         job.ShouldNotMatch(@"(?m)^    if:");
+-        foreach (string dependency in new[] { "AI.Tools", "Builds", "Commons", "EventStore", "PolymorphicSerializations", "Tenants", "Parties", "Platform" })
++        foreach (string dependency in new[] { "AI.Tools", "Builds", "Commons", "McpCli", "Memories", "EventStore", "PolymorphicSerializations", "Tenants", "Parties", "Platform" })
+             job.ShouldContain("references/Hexalith." + dependency, Case.Sensitive);
+         string bootstrap = Read(root, "scripts/verify-platform-parity-ci.py");
+         bootstrap.ShouldContain("eng/verify-works-host.sh", Case.Sensitive);
+diff --git a/tools/source-debug-dependencies.json b/tools/source-debug-dependencies.json
+index 4aa4f18..9a847f1 100644
+--- a/tools/source-debug-dependencies.json
++++ b/tools/source-debug-dependencies.json
+@@ -2,7 +2,7 @@
+   "schemaVersion": 1,
+   "dependencies": {
+     "references/Hexalith.EventStore": {
+-      "sourceRevision": "653124dced81830e932edb7738a78ee61104d55a",
++      "sourceRevision": "98a298a084ec6dedecf99e0abefd649051038376",
+       "releaseProperty": "HexalithEventStoreVersion",
+       "releaseVersion": "4.0.0"
+     },

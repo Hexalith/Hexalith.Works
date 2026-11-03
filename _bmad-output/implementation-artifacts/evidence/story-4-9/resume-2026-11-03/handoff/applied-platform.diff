@@ -1,0 +1,317 @@
+diff --git a/DaprComponents/accesscontrol.yaml b/DaprComponents/accesscontrol.yaml
+index 102373d0..0547d759 100644
+--- a/DaprComponents/accesscontrol.yaml
++++ b/DaprComponents/accesscontrol.yaml
+@@ -37,9 +37,8 @@ spec:
+           - name: /api/v1/commands/status/*
+             httpVerb: ['GET']
+             action: allow
+-          - name: /api/v1/commands/status/workload/*/*
+-            httpVerb: ['GET']
+-            action: allow
++          # Dapr's scalar wildcard trie denies the two-parameter workload status route.
++          # Keep that denial; a nested scalar declaration also fails finite catalog admission.
+           - name: /api/v1/streams/read
+             httpVerb: ['POST']
+             action: allow
+diff --git a/docs/works-host-parity.md b/docs/works-host-parity.md
+index dfbc22e6..49ab2819 100644
+--- a/docs/works-host-parity.md
++++ b/docs/works-host-parity.md
+@@ -3,6 +3,10 @@
+ Current Development startup also requires the [private owner catalog profile](works-development-catalog-profile.md).
+ The canonical proof supplies it before composition; retained state never receives automatically regenerated digest material.
+ 
++The EventStore receiver withdraws the nested scalar workload-status grant: Dapr 1.18 trie semantics already deny the compiled two-parameter status endpoint under that spelling. Human status and the other finite grants remain; the unmatched one-segment workload prefix is now denied too. This narrows that unmatched path and does not claim identical decisions for every URI.
++
++The explicit SDK 4.0.2 capability branches support preparation with its published trusted-effects controller annotation. They do not select a new catalog or grant Builds tuple acceptance; owner publication and fresh canonical full/CI proofs remain required before changing the accepted consumer pins.
++
+ ## Canonical local and CI profiles
+ 
+ `eng/verify-works-host.sh --profile full` is the default local gate: source Debug and public-package Release consumer checks, followed by every explicit live R1–R11 proof and complete-fleet rollback. `--profile ci` uses only Release/public-package consumer checks and Release/package Agents scaffold probes, as required by the Hexalith CI baseline. The explicitly accepted test-only source exceptions are unpublished Platform.Identity, Platform.Composition, conditional Platform.Works.Runtime and the eleven linked Parties authority/query sources compiled into Works IntegrationTests. Parties.Client and Parties.Contracts remain catalog-selected public NuGet packages, and `linkedFixtureSources` binds the exact linked authority/query bytes from `HexalithPartiesRoot`; the Composition exception is hash-bound from the Platform tree the consumer actually compiles (`PlatformWorksRuntimeRoot`), including its linked `DaprSelfHostedMtls.cs`, not from the Works dependency copy. Runtime SDK executables still build in Release from independently qualified exact public producer source; their external dependencies use packages.
+@@ -11,6 +15,8 @@ The Builds catalog (`HexalithDaprRuntimeVersion` 1.18.7, `HexalithDaprCliVersion
+ 
+ Both profiles execute the same live recovery, callback, historical lifecycle/security, restart, HA, mTLS, shared rebuild and retained-fleet rollback path. Both retain public producer qualification and final source, fixture, archive, runtime and launcher closure. A CI profile does not weaken an R1–R11 proof or satisfy source Debug conformance: its ledger records `profile.name=ci`, only `Release` in consumer configurations/checks/dependency modes, `agentsConfiguration=Release`, and source conformance as not requested. It never records an absent Debug check as passed. `--prepare-only` remains nonqualifying in either profile. Both still require status `passed-disposable-synthetic-parity-and-rollback`, all 44 proof kinds and complete rollback.
+ 
++Platform model tests prepare the selected Works owner through its real build. Their child build inherits the parent test build's selected configuration, SDK source root/version, source/package switches and artifacts root. Parent and child explicitly select the same SDK and serializer source switches, including for a direct `--runtime-sdk-root` invocation with conflicting ambient settings. Reusing that output context preserves the SDK's embedded debug paths and exact loaded assembly bytes; matching version strings alone is insufficient. The SDK's loaded-module and exact-byte checks remain mandatory.
++
+ Agents Full component probes receive the same selected configuration through `verify-agents-host.sh` and `ext-host-1/verify_full.py`. Their custody and EventStore guard `dotnet test` calls explicitly select that configuration and its matching source/package flags; CI never relies on the implicit Debug default. Component evidence records the actual configuration and dependency mode, and each suite retains its exact `command.json`. Release attempt identity includes that mode, so a retained Debug component attempt cannot qualify a Release request. The default Debug attempt identity remains compatible with historical local attempts. These nested helpers and their regression tests are explicitly hash-bound before execution and checked at final closure.
+ 
+ Fixture binding includes the complete IntegrationTests and Testing project inputs, copied golden resources,
+diff --git a/eng/test_verify_works_host.py b/eng/test_verify_works_host.py
+index c92470e0..5fb77679 100644
+--- a/eng/test_verify_works_host.py
++++ b/eng/test_verify_works_host.py
+@@ -153,10 +153,14 @@ class WorksEvidenceGateTests(unittest.TestCase):
+                 self.assertEqual(command[command.index('-c') + 1], 'Release')
+                 self.assertIn('-p:UseHexalithProjectReferences=false', command)
+                 self.assertIn('-p:UseNuGetDeps=true', command)
++                self.assertIn('-p:HexalithEventStoreFromSource=false', command)
++                self.assertIn('-p:HexalithPolymorphicSerializationsFromSource=false', command)
+                 self.assertNotIn('-p:UseHexalithProjectReferences=true', command)
+         debug = verify_works_host.consumer_build_command('consumer.csproj', 'Debug', VERSION)
+         self.assertIn('-p:UseHexalithProjectReferences=true', debug)
+         self.assertIn('-p:UseNuGetDeps=false', debug)
++        self.assertIn('-p:HexalithEventStoreFromSource=true', debug)
++        self.assertIn('-p:HexalithPolymorphicSerializationsFromSource=true', debug)
+ 
+     def test_r10_points_at_the_current_workload_policy_and_attaches_all_live_commands(self):
+         self.assertEqual(ROWS['R10'][3], 'src/Hexalith.Works/Runtime/WorksDomainAdapters.cs')
+@@ -289,7 +293,8 @@ class WorksEvidenceGateTests(unittest.TestCase):
+                 self.assertIn('-p:UseHexalithProjectReferences=false', entry['command'])
+                 self.assertIn('-p:UseNuGetDeps=true', entry['command'])
+ 
+-    def run_until_live_lanes(self, runtime_bytes, isolated_hash=None, finish=False, final_error=None, observed_runtime_envs=None, profile='ci'):
++    def run_until_live_lanes(self, runtime_bytes, isolated_hash=None, finish=False, final_error=None,
++                            observed_runtime_envs=None, profile='ci', observed_model_envs=None, runtime_sdk_root=None):
+         """Drive the real gate sequence through toolchain qualification and optionally final acceptance."""
+         works = self.directory()
+         for _, _, _, consumer in ROWS.values():
+@@ -303,13 +308,15 @@ class WorksEvidenceGateTests(unittest.TestCase):
+         qualified = hashlib.sha256(b'qualified runtime').hexdigest()
+         pins = {'daprCli': '1.18.2', 'daprRuntime': '1.18.7', 'linuxAmd64DaprdSha256': qualified,
+                 'catalog': str(platform / verify_works_host.CATALOG), 'catalogSha256': DIGEST}
+-        args = type('Args', (), {'works_root': works, 'runtime_sdk_root': None, 'artifacts_path': artifacts,
++        args = type('Args', (), {'works_root': works, 'runtime_sdk_root': runtime_sdk_root, 'artifacts_path': artifacts,
+                                 'prepare_only': False, 'profile': profile})()
+         snapshot = {'root': str(works), 'commit': 'c', 'sourceFiles': {}, 'inventorySha256': 'i'}
+         producers = {package: {'version': VERSION} for _, package, _, _ in ROWS.values()} | {'Hexalith.EventStore.Client': {'version': VERSION}}
+ 
+         def command(arguments, **kwargs):
+             name = Path(kwargs['stdout'].name).stem
++            if observed_model_envs is not None and name in ('platform-tests-debug', 'platform-tests-release'):
++                observed_model_envs.append((name, kwargs['env']))
+             if observed_runtime_envs is not None and verify_works_host.target_commands([{'name': name}]):
+                 observed_runtime_envs.append(kwargs['env'])
+             if verify_works_host.target_commands([{'name': name}]) and not finish:
+@@ -354,6 +361,9 @@ class WorksEvidenceGateTests(unittest.TestCase):
+                 patch('works_toolchain.subprocess.check_output', side_effect=['1.18.7', 'CLI version: 1.18.2\nRuntime version: 1.18.7']), \
+                 patch.dict(os.environ, {'WORKS_PLATFORM_DAPRD': str(runtime)}), \
+                 patch('verify_works_host.run_owned', side_effect=command):
++            final_checks.enter_context(patch('verify_works_host.runtime_source_snapshot',
++                                             side_effect=lambda root: snapshot | {'root': str(root)}))
++            final_checks.enter_context(patch('verify_works_host.qualify_runtime_source', return_value={}))
+             for target, value in (('require_identical_runtime', {}), ('retained_works_host.prepare', {}),
+                                   ('verify_host_records', []), ('isolated_daprd.verify', {})):
+                 final_checks.enter_context(patch('verify_works_host.' + target, return_value=value))
+@@ -369,6 +379,40 @@ class WorksEvidenceGateTests(unittest.TestCase):
+                     outcomes.assert_not_called()
+         return json.loads((artifacts / 'ledger.json').read_text()), artifacts, qualified
+ 
++    def test_model_owner_preparation_reuses_the_parent_sdk_build_context_in_both_profiles(self):
++        for profile, explicit_sdk in (('full', False), ('full', True), ('ci', False), ('ci', True)):
++            observed = []
++            sdk = self.directory() / 'selected-sdk' if explicit_sdk else None
++            default_sdk = Path(verify_works_host.__file__).resolve().parents[1] / 'references/Hexalith.EventStore'
++            expected_sdk = sdk or default_sdk
++            with self.subTest(profile=profile, explicit_sdk=explicit_sdk), patch.dict(os.environ, {
++                    'ArtifactsPath': '/unrelated/output', 'UseArtifactsOutput': 'false',
++                    'Configuration': 'Custom', 'Version': '0.0.1', 'MinVerVersionOverride': '0.0.1',
++                    'HexalithEventStoreVersion': '0.0.1', 'UseHexalithProjectReferences': 'invalid',
++                    'HexalithEventStoreRoot': '/unrelated/sdk', 'HexalithEventStoreFromSource': 'invalid',
++                    'HexalithPolymorphicSerializationsFromSource': 'invalid',
++                    'UseNuGetDeps': 'invalid'}):
++                ledger, _, _ = self.run_until_live_lanes(b'qualified runtime', profile=profile,
++                                                       observed_model_envs=observed, runtime_sdk_root=sdk)
++            self.assertEqual(len(observed), 2 if profile == 'full' else 1)
++            for name, environment in observed:
++                configuration = 'Debug' if name.endswith('debug') else 'Release'
++                output = Path(ledger['platformTestsArtifacts']) / configuration.lower()
++                self.assertEqual(environment['ArtifactsPath'], str(output))
++                self.assertEqual(environment['UseArtifactsOutput'], 'true')
++                self.assertEqual(environment['Configuration'], configuration)
++                for key in ('Version', 'MinVerVersionOverride', 'HexalithEventStoreVersion'):
++                    self.assertEqual(environment[key], VERSION)
++                source = 'true' if configuration == 'Debug' else 'false'
++                self.assertEqual(environment['UseHexalithProjectReferences'], source)
++                self.assertEqual(environment['HexalithEventStoreFromSource'], source)
++                self.assertEqual(environment['HexalithPolymorphicSerializationsFromSource'], source)
++                self.assertEqual(environment['HexalithEventStoreRoot'], str(expected_sdk))
++                self.assertEqual(environment['UseNuGetDeps'], 'false' if configuration == 'Debug' else 'true')
++                self.assertEqual(environment['Platform__Works__SourceRoot'], ledger['worksConsumerSource']['root'])
++                build = next(row for row in ledger['commands'] if row['name'] == name.replace('tests-', 'tests-build-'))
++                self.assertIn('-p:HexalithEventStoreRoot=' + str(expected_sdk), build['command'])
++
+     def test_consumer_source_roots_override_ambient_roots_and_match_the_linked_fixture_binding(self):
+         alternate = self.directory()
+         environment = {'HexalithPartiesRoot': str(alternate / 'Parties'),
+diff --git a/eng/verify_works_host.py b/eng/verify_works_host.py
+index eb4e08e0..5aba6cc2 100644
+--- a/eng/verify_works_host.py
++++ b/eng/verify_works_host.py
+@@ -72,13 +72,28 @@ def consumer_build_command(project, configuration, version, output=None, extra=(
+                "-p:NuGetAudit=false", "-p:Version=" + version, "-p:MinVerVersionOverride=" + version,
+                "-p:MSBuildWarningsAsErrors=MSB3277",
+                "-p:UseHexalithProjectReferences=" + ("true" if configuration == "Debug" else "false"),
+-               "-p:UseNuGetDeps=" + ("false" if configuration == "Debug" else "true")]
++               "-p:UseNuGetDeps=" + ("false" if configuration == "Debug" else "true"),
++               "-p:HexalithEventStoreFromSource=" + ("true" if configuration == "Debug" else "false"),
++               "-p:HexalithPolymorphicSerializationsFromSource=" + ("true" if configuration == "Debug" else "false")]
+     if output:
+         command += ["--artifacts-path", str(output)]
+     command += ["-p:AspireUseCliBundle=true"] if project.endswith(".cs") else ["-m:1"]
+     return command + list(extra)
+ 
+ 
++def consumer_model_environment(works, sdk_root, configuration, version, output):
++    """Keep selected-child preparation on the loaded SDK's actual compilation and output context."""
++    return os.environ.copy() | {
++        "Platform__Works__SourceRoot": str(works), "ArtifactsPath": str(output), "UseArtifactsOutput": "true",
++        "Configuration": configuration, "Version": version, "MinVerVersionOverride": version,
++        "HexalithEventStoreVersion": version, "HexalithEventStoreRoot": str(sdk_root),
++        "UseHexalithProjectReferences": "true" if configuration == "Debug" else "false",
++        "UseNuGetDeps": "false" if configuration == "Debug" else "true",
++        "HexalithEventStoreFromSource": "true" if configuration == "Debug" else "false",
++        "HexalithPolymorphicSerializationsFromSource": "true" if configuration == "Debug" else "false",
++    }
++
++
+ def sha256(path):
+     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+ 
+@@ -1087,6 +1102,7 @@ def run_verification(args):
+     profile = verification_profile(getattr(args, "profile", "full"))
+     works = args.works_root.resolve()
+     runtime_sdk = args.runtime_sdk_root.resolve() if args.runtime_sdk_root else works / "references/Hexalith.EventStore"
++    model_sdk = runtime_sdk if args.runtime_sdk_root else platform / "references/Hexalith.EventStore"
+     artifacts = args.artifacts_path.resolve() if args.artifacts_path else Path(tempfile.mkdtemp(prefix="works-platform-proof-"))
+     if artifacts.exists() and any(artifacts.iterdir()):
+         raise ValueError("Artifacts directory must be empty; existing evidence cannot be reused or overwritten")
+@@ -1172,11 +1188,12 @@ def run_verification(args):
+         for configuration in profile["consumerConfigurations"]:
+             build("platform-tests-build-" + configuration.lower(), "tests/Hexalith.Platform.Works.Tests/Hexalith.Platform.Works.Tests.csproj", configuration, platform,
+                   platform_test_output / configuration.lower(),
+-                  extra=["-p:HexalithEventStoreRoot=" + str(runtime_sdk), "-p:HexalithEventStoreVersion=" + version] if args.runtime_sdk_root is not None else [])
++                  extra=["-p:HexalithEventStoreRoot=" + str(model_sdk), "-p:HexalithEventStoreVersion=" + version])
+             executable = platform_test_output / configuration.lower() / "bin/Hexalith.Platform.Works.Tests" / configuration.lower() / "Hexalith.Platform.Works.Tests"
+             xml = artifacts / ("platform-" + configuration.lower() + ".xml")
+             run("platform-tests-" + configuration.lower(), [executable, "-noLogo", "-result-xml", xml],
+-                environment=os.environ.copy() | {"Platform__Works__SourceRoot": str(works)})
++                environment=consumer_model_environment(
++                    works, model_sdk, configuration, version, platform_test_output / configuration.lower()))
+             summary["checks"][configuration] = require_passed_tests(xml)
+             if configuration == "Debug":
+                 summary["platformDebugSdkAssemblies"] = {path.name: sha256(path) for path in
+diff --git a/src/Hexalith.Platform.CatalogBuilder/Hexalith.Platform.CatalogBuilder.csproj b/src/Hexalith.Platform.CatalogBuilder/Hexalith.Platform.CatalogBuilder.csproj
+index f1536bf0..abf7eb7b 100644
+--- a/src/Hexalith.Platform.CatalogBuilder/Hexalith.Platform.CatalogBuilder.csproj
++++ b/src/Hexalith.Platform.CatalogBuilder/Hexalith.Platform.CatalogBuilder.csproj
+@@ -1,6 +1,6 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+   <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><IsPackable>false</IsPackable><JsonSerializerIsReflectionEnabledByDefault>true</JsonSerializerIsReflectionEnabledByDefault></PropertyGroup>
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' != 'true' and ('$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or $([System.Text.RegularExpressions.Regex]::IsMatch('$(HexalithEventStoreVersion)', '^3\.130\.[012](?:\.0)?(?:\+[0-9A-Za-z.-]+)?$')))">
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' != 'true' and ('$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2' or $([System.Text.RegularExpressions.Regex]::IsMatch('$(HexalithEventStoreVersion)', '^3\.130\.[012](?:\.0)?(?:\+[0-9A-Za-z.-]+)?$')))">
+     <DefineConstants>$(DefineConstants);HEXALITH_SCOPED_CONSUMER_BINDING</DefineConstants>
+   </PropertyGroup>
+   <Import Project="$(PlatformCatalogBindings)" Condition="'$(PlatformCatalogBindings)' != ''" />
+diff --git a/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj b/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj
+index 89c32141..9a797453 100644
+--- a/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj
++++ b/src/Hexalith.Platform.Composition/Hexalith.Platform.Composition.csproj
+@@ -12,8 +12,8 @@
+     <HexalithMemoriesPreparationRoot Condition="'$(HexalithMemoriesPreparationRoot)' == ''">$(MSBuildThisFileDirectory)../../references/Hexalith.Memories</HexalithMemoriesPreparationRoot>
+   </PropertyGroup>
+   <!-- Qualify exact SDK cohorts; future packages remain unqualified. -->
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.129.0' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_CATALOG_SDK</DefineConstants></PropertyGroup>
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_V2_CATALOG</DefineConstants></PropertyGroup>
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.129.0' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_CATALOG_SDK</DefineConstants></PropertyGroup>
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_V2_CATALOG</DefineConstants></PropertyGroup>
+   <ItemGroup Condition="'$(UseHexalithProjectReferences)' == 'true'">
+     <ProjectReference Include="$(HexalithTenantPreparationRoot)/src/Hexalith.Tenants.Contracts/Hexalith.Tenants.Contracts.csproj" />
+     <ProjectReference Include="$(HexalithMemoriesPreparationRoot)/src/Hexalith.Memories.Contracts/Hexalith.Memories.Contracts.csproj" />
+diff --git a/src/Hexalith.Platform.EventStoreHost/Hexalith.Platform.EventStoreHost.csproj b/src/Hexalith.Platform.EventStoreHost/Hexalith.Platform.EventStoreHost.csproj
+index 81b34dbc..ead39077 100644
+--- a/src/Hexalith.Platform.EventStoreHost/Hexalith.Platform.EventStoreHost.csproj
++++ b/src/Hexalith.Platform.EventStoreHost/Hexalith.Platform.EventStoreHost.csproj
+@@ -13,9 +13,9 @@
+   <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true'">
+     <DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_SOURCE_CATALOG</DefineConstants>
+   </PropertyGroup>
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '4.0.0'">
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2'">
+     <DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_TECHNICAL_CATALOG_SDK</DefineConstants>
+   </PropertyGroup>
+   <!-- Qualify exact SDK cohorts; future packages remain unqualified. -->
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.129.0' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_CATALOG_SDK</DefineConstants></PropertyGroup>
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.129.0' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_CATALOG_SDK</DefineConstants></PropertyGroup>
+ </Project>
+diff --git a/tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj b/tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj
+index 60954e4c..f5918b04 100644
+--- a/tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj
++++ b/tests/Hexalith.Platform.Composition.Tests/Hexalith.Platform.Composition.Tests.csproj
+@@ -2,8 +2,8 @@
+   <PropertyGroup><IsPackable>false</IsPackable><OutputType>Exe</OutputType></PropertyGroup>
+   <PropertyGroup><HexalithPartiesRoot Condition="'$(HexalithPartiesRoot)' == ''">$(MSBuildThisFileDirectory)../../references/Hexalith.Parties</HexalithPartiesRoot></PropertyGroup>
+   <!-- Qualify exact SDK cohorts; future packages remain unqualified. -->
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.129.0' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_CATALOG_SDK</DefineConstants></PropertyGroup>
+-  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_V2_CATALOG</DefineConstants></PropertyGroup>
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.129.0' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_CATALOG_SDK</DefineConstants></PropertyGroup>
++  <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true' or '$(HexalithEventStoreVersion)' == '3.130.0' or '$(HexalithEventStoreVersion)' == '3.130.1' or '$(HexalithEventStoreVersion)' == '3.130.2' or '$(HexalithEventStoreVersion)' == '3.132.1' or '$(HexalithEventStoreVersion)' == '3.132.2' or '$(HexalithEventStoreVersion)' == '3.133.0' or '$(HexalithEventStoreVersion)' == '4.0.0' or '$(HexalithEventStoreVersion)' == '4.0.2'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_V2_CATALOG</DefineConstants></PropertyGroup>
+   <!-- Source-only owner parity controls remain available alongside native preparation in both modes. -->
+   <PropertyGroup Condition="'$(UseHexalithProjectReferences)' == 'true'"><DefineConstants>$(DefineConstants);HEXALITH_PLATFORM_SOURCE_CATALOG</DefineConstants></PropertyGroup>
+   <ItemGroup>
+diff --git a/tests/Hexalith.Platform.Works.Tests/WorksDaprPolicyTests.cs b/tests/Hexalith.Platform.Works.Tests/WorksDaprPolicyTests.cs
+index fb1c25d8..d6adc232 100644
+--- a/tests/Hexalith.Platform.Works.Tests/WorksDaprPolicyTests.cs
++++ b/tests/Hexalith.Platform.Works.Tests/WorksDaprPolicyTests.cs
+@@ -1,5 +1,6 @@
+ namespace Hexalith.Platform.Works.Tests;
+ 
++using Hexalith.EventStore.Contracts.Routing;
+ using Shouldly;
+ using YamlDotNet.RepresentationModel;
+ 
+@@ -45,7 +46,6 @@ public sealed class WorksDaprPolicyTests
+             "POST /api/v1/commands/workload allow",
+             "POST /api/v1/queries allow",
+             "GET /api/v1/commands/status/* allow",
+-            "GET /api/v1/commands/status/workload/*/* allow",
+             "POST /api/v1/streams/read allow",
+             "POST /api/v1/streams/read/workload allow",
+             "POST /api/v1/trusted-effects allow",
+@@ -57,6 +57,45 @@ public sealed class WorksDaprPolicyTests
+             "POST /api/v1/streams/read allow",
+             "GET /health allow",
+         ]);
++    }
++
++    /// <summary>Withdrawing the unusable nested scalar declaration preserves the protected request decisions.</summary>
++    [Theory]
++    [InlineData("works", "GET", "/api/v1/commands/status/01ARZ3NDEKTSV4RRFFQ69G5FAV", true)]
++    [InlineData("works", "GET", "/api/v1/commands/status/workload/tenant-a/01ARZ3NDEKTSV4RRFFQ69G5FAV", false)]
++    [InlineData("works", "DELETE", "/api/v1/commands/status/01ARZ3NDEKTSV4RRFFQ69G5FAV", false)]
++    [InlineData("unknown", "GET", "/api/v1/commands/status/01ARZ3NDEKTSV4RRFFQ69G5FAV", false)]
++    [InlineData("works", "GET", "/api/v1/commands/status-other/01ARZ3NDEKTSV4RRFFQ69G5FAV", false)]
++    [InlineData("works", "POST", "/api/v1/trusted-effects", true)]
++    public void WithdrawingNestedStatusGrantPreservesProtectedRequests(string caller, string verb, string path, bool expected)
++    {
++        Allows(caller, verb, path, includeWithdrawnGrant: true).ShouldBe(expected);
++        Allows(caller, verb, path, includeWithdrawnGrant: false).ShouldBe(expected);
++    }
++
++    /// <summary>The withdrawn grant reached an unmatched one-segment prefix; removing it narrows that admission.</summary>
++    [Fact]
++    public void WithdrawingNestedStatusGrantDeniesItsUnmatchedPrefix()
++    {
++        const string withdrawn = "/api/v1/commands/status/workload/*/*";
++        RouteCatalogDaprGrant.Intersects(withdrawn, "/api/v1/commands/status/workload/{tenant}/{messageId}").ShouldBeFalse();
++        const string prefix = "/api/v1/commands/status/workload/tenant-a";
++        Allows("works", "GET", prefix, includeWithdrawnGrant: true).ShouldBeTrue();
++        Allows("works", "GET", prefix, includeWithdrawnGrant: false).ShouldBeFalse();
++    }
++
++    private static bool Allows(string caller, string verb, string path, bool includeWithdrawnGrant)
++    {
++        YamlMappingNode access = (YamlMappingNode)Spec("accesscontrol.yaml")["accessControl"];
++        YamlMappingNode? policy = ((YamlSequenceNode)access["policies"]).Cast<YamlMappingNode>()
++            .SingleOrDefault(item => Scalar(item, "appId") == caller);
++        if (policy is null) return false;
++        bool retained = ((YamlSequenceNode)policy["operations"]).Cast<YamlMappingNode>().Any(operation =>
++            Scalar(operation, "action") == "allow"
++            && ((YamlSequenceNode)operation["httpVerb"]).Cast<YamlScalarNode>().Any(item => item.Value == verb)
++            && RouteCatalogDaprGrant.Allows(Scalar(operation, "name"), path));
++        return retained || includeWithdrawnGrant && caller == "works" && verb == "GET"
++            && RouteCatalogDaprGrant.Allows("/api/v1/commands/status/workload/*/*", path);
+     }
+ 
+     /// <summary>Only the SDK gateway may invoke named projection ingress and protected metadata discovery.</summary>

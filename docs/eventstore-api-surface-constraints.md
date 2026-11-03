@@ -1,14 +1,17 @@
 # EventStore API Surface Constraints
 
-<!-- EventStore-current-source: 653124dced81830e932edb7738a78ee61104d55a -->
+<!-- EventStore-current-source: 98a298a084ec6dedecf99e0abefd649051038376 -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
 
-Current Release selects published EventStore `4.0.0` (tag `v4.0.0`, producer
-`653124dced81830e932edb7738a78ee61104d55a`). The current source marker has separate scope.
-All fourteen public archives have verified identity, repository/source metadata and signatures.
-Current identity preflight passes; full Works runtime/parity acceptance remains pending.
+Current Release selects published EventStore `4.0.4` (tag `v4.0.4`, producer
+`326bfef884543cdbcaf96de7f4c4ad378dbad6d7`). The current source marker has separate scope.
+The nine 4.0.4 archives consumed by the package graph have verified exact identity, official
+repository/source metadata and signatures, with executed consumer DLLs matching their archives.
+This does not carry forward the prior fourteen-archive 4.0.0 verification. Identity preflight passes
+in the original workspace for the reviewed current source/4.0.4 pair. This checks identities rather
+than behavioral equivalence; runtime/parity acceptance requires separate fresh full/CI and rollback evidence.
 Historical qualification records below retain their original package versions.
 
 ## Story 4.14 published SDK consumer surface

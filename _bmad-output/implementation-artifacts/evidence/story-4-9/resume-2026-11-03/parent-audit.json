@@ -1,0 +1,27 @@
+{
+  "auditedAtUtc": "2026-11-03T08:10:17.120671+00:00",
+  "status": "supporting-only; story-in-progress; owner-publication-and-full-CI-pending",
+  "manifestArtifactsBeforeAudit": {
+    "compressed": 310,
+    "documents": 7,
+    "allCompressedAndDecodedHashesVerified": true
+  },
+  "frozenIntentUnchanged": true,
+  "pinPatchApplyChecks": {
+    "Builds": 0,
+    "Works": 0
+  },
+  "whitespaceChecks": {
+    "configuration": "blank-at-eol,blank-at-eof,space-before-tab,cr-at-eol",
+    "Works": 0,
+    "Platform": 0,
+    "defaultCheck": "CRLF-policy mismatch retained in report"
+  },
+  "BuildsWorkingTree": "clean; prepared central pin patch unapplied",
+  "liveReleaseSdk": "4.0.0",
+  "preparedReleaseSdk": "4.0.2",
+  "candidateLimits": "383/384 supporting cases; unchanged failed Redis case passed focused retry; no clean384-case rerun claimed",
+  "latestFull": "attempt6 exit1 at retained-host-preflight; no qualifying full/CI or complete-fleet rollback for final inputs",
+  "requiredNextAction": "Publish the reviewed owning Builds catalog/tooling through its normal audit/release flow; bind genuine publication metadata in Platform; apply prepared Works pins; rerun source, canonical full, then actual CI.",
+  "remoteMutations": "none; no staging, commit, push, publication, dependency checkout or ref changes"
+}

@@ -14,14 +14,18 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-The current EventStore source is `653124dced81830e932edb7738a78ee61104d55a`.
-Release pins public `4.0.0`, produced by `653124dced81830e932edb7738a78ee61104d55a`.
+The current EventStore source is `98a298a084ec6dedecf99e0abefd649051038376`.
+Release pins public `4.0.4`, produced by `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`.
 PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
 one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
 Release pins 1.19.8. The current source markers in the API and boundary records bind the consumed
-EventStore checkout. All fourteen EventStore and both PolymorphicSerializations public archives
-have verified exact version, owning repository/source metadata and signatures. Current source/package
-identity preflight passes; full current Works source/runtime/parity acceptance remains pending.
+EventStore checkout. The nine EventStore 4.0.4 archives consumed by the package graph have verified
+exact versions, official repository/source metadata and signatures; their executed consumer DLLs
+match those archives. This does not extend the prior fourteen-archive 4.0.0 verification to 4.0.4.
+Both PolymorphicSerializations archives retain their separately verified 1.19.8 scope.
+Identity preflight passes in the original workspace for the reviewed current source/4.0.4 pairing.
+It checks producer identity and does not establish behavioral equivalence. Runtime/parity acceptance
+requires fresh ordinary checks, canonical full and actual CI with complete-fleet rollback.
 Historical public-producer and live-proof revisions retain their original scope.
 
 The unmapped source entry point explicitly selects Commons (including Http) and McpCli
