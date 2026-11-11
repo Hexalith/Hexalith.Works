@@ -1,0 +1,2 @@
+# Preserve the authored SDK selection file's CRLF bytes during updates.
+global.json text eol=crlf whitespace=cr-at-eol

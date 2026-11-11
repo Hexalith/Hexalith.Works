@@ -57,6 +57,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
+          dotnet-version: '10.0.404'
       - name: Read Platform-owned Works proof toolchain
         id: platform-toolchain
         run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
@@ -97,6 +98,7 @@ jobs:
     needs: platform-toolchain
     uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@68563f3453397e2ff3c035dc489fc6c2930d5d4f
     with:
+      additional-sdk-version: '10.0.404'
       solution: Hexalith.Works.slnx
       test-platform: microsoft-testing-platform
       dapr-version: ${{ needs.platform-toolchain.outputs.dapr-cli }}
@@ -145,6 +147,7 @@ jobs:
       - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
         with:
           global-json-file: global.json
+          dotnet-version: '10.0.404'
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: '24'

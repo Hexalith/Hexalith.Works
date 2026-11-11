@@ -153,7 +153,11 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             source = export / canonical
             source.parent.mkdir(parents=True)
             source.write_bytes(b'{"producer":"exact tracked bytes"}\r\n')
-            for name in (".artifacts", "artifacts", "src/Hexalith.EventStore.Admin.UI/bin", "src/Hexalith.EventStore.Admin.UI/obj"):
+            output_roots = (
+                ".artifacts", "artifacts",
+                "src/Hexalith.EventStore.Admin.UI/bin", "src/Hexalith.EventStore.Admin.UI/obj",
+            )
+            for name in output_roots:
                 output = export / name / "old-output.txt"
                 output.parent.mkdir(parents=True, exist_ok=True)
                 output.write_text("foreign output must not enter this run\n")
@@ -165,10 +169,12 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             selected = Path(record["sdkRoot"])
             self.assertEqual((selected / canonical).read_bytes(), source.read_bytes())
             self.assertFalse((selected / canonical).is_symlink())
-            for name in (".artifacts", "artifacts", "src/Hexalith.EventStore.Admin.UI/bin", "src/Hexalith.EventStore.Admin.UI/obj"):
+            for name in output_roots:
                 self.assertFalse((selected / name).exists(), name)
             self.assertEqual((selected / "references/Hexalith.Builds").resolve(), works / "references/Hexalith.Builds")
-            self.assertEqual((export / "references/Hexalith.Builds/foreign.txt").read_text(), "preserve original dependency\n")
+            self.assertEqual(
+                (export / "references/Hexalith.Builds/foreign.txt").read_text(), "preserve original dependency\n",
+            )
             (selected / canonical).write_text("run-owned copy\n")
             self.assertEqual(source.read_bytes(), b'{"producer":"exact tracked bytes"}\r\n')
 
