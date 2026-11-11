@@ -14,8 +14,17 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-The current EventStore source is `fe974f485fa2c29d9ea055f5597b41ae38d072f1`.
-Release pins public `4.0.4`, produced by `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`.
+Current maintenance selects EventStore source `aa16227bd07f0564a3026d619a5abd973e02656f`,
+the exact producer recorded by the public `v4.2.0` tag and 4.2.0 package metadata.
+Both build defaults, the literal Release pin, source gitlink and reviewed pair manifest
+select this identity. The public Contracts archive passed NuGet signature verification
+and exact source/identity checks. The Contracts and Server Release builds pass with zero
+warnings or errors. Release policy controls pass 12/12. This does not extend the old
+nine-archive verification or establish full runtime/parity acceptance. Source-mode and
+canonical Platform parity remain separate required checks.
+
+The previous reviewed EventStore source was `fe974f485fa2c29d9ea055f5597b41ae38d072f1`.
+Its Release pin was public `4.0.4`, produced by `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`.
 PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
 one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
 Release pins 1.19.8. The current source markers in the API and boundary records bind the consumed
@@ -23,7 +32,7 @@ EventStore checkout. The nine EventStore 4.0.4 archives consumed by the package 
 exact versions, official repository/source metadata and signatures; their executed consumer DLLs
 match those archives. This does not extend the prior fourteen-archive 4.0.0 verification to 4.0.4.
 Both PolymorphicSerializations archives retain their separately verified 1.19.8 scope.
-Identity preflight passes in the original workspace for the reviewed current source/4.0.4 pairing.
+The previous identity preflight passed for that source/4.0.4 pairing.
 It checks producer identity and does not establish behavioral equivalence. Runtime/parity acceptance
 requires fresh ordinary checks, canonical full and actual CI with complete-fleet rollback.
 Historical public-producer and live-proof revisions retain their original scope.

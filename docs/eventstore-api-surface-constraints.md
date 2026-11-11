@@ -1,16 +1,22 @@
 # EventStore API Surface Constraints
 
-<!-- EventStore-current-source: fe974f485fa2c29d9ea055f5597b41ae38d072f1 -->
+<!-- EventStore-current-source: aa16227bd07f0564a3026d619a5abd973e02656f -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
 
-Current Release selects published EventStore `4.0.4` (tag `v4.0.4`, producer
+Current Release selects EventStore `4.2.0`, produced by the same
+`aa16227bd07f0564a3026d619a5abd973e02656f` commit as its source gitlink and tag.
+Contracts and Server compile in Release with zero warnings or errors; the public
+Contracts archive passed source/identity and NuGet signature verification. Current
+composed runtime/parity acceptance remains dependent on the separate full CI gate.
+
+The previous Release selection was EventStore `4.0.4` (tag `v4.0.4`, producer
 `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`). The current source marker has separate scope.
 The nine 4.0.4 archives consumed by the package graph have verified exact identity, official
 repository/source metadata and signatures, with executed consumer DLLs matching their archives.
-This does not carry forward the prior fourteen-archive 4.0.0 verification. Identity preflight passes
-in the original workspace for the reviewed current source/4.0.4 pair. This checks identities rather
+This does not carry forward the prior fourteen-archive 4.0.0 verification. Its identity preflight passed
+for the previous source/4.0.4 pair. This checks identities rather
 than behavioral equivalence; runtime/parity acceptance requires separate fresh full/CI and rollback evidence.
 Historical qualification records below retain their original package versions.
 
