@@ -136,7 +136,7 @@ def require_compatible(ci: str, release: str, ci_init: str, release_init: str,
     for producer, caller in ((ci, ci_call), (release, release_call)):
         supplied = mapping(caller, "with", len(re.search(r"(?m)^( +)with:", caller)[1]))
         resolved = {}
-        for name in ("solution", "dotnet-global-json", "package-prepare-script"):
+        for name in ("solution", "dotnet-global-json", "additional-sdk-version", "package-prepare-script"):
             resolved[name] = (field(supplied, name) if re.search(r"(?m)^ +" + name + ": ", supplied)
                               else input_default(producer, name))
         values.append(resolved)
@@ -210,6 +210,13 @@ class ReleaseBuildsCompatibilityTests(unittest.TestCase):
         )
         with self.assertRaisesRegex(ValueError, "incompatible"):
             self.compatible(release=changed)
+
+    def test_different_runtime_sdk_input_is_rejected(self) -> None:
+        changed = self.release_caller.replace("additional-sdk-version: '10.0.404'",
+                                              "additional-sdk-version: '10.0.403'", 1)
+        self.assertNotEqual(changed, self.release_caller)
+        with self.assertRaisesRegex(ValueError, "incompatible effective caller inputs"):
+            self.compatible(release_caller=changed)
 
     def test_different_sdk_default_is_rejected(self) -> None:
         changed = self.release.replace("default: global.json", "default: other-global.json", 1)

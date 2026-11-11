@@ -62,7 +62,7 @@ jobs:
         id: platform-toolchain
         run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
       - name: Initialize Dapr proof prerequisites
-        uses: Hexalith/Hexalith.Builds/Github/dapr-init@68563f3453397e2ff3c035dc489fc6c2930d5d4f
+        uses: Hexalith/Hexalith.Builds/Github/dapr-init@163f3d0deac6b0db5ec4bdfcc0934b12e6adb46a
         with:
           version: ${{ steps.platform-toolchain.outputs.dapr-cli }}
           runtime-version: ${{ steps.platform-toolchain.outputs.dapr-runtime }}
@@ -96,7 +96,7 @@ jobs:
 
   ci:
     needs: platform-toolchain
-    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@68563f3453397e2ff3c035dc489fc6c2930d5d4f
+    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@163f3d0deac6b0db5ec4bdfcc0934b12e6adb46a
     with:
       additional-sdk-version: '10.0.404'
       solution: Hexalith.Works.slnx

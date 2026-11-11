@@ -1,2 +1,5 @@
 # Preserve the authored SDK selection file's CRLF bytes during updates.
 global.json text eol=crlf whitespace=cr-at-eol
+
+# Existing compatibility controls retain their authored CRLF bytes.
+scripts/tests/test_release_builds_compatibility.py whitespace=cr-at-eol
