@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   codeql:
-    uses: Hexalith/Hexalith.Builds/.github/workflows/codeql.yml@68563f3453397e2ff3c035dc489fc6c2930d5d4f
+    uses: Hexalith/Hexalith.Builds/.github/workflows/codeql.yml@6ad5854aa14a9950e1fbfc32d7e27953a1c4b82b
     permissions:
       contents: read
       security-events: write

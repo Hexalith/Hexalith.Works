@@ -538,6 +538,14 @@ internal static class WorksAppHostSmokeHarness
                     builder.AppHostAssembly?.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration,
                     WorksAppHostSelection.RetainedEntryPoint().Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()?.Configuration);
             }
+            if (WorksAppHostSelection.IsPlatform)
+            {
+                // Qualification-only: both the current target and immutable retained topology run their
+                // unchanged net10 projects on the same managed runtime as the qualified parent host.
+                foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>()
+                    .Where(project => WorksManagedRuntimeEvidence.IsRuntimeResource(project.Name)))
+                    builder.CreateResourceBuilder(project).WithEnvironment("DOTNET_ROLL_FORWARD", "LatestMajor");
+            }
             app = await builder.BuildAsync(startupToken).ConfigureAwait(true);
             try
             {
@@ -641,6 +649,8 @@ internal static class WorksAppHostSmokeHarness
                     readinessPassed = !expectWorksReadinessDegraded,
                     worksReadinessExpectation = expectWorksReadinessDegraded ? "Degraded" : "Healthy",
                     runtimeModules = RuntimeModules(builder),
+                    managedRuntime = WorksManagedRuntimeEvidence.Capture(app, builder.Resources.OfType<ProjectResource>(),
+                        builder.AppHostAssembly!.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration),
                     hostingStartups = await ReadHostingEvidenceAsync(hostingEvidence, cancellationToken).ConfigureAwait(false),
                     // Platform's composed values (evaluated from its own callbacks before the fixture ran), the keys the
                     // fixture wrote, and each module's effective launched environment, for independent comparison.

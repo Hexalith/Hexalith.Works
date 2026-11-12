@@ -6,3 +6,13 @@ scripts/tests/test_release_builds_compatibility.py whitespace=cr-at-eol
 
 # Preserve the runnable host project's authored CRLF bytes.
 src/Hexalith.Works/Hexalith.Works.csproj whitespace=cr-at-eol
+
+# Preserve the architecture and consumer metadata authored CRLF bytes.
+tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksAppHostRuntimeEvidenceTests.cs whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksManagedRuntimeEvidence.cs whitespace=cr-at-eol
