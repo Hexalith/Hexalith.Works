@@ -407,6 +407,20 @@ internal static class WorksAppHostSmokeHarness
         return output.ToString();
     }
 
+    /// <summary>Scopes managed runtime and non-reusable build workers to the exact owned qualification services.</summary>
+    internal static void ConfigureQualificationProjectLaunches(IDistributedApplicationBuilder builder)
+    {
+        foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>()
+            .Where(project => WorksManagedRuntimeEvidence.IsRuntimeResource(project.Name)))
+        {
+            builder.CreateResourceBuilder(project)
+                .WithEnvironment("DOTNET_ROLL_FORWARD", "LatestMajor")
+                .WithEnvironment("UseSharedCompilation", "false")
+                .WithEnvironment("DOTNET_CLI_USE_MSBUILD_SERVER", "0")
+                .WithEnvironment("MSBUILDDISABLENODEREUSE", "1");
+        }
+    }
+
     /// <summary>Refuses the shared default providers before any live resource can start.</summary>
     internal static void RequireOwnedPlatformFixture(bool platform, bool configured, string? schedulerVolume, string? certificates)
     {
@@ -542,9 +556,7 @@ internal static class WorksAppHostSmokeHarness
             {
                 // Qualification-only: both the current target and immutable retained topology run their
                 // unchanged net10 projects on the same managed runtime as the qualified parent host.
-                foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>()
-                    .Where(project => WorksManagedRuntimeEvidence.IsRuntimeResource(project.Name)))
-                    builder.CreateResourceBuilder(project).WithEnvironment("DOTNET_ROLL_FORWARD", "LatestMajor");
+                ConfigureQualificationProjectLaunches(builder);
             }
             app = await builder.BuildAsync(startupToken).ConfigureAwait(true);
             try
