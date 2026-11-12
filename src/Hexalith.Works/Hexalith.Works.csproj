@@ -30,6 +30,8 @@
          so Works owns no service-default project. -->
     <ProjectReference Include="$(HexalithEventStoreRoot)\src\Hexalith.EventStore.DomainService\Hexalith.EventStore.DomainService.csproj" Condition="'$(HexalithEventStoreFromSource)' == 'true'" />
     <PackageReference Include="Hexalith.EventStore.DomainService" Condition="'$(HexalithEventStoreFromSource)' != 'true'" />
+    <!-- Keep the catalog DI contract primary over the net10 shared-framework reference. -->
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
     <ProjectReference Include="$(HexalithPartiesRoot)\src\Hexalith.Parties.Client\Hexalith.Parties.Client.csproj" Condition="'$(UseHexalithProjectReferences)' == 'true'" />
     <PackageReference Include="Hexalith.Parties.Client" Condition="'$(UseHexalithProjectReferences)' != 'true'" />
   </ItemGroup>

@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
+    <!-- SDK11 MSBuild APIs require a compatible test process; product TFMs stay net10. -->
+    <RuntimeFrameworkVersion>11.0.0</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
