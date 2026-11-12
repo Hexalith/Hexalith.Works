@@ -59,9 +59,22 @@ public sealed class WorksFleetQuiescenceTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         observations.ShouldBe(3);
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
-        deadline.CancelAfter(TimeSpan.FromMilliseconds(100));
-        await Should.ThrowAsync<OperationCanceledException>(() => WorksFleetQuiescence.WaitStoppedAsync(document.Scope,
-            document.Scope.Boot, document.Scope.PidNamespace, () => document.Scope.Processes.ToDictionary(process => process.Pid), deadline.Token)).ConfigureAwait(true);
+        int cancellationObservations = 0;
+        OperationCanceledException? refusal = null;
+        try
+        {
+            await WorksFleetQuiescence.WaitStoppedAsync(document.Scope, document.Scope.Boot, document.Scope.PidNamespace, () =>
+            {
+                if (++cancellationObservations == 2) deadline.Cancel();
+                return document.Scope.Processes.ToDictionary(process => process.Pid);
+            }, deadline.Token).ConfigureAwait(true);
+        }
+        catch (OperationCanceledException exception) { refusal = exception; }
+        cancellationObservations.ShouldBe(2);
+        refusal.ShouldNotBeNull();
+        refusal.CancellationToken.ShouldBe(deadline.Token);
+        refusal.InnerException.ShouldBeOfType<RouteCatalogUnavailableException>();
+        refusal.Message.ShouldContain("Remaining=10/");
         document.Fences.Length.ShouldBe(2);
     }
 

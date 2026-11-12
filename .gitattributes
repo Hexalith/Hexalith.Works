@@ -18,3 +18,7 @@ tests/Hexalith.Works.IntegrationTests/WorksAppHostRuntimeEvidenceTests.cs whites
 tests/Hexalith.Works.IntegrationTests/WorksManagedRuntimeEvidence.cs whitespace=cr-at-eol
 
 tests/Hexalith.Works.IntegrationTests/WorksTlsCertificateRefusalTests.cs whitespace=cr-at-eol
+
+# Retain the existing fleet-proof sources' authored CRLF bytes.
+tests/Hexalith.Works.IntegrationTests/WorksFleetQuiescence.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksFleetQuiescenceTests.cs whitespace=cr-at-eol

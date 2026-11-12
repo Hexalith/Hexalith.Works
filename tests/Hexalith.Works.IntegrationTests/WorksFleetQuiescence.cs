@@ -101,12 +101,26 @@ internal static class WorksFleetQuiescence
     {
         if (scope.Boot != boot || scope.PidNamespace != pidNamespace)
             throw new RouteCatalogUnavailableException("The owner proof cannot cross kernel or PID namespace boundaries.");
-        while (true)
+        RouteCatalogUnavailableException? lastRefusal = null;
+        try
         {
-            token.ThrowIfCancellationRequested();
-            var current = observe(); // Unknown IO/access failures must never become disappearance.
-            try { RequireStopped(scope, boot, pidNamespace, current); return; }
-            catch (RouteCatalogUnavailableException) { await Task.Delay(50, token).ConfigureAwait(false); }
+            while (true)
+            {
+                token.ThrowIfCancellationRequested();
+                var current = observe(); // Unknown IO/access failures must never become disappearance.
+                try { RequireStopped(scope, boot, pidNamespace, current); return; }
+                catch (RouteCatalogUnavailableException refusal)
+                {
+                    lastRefusal = refusal;
+                    await Task.Delay(50, token).ConfigureAwait(false);
+                }
+            }
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested && lastRefusal is not null)
+        {
+            // Preserve the last independently observed PID/group/session/state refusal; cancellation is never proof.
+            throw new OperationCanceledException("Stopped-fleet observation ended before actual disappearance. "
+                + lastRefusal.Message, lastRefusal, token);
         }
     }
 

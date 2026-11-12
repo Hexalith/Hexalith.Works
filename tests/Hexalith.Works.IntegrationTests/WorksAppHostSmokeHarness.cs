@@ -708,6 +708,18 @@ internal static class WorksAppHostSmokeHarness
         var cleanupFailures = new List<Exception>();
         if (app is not null)
         {
+            // DistributedApplication.DisposeAsync disposes services; StopAsync runs hosted-service
+            // shutdown before disposal, including DCP's owned process/session lifecycle.
+            using var stopDeadline = new CancellationTokenSource(DisposalWait);
+            try
+            {
+                await app.StopAsync(stopDeadline.Token).WaitAsync(DisposalWait).ConfigureAwait(true);
+            }
+            catch (Exception exception)
+            {
+                cleanupFailures.Add(new InvalidOperationException("[teardown] Distributed application stop failed.", exception));
+            }
+
             try
             {
                 await app.DisposeAsync().AsTask().WaitAsync(DisposalWait).ConfigureAwait(true);
