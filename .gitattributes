@@ -16,3 +16,5 @@ tests/Hexalith.Works.IntegrationTests/WorksAppHostSmokeHarness.cs whitespace=cr-
 tests/Hexalith.Works.IntegrationTests/WorksAppHostRuntimeEvidenceTests.cs whitespace=cr-at-eol
 
 tests/Hexalith.Works.IntegrationTests/WorksManagedRuntimeEvidence.cs whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksTlsCertificateRefusalTests.cs whitespace=cr-at-eol

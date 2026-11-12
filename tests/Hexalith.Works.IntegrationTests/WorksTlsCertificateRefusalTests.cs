@@ -128,13 +128,15 @@ public sealed class WorksTlsCertificateRefusalTests
                 string diagnostic = await error.ConfigureAwait(true);
                 process.ExitCode.ShouldBe(0, diagnostic);
                 result.ServerAccepted.ShouldBeFalse();
-                // TLS 1.2 refusal precedes .NET's server-certificate validation callback. Even an explicit
-                // alert then remains inconclusive; TLS 1.3 authenticates the server before its refusal arrives.
-                result.ClientRejectedServer.ShouldBe(protocol == SslProtocols.Tls12, result.Failure);
-                result.ServerIdentity.ShouldBe(protocol == SslProtocols.Tls13 ? Identity : null, result.Failure);
-                result.ServerRefusedClientCertificate.ShouldBe(protocol == SslProtocols.Tls13, result.Failure);
+                // TLS 1.2 callback timing differs across supported .NET/OpenSSL providers. The exact
+                // trusted fixture identity, rather than the protocol version, determines authentication.
+                if (protocol == SslProtocols.Tls13) result.ServerIdentity.ShouldBe(Identity, result.Failure);
+                result.ServerIdentity.ShouldBeOneOf(new string?[] { null, Identity });
+                bool authenticatedServer = result.ServerIdentity == Identity;
+                result.ClientRejectedServer.ShouldBe(!authenticatedServer, result.Failure);
                 int? expectedReason = foreignClient ? 1048 : protocol == SslProtocols.Tls13 ? 1116 : null;
                 result.CertificateRefusalAlertReason.ShouldBe(expectedReason, result.Failure);
+                result.ServerRefusedClientCertificate.ShouldBe(authenticatedServer && expectedReason is not null, result.Failure);
             }
             finally
             {
