@@ -14,7 +14,7 @@
   <!-- The shared catalog delegates these architecture-loader versions to the Works wrapper. -->
   <ItemGroup>
     <PackageVersion Include="Microsoft.Build" Version="18.9.6" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
-    <PackageVersion Include="Microsoft.Build.Framework" Version="18.9.6" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
+    <PackageVersion Include="Microsoft.Build.Framework" Version="18.12.2" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="1.11.2" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
   </ItemGroup>
 </Project>
