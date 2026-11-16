@@ -197,7 +197,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
     internal static IReadOnlyList<(string Name, string Value)> PlatformComposedValues(IReadOnlyDictionary<string, object> composed)
     {
         // DOTNET_ENVIRONMENT too: on an actual Platform start the fixture no longer sets it, so the replica takes Platform's value.
-        string[] required = ["DOTNET_ENVIRONMENT", "WORKS_PLATFORM_RUNTIME", "DOTNET_STARTUP_HOOKS", "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
+        string[] required = ["DOTNET_ENVIRONMENT", "WORKS_PLATFORM_RUNTIME", "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES",
             "Dapr__DeclarativeSubscriptions", "Works__Projection__UseSdkDelivery", "Works__Recovery__UseSdkRuntime", "Works__Query__GatewayWorkloadId",
             "Authentication__Workload__Audience", "Authentication__WorkloadIssuer__Workload", "Authentication__Workload__AllowedCallers__0"];
         string[] prefixed = [.. composed.Keys.Where(name => name.StartsWith("Authentication__Workload__AllowedCallers__", StringComparison.Ordinal)

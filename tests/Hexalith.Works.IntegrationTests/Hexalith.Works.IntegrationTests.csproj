@@ -8,6 +8,12 @@
     <WorksPlatformTestRoot Condition="'$(WorksPlatformTestRoot)' == ''">$(HexalithPlatformRoot)</WorksPlatformTestRoot>
   </PropertyGroup>
 
+  <!-- This preparation exercises the public package graph. Debug keeps the independently
+       qualified sibling-source tests and does not compile this Release qualification class. -->
+  <ItemGroup Condition="'$(Configuration)' != 'Release'">
+    <Compile Remove="WorksSdkProofPreparationTests.cs" />
+  </ItemGroup>
+
   <ItemGroup>
     <AssemblyMetadata Include="WorksSelectedEventStoreVersion" Value="$(HexalithEventStoreVersion)" />
     <AssemblyMetadata Include="WorksSelectedPartiesVersion" Value="$(HexalithPartiesVersion)" />

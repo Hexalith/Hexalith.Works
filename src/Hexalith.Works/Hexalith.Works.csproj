@@ -35,4 +35,21 @@
   </ItemGroup>
 
 
+  <!-- Explicit Platform development/qualification fixture only. Ordinary Release and all five
+       published Works packages retain no Platform runtime dependency. The dependency must be
+       declared before SDK owner preparation; startup-hook injection is not supported. -->
+  <PropertyGroup Condition="'$(PlatformWorksRuntimeRoot)' != ''">
+    <WorksPlatformRuntimeQualification>synthetic-development-only</WorksPlatformRuntimeQualification>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PlatformWorksRuntimeRoot)' != ''">
+    <AssemblyMetadata Include="WorksPlatformRuntimeQualification" Value="$(WorksPlatformRuntimeQualification)" />
+    <ProjectReference Include="$(PlatformWorksRuntimeRoot)/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj" />
+  </ItemGroup>
+  <Target Name="ValidateWorksPlatformRuntimeQualification"
+          BeforeTargets="ValidateHexalithDependencyMode;PrepareForBuild"
+          Condition="'$(PlatformWorksRuntimeRoot)' != ''">
+    <Error Condition="!Exists('$(PlatformWorksRuntimeRoot)/src/Hexalith.Platform.Works.Runtime/Hexalith.Platform.Works.Runtime.csproj')"
+           Code="HXW0003" Text="PlatformWorksRuntimeRoot must select the existing synthetic Platform Works runtime project." />
+  </Target>
+
 </Project>

@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup Condition="'$(HexalithWorksProofAssembly)' != '' and ('$(MSBuildProjectName)' == 'Hexalith.Works' or '$(MSBuildProjectName)' == 'Hexalith.EventStore' or '$(MSBuildProjectName)' == 'Hexalith.EventStore.Admin.Server.Host')">
+    <Reference Include="Hexalith.Works.IntegrationTests">
+      <HintPath>$(HexalithWorksProofAssembly)</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

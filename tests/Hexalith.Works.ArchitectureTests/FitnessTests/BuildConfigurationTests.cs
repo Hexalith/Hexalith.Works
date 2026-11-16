@@ -68,6 +68,41 @@ public sealed class BuildConfigurationTests
         externalEdges.ShouldBeGreaterThan(0);
     }
 
+    /// <summary>The nonpackable Platform proof runtime is an explicit fixture input, never an ordinary Release dependency.</summary>
+    /// <param name="explicitRuntime">Whether the caller selects the synthetic Platform runtime.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void P0_PlatformRuntimeReferenceRequiresExplicitQualification(bool explicitRuntime)
+    {
+        string root = RepositoryRoot.Locate();
+        string platform = Path.Combine(root, "references", "Hexalith.Platform");
+        string runtime = Path.Combine(platform, "src", "Hexalith.Platform.Works.Runtime", "Hexalith.Platform.Works.Runtime.csproj");
+        var globals = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["Configuration"] = "Release",
+            ["PlatformWorksRuntimeRoot"] = explicitRuntime ? platform : string.Empty,
+        };
+        MsBuildProjectEvaluation.TryEvaluate(Path.Combine(root, "src", "Hexalith.Works", "Hexalith.Works.csproj"), globals,
+            out MsBuildProjectSnapshot? snapshot, out string diagnostic).ShouldBeTrue(diagnostic);
+        snapshot.ShouldNotBeNull();
+        snapshot.ItemsOfType("ProjectReference").Count(reference =>
+            MsBuildProjectEvaluation.PathComparer.Equals(reference.CanonicalPath, runtime)).ShouldBe(explicitRuntime ? 1 : 0);
+        snapshot.PropertyValue("IsPackable").ShouldBe("false");
+    }
+
+    /// <summary>An explicitly selected missing runtime fails closed before compilation.</summary>
+    [Fact]
+    public async Task P0_MissingExplicitPlatformRuntimeFailsClosedAsync()
+    {
+        string root = RepositoryRoot.Locate();
+        (int exitCode, string output) = await RunMsBuildTargetAsync(root,
+            Path.Combine(root, "src", "Hexalith.Works", "Hexalith.Works.csproj"), "-p:Configuration=Release",
+            "-p:PlatformWorksRuntimeRoot=" + Path.Combine(root, "missing-platform-runtime")).ConfigureAwait(true);
+        exitCode.ShouldNotBe(0);
+        output.ShouldContain("HXW0003", Case.Sensitive);
+    }
+
     [Fact]
     public void P0_GlobalJsonPinsSdkAndTestRunnerWithoutPlatformHostingSdk()
     {

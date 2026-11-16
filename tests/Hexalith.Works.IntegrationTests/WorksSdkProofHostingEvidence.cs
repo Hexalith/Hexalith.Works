@@ -51,6 +51,7 @@ internal static class WorksSdkProofHostingEvidence
             processId = Environment.ProcessId,
             hostingStartupAssemblies,
             startupHooks = List("DOTNET_STARTUP_HOOKS", Path.PathSeparator),
+            declaredProofRuntime = WorksDeclaredProofRuntime.Capture(),
             startups,
             platformRuntimeEnabled = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME") == "1",
             platformTelemetryRegisteredBeforeProof,

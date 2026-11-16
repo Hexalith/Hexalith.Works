@@ -16,7 +16,7 @@ using Microsoft.Extensions.Hosting;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>Enrols the actual archived topology's selected qualified deployment through the SDK without rebuilding the frozen host.</summary>
-internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComposition catalog) : IHostedService, IAsyncDisposable
+internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComposition catalog, WorksQualifiedRuntimeContext? qualifiedRuntime = null) : IHostedService, IAsyncDisposable
 {
     /// <summary>Registers real observed receivers and the retained owner's real CAS/key custody.</summary>
     internal static void Configure(IDistributedApplicationTestingBuilder builder, string profilePath, string ownedRedisEndpoint)
@@ -42,35 +42,56 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
         string selectedProject = Path.GetFullPath(works.Resource.GetProjectMetadata().ProjectPath);
         string expectedRoot = Environment.GetEnvironmentVariable("WORKS_PLATFORM_WORKS_ROOT")
             ?? throw new InvalidOperationException("The actual qualified Works deployment must be explicit.");
-        Assembly assembly = typeof(WorksHost).Assembly;
-        RequireQualifiedDeployment(selectedProject, Path.Combine(expectedRoot, "src/Hexalith.Works/Hexalith.Works.csproj"),
-            WorksPlatformRuntimeArtifacts.DirectoryFor(selectedProject, assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration),
-            Path.GetDirectoryName(assembly.Location)!, Path.ChangeExtension(typeof(WorksAppHostSmokeHarness).Assembly.Location, ".deps.json"));
-        string statePath = RequireAuthorityComponentPath(builder.Resources.OfType<IDaprComponentResource>().Single(resource => resource.Name == "statestore"),
-            profile.StateStoreComponentPath, ownedRedisEndpoint);
-        int gatewayPort = AllocateGatewayPort();
-        IDaprSidecarResource gatewaySidecar = gateway.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar;
-        DaprSidecarOptionsAnnotation gatewayOptions = gatewaySidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
-        gatewaySidecar.Annotations[gatewaySidecar.Annotations.IndexOf(gatewayOptions)] =
-            new DaprSidecarOptionsAnnotation(gatewayOptions.Options with { DaprHttpPort = gatewayPort });
-        admin.WithEnvironment("AdminServer__EventStoreDaprHttpEndpoint", "http://localhost:" + gatewayPort);
-        admin.WithEnvironment("EventStore__RouteCatalog__DevelopmentBootstrap__Role", "admin-receiver");
-        operations.WithEnvironment("EventStore__RouteCatalog__DevelopmentBootstrap__Role", "operations-receiver");
-        // The archived host predates mandatory Operations JWT validation. Reuse its actual
-        // private local issuer parameter; no credential or permission is created for this receiver.
-        ConfigureOperationsAuthentication(operations, builder.CreateResourceBuilder(builder.Resources.OfType<ParameterResource>()
-            .Single(resource => resource.Name == "works-local-jwt-signing-key")));
-        // SuppressBuild remains the archived model's actual launch metadata. The complete selected
-        // deployment was independently qualified above and is independently observed in each child.
-        // The retained host restores Platform's checked receiver policy before enrollment.
-        // Capture that bounded policy directly for the current SDK's v2 technical inventory.
-        var gatewayReceiver = gateway.CaptureEventStoreDevelopmentReceiver(works, admin) with { TechnicalHttp = true };
-        var composition = builder.AddEventStoreDevelopmentRouteCatalog(gateway, [new(works, assembly, assembly)],
-            [gatewayReceiver,
-                works.CaptureEventStoreDevelopmentReceiver(gateway, operations, admin),
-                admin.CaptureEventStoreDevelopmentReceiver() with { TechnicalHttp = true, ActorStateOwners = [gateway] },
-                operations.CaptureEventStoreDevelopmentReceiver(admin)], statePath, profile.Catalog);
-        builder.Services.AddSingleton<IHostedService>(_ => new WorksRetainedCatalogEnrollment(composition));
+        var proofRuntime = WorksProofRuntimeContext.Load(builder.Configuration["Platform:Works:ProofRuntimeManifest"], expectedRoot);
+        proofRuntime?.Verify();
+        string runtimeDirectory = WorksPlatformRuntimeArtifacts.DirectoryFor(selectedProject,
+            typeof(WorksHost).Assembly.GetCustomAttribute<AssemblyConfigurationAttribute>()!.Configuration);
+        WorksQualifiedRuntimeContext? qualified = proofRuntime is null ? null : new WorksQualifiedRuntimeContext(
+            Environment.GetEnvironmentVariable(WorksQualifiedRuntimeContext.ManifestVariable)
+                ?? throw new InvalidOperationException("Retained proof enrollment requires the frozen actual runtime manifest."), selectedProject, runtimeDirectory);
+        DevelopmentRouteCatalogComposition? composition = null;
+        try
+        {
+            Assembly assembly = qualified?.ReadOwner() ?? typeof(WorksHost).Assembly;
+            RequireQualifiedDeployment(selectedProject, Path.Combine(expectedRoot, "src/Hexalith.Works/Hexalith.Works.csproj"),
+                runtimeDirectory, Path.GetDirectoryName(typeof(WorksHost).Assembly.Location)!,
+                Path.ChangeExtension(typeof(WorksAppHostSmokeHarness).Assembly.Location, ".deps.json"), proofRuntime, qualified);
+            string statePath = RequireAuthorityComponentPath(builder.Resources.OfType<IDaprComponentResource>().Single(resource => resource.Name == "statestore"),
+                profile.StateStoreComponentPath, ownedRedisEndpoint);
+            int gatewayPort = AllocateGatewayPort();
+            IDaprSidecarResource gatewaySidecar = gateway.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar;
+            DaprSidecarOptionsAnnotation gatewayOptions = gatewaySidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+            gatewaySidecar.Annotations[gatewaySidecar.Annotations.IndexOf(gatewayOptions)] =
+                new DaprSidecarOptionsAnnotation(gatewayOptions.Options with { DaprHttpPort = gatewayPort });
+            admin.WithEnvironment("AdminServer__EventStoreDaprHttpEndpoint", "http://localhost:" + gatewayPort);
+            admin.WithEnvironment("EventStore__RouteCatalog__DevelopmentBootstrap__Role", "admin-receiver");
+            operations.WithEnvironment("EventStore__RouteCatalog__DevelopmentBootstrap__Role", "operations-receiver");
+            // The archived host predates mandatory Operations JWT validation. Reuse its actual
+            // private local issuer parameter; no credential or permission is created for this receiver.
+            ConfigureOperationsAuthentication(operations, builder.CreateResourceBuilder(builder.Resources.OfType<ParameterResource>()
+                .Single(resource => resource.Name == "works-local-jwt-signing-key")));
+            // SuppressBuild remains the archived model's actual launch metadata. The complete selected
+            // deployment was independently qualified above and is independently observed in each child.
+            // The retained host restores Platform's checked receiver policy before enrollment.
+            // Capture that bounded policy directly for the current SDK's v2 technical inventory.
+            var gatewayReceiver = gateway.CaptureEventStoreDevelopmentReceiver(works, admin) with { TechnicalHttp = true };
+            composition = builder.AddEventStoreDevelopmentRouteCatalog(gateway, [new(works, assembly, assembly)],
+                [gatewayReceiver,
+                    works.CaptureEventStoreDevelopmentReceiver(gateway, operations, admin),
+                    admin.CaptureEventStoreDevelopmentReceiver() with { TechnicalHttp = true, ActorStateOwners = [gateway] },
+                    operations.CaptureEventStoreDevelopmentReceiver(admin)], statePath, profile.Catalog);
+            proofRuntime?.Verify(); qualified?.Verify();
+            qualified?.ObserveStarts(builder, works.Resource);
+            proofRuntime?.ObserveStarts(builder, [works.Resource, gateway.Resource, admin.Resource]);
+            builder.Services.AddSingleton<IHostedService>(_ => new WorksRetainedCatalogEnrollment(composition, qualified));
+        }
+        catch
+        {
+            // Construction already failed; release the owned metadata image even if no service was registered.
+            try { if (composition is not null) composition.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
+            finally { qualified?.Unload(); }
+            throw;
+        }
     }
 
     private static int AllocateGatewayPort()
@@ -129,20 +150,37 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
     }
 
     /// <summary>Requires actual project identity and every selected Works/SDK deployment DLL to match the qualified consumer closure.</summary>
-    internal static void RequireQualifiedDeployment(string selectedProject, string expectedProject, string runtimeDirectory, string consumerDirectory, string consumerManifest)
+    internal static void RequireQualifiedDeployment(string selectedProject, string expectedProject, string runtimeDirectory, string consumerDirectory, string consumerManifest, WorksProofRuntimeContext? proofRuntime = null, WorksQualifiedRuntimeContext? qualifiedRuntime = null)
     {
         if (Path.GetFullPath(selectedProject) != Path.GetFullPath(expectedProject) || !File.Exists(selectedProject))
             throw new InvalidOperationException("The archived model selected a foreign Works executable.");
         string[] files = Directory.EnumerateFiles(runtimeDirectory, "*.dll").Where(path => Owned(Path.GetFileName(path))).ToArray();
-        var expectedNames = QualifiedClosure(consumerManifest);
+        proofRuntime?.Verify(); qualifiedRuntime?.Verify();
+        if (proofRuntime is not null && qualifiedRuntime is null)
+            throw new InvalidOperationException("The declared proof requires the independently frozen actual Works runtime.");
+        var expectedNames = QualifiedClosure(consumerManifest, "Hexalith.Works");
+        if (proofRuntime is not null)
+        {
+            if (!proofRuntime.MatchesConsumerArtifact(consumerManifest))
+                throw new InvalidOperationException("The proof dependency manifest is outside its frozen consumer inventory.");
+            expectedNames.UnionWith(QualifiedClosure(consumerManifest, "Hexalith.Works.IntegrationTests"));
+            string proof = Path.Combine(runtimeDirectory, "Hexalith.Works.IntegrationTests.dll");
+            if (!proofRuntime.MatchesProofAssembly(proof))
+                throw new InvalidOperationException("The retained runtime proof differs from its frozen ordinary dependency.");
+        }
         if (!expectedNames.Contains("Hexalith.Works.dll") || !expectedNames.Contains("Hexalith.EventStore.ServiceDefaults.dll")
             || !expectedNames.SetEquals(files.Select(Path.GetFileName)!))
             throw new InvalidOperationException("The actual deployment's SDK/Works name set differs from the qualified executable dependency closure.");
         foreach (string runtime in files)
         {
+            string original = Path.Combine(consumerDirectory, Path.GetFileName(runtime));
+            if (proofRuntime is not null && !proofRuntime.MatchesConsumerArtifact(original))
+                throw new InvalidOperationException("The retained runtime dependency is outside its frozen consumer inventory: " + Path.GetFileName(runtime));
             byte[] actual = SHA256.HashData(File.ReadAllBytes(runtime));
-            byte[] expected = SHA256.HashData(File.ReadAllBytes(Path.Combine(consumerDirectory, Path.GetFileName(runtime))));
-            if (!actual.SequenceEqual(expected))
+            byte[] expected = SHA256.HashData(File.ReadAllBytes(original));
+            if (qualifiedRuntime is not null && !qualifiedRuntime.Matches(runtime))
+                throw new InvalidOperationException("The retained deployment differs from its independently frozen actual runtime: " + Path.GetFileName(runtime));
+            if (!actual.SequenceEqual(expected) && !(Path.GetFileName(runtime) == "Hexalith.Works.dll" && qualifiedRuntime is not null))
                 throw new InvalidOperationException("The archived model deployment differs from its actual qualified consumer closure: " + Path.GetFileName(runtime));
         }
     }
@@ -150,12 +188,12 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
     private static bool Owned(string name) => name.StartsWith("Hexalith.EventStore.", StringComparison.OrdinalIgnoreCase)
         || name.StartsWith("Hexalith.Works.", StringComparison.OrdinalIgnoreCase) || name.Equals("Hexalith.Works.dll", StringComparison.OrdinalIgnoreCase);
 
-    private static HashSet<string> QualifiedClosure(string manifest)
+    private static HashSet<string> QualifiedClosure(string manifest, string rootName)
     {
         if (new FileInfo(manifest).Length > 16 * 1024 * 1024) throw new InvalidOperationException("The qualified dependency manifest exceeds its bound.");
         using var document = JsonDocument.Parse(File.ReadAllBytes(manifest));
         var target = document.RootElement.GetProperty("targets").GetProperty(document.RootElement.GetProperty("runtimeTarget").GetProperty("name").GetString()!);
-        string root = target.EnumerateObject().Single(node => node.Name.Split('/')[0] == "Hexalith.Works").Name;
+        string root = target.EnumerateObject().Single(node => node.Name.Split('/')[0] == rootName).Name;
         var pending = new Queue<string>(); pending.Enqueue(root);
         var visited = new HashSet<string>(StringComparer.Ordinal); var names = new HashSet<string>(StringComparer.Ordinal);
         while (pending.TryDequeue(out string? key))
@@ -181,5 +219,9 @@ internal sealed class WorksRetainedCatalogEnrollment(DevelopmentRouteCatalogComp
     /// <inheritdoc/>
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     /// <inheritdoc/>
-    public ValueTask DisposeAsync() => catalog.DisposeAsync();
+    public async ValueTask DisposeAsync()
+    {
+        try { await catalog.DisposeAsync().ConfigureAwait(false); }
+        finally { qualifiedRuntime?.Dispose(); }
+    }
 }

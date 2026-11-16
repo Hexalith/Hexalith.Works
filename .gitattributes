@@ -37,3 +37,20 @@ tools/source-debug-dependencies.json whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs whitespace=cr-at-eol
 
 tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryPolicyTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the declared runtime qualification fixtures.
+tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuard.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformCompositionGuardTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformHaPipelineSmokeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformHostingCompositionTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingEvidence.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingStartup.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksDeclaredProofRuntime.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksDeclaredProofRuntimeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRuntime.targets whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksRetainedCatalogEnrollment.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksRetainedCatalogEnrollmentTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksQualifiedRuntimeContext.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksQualifiedRuntimeContextTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProofPreparationTests.cs whitespace=cr-at-eol

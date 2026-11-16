@@ -853,7 +853,6 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             if (OperatingSystem.IsWindows()) Directory.CreateDirectory(adminDirectory);
             else Directory.CreateDirectory(adminDirectory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore-admin"))
-                .WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "DOTNET_STARTUP_HOOKS", assembly, Path.PathSeparator))
                 .WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", hostingStartup, ';'))
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "eventstore-admin")
                 .WithEnvironment(WorksAdminProofProtocol.DirectoryKey, adminDirectory).WithEnvironment(WorksAdminProofProtocol.SessionKey, callerSession)
@@ -865,11 +864,11 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             target.WithEnvironment("HexalithEventStoreVersion", WorksSdkProofProducer.Version);
             if (WorksSdkProofProducer.Version.Contains("-story415.", StringComparison.Ordinal))
                 target.WithEnvironment("RestoreAdditionalProjectSources", Path.GetFullPath(Path.Combine(builder.AppHostDirectory, "../../.artifacts/story-4-15/feed")));
-            // Platform composes its own runtime startup hook and hosting startup on its works host. The proof
-            // assembly is appended after them, so Platform's WorksRecoveryHostingStartup and its
-            // WORKS_PLATFORM_RUNTIME gate still run live. Hosts without a composed value receive only the proof.
-            target.WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "DOTNET_STARTUP_HOOKS", assembly, Path.PathSeparator))
-                .WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", hostingStartup, ';'))
+            // Platform and proof hosting startups resolve from the ordinary declared dependency closure.
+            // Platform remains first and its WORKS_PLATFORM_RUNTIME gate still executes in the live process.
+            if (!WorksAppHostSelection.IsPlatform)
+                target.WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "DOTNET_STARTUP_HOOKS", assembly, Path.PathSeparator));
+            target.WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", hostingStartup, ';'))
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", resource.Name == "eventstore" ? "eventstore" : "works")
                 .WithEnvironment("WORKS_SDK_PROOF_KEY", key);
             if (WorksAppHostSelection.IsPlatform)

@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import atexit
+import os
 import re
 import subprocess
+import tempfile
 import textwrap
 import unittest
 from pathlib import Path
@@ -12,13 +15,43 @@ ROOT = Path(__file__).resolve().parents[2]
 BUILDS = ROOT / "references" / "Hexalith.Builds"
 
 
-def git(*arguments: str) -> str:
-    """Read committed Builds inputs without fetching or changing the checkout."""
+_PRIVATE_STORE: tempfile.TemporaryDirectory | None = None
+_PRIVATE_REVISIONS: set[str] = set()
 
-    return subprocess.run(
-        ["git", "-C", str(BUILDS), *arguments],
-        check=True, capture_output=True, text=True, timeout=15,
-    ).stdout
+
+def git(*arguments: str) -> str:
+    """Read exact approved objects, privately acquiring revisions absent from shallow clones."""
+
+    environment = {key: value for key, value in os.environ.items() if not key.upper().startswith("GIT_")}
+    environment.update(GIT_NO_REPLACE_OBJECTS="1", GIT_NO_LAZY_FETCH="1")
+
+    def run(repository: Path, *command: str, check: bool = True):
+        return subprocess.run(
+            ["git", "-C", str(repository), *command], env=environment,
+            check=check, capture_output=True, text=True, timeout=60,
+        )
+
+    result = run(BUILDS, *arguments, check=False)
+    if result.returncode == 0:
+        return result.stdout
+    selected = re.fullmatch(r"([0-9a-f]{40})(?:\^\{commit\}|:.+)", arguments[-1])
+    if arguments[0] not in {"show", "rev-parse"} or selected is None:
+        result.check_returncode()
+    selected_revision = selected[1]
+    if run(BUILDS, "cat-file", "-e", selected_revision + "^{commit}", check=False).returncode == 0:
+        result.check_returncode()
+
+    global _PRIVATE_STORE
+    if _PRIVATE_STORE is None:
+        _PRIVATE_STORE = tempfile.TemporaryDirectory(prefix="works-approved-builds-")
+        atexit.register(_PRIVATE_STORE.cleanup)
+        run(BUILDS, "clone", "--quiet", "--shared", "--no-checkout", "--", str(BUILDS), _PRIVATE_STORE.name + "/builds")
+    private = Path(_PRIVATE_STORE.name) / "builds"
+    if selected_revision not in _PRIVATE_REVISIONS:
+        run(private, "fetch", "--quiet", "--no-recurse-submodules", "--depth=1", "--",
+            "https://github.com/Hexalith/Hexalith.Builds.git", selected_revision)
+        _PRIVATE_REVISIONS.add(selected_revision)
+    return run(private, *arguments).stdout
 
 
 def revision(text: str, action: str) -> str:

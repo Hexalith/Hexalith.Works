@@ -735,7 +735,7 @@ printf '%s' "$status"
             "GITHUB_SHA": sha,
             "GITHUB_REPOSITORY": repository,
             "GH_TOKEN": "fixture-token",
-            "HEXALITH_BUILDS_EXECUTION_SHA": "6ad5854aa14a9950e1fbfc32d7e27953a1c4b82b",
+            "HEXALITH_BUILDS_EXECUTION_SHA": "3641d6226b4e6150a4ed43c472c97373378f3679",
             "HEXALITH_RELEASE_ENVIRONMENT": "production",
             "HEXALITH_RELEASE_EXPECTED_PACKAGE_COUNT": "5",
             "HEXALITH_RELEASE_PACKAGE_MANIFEST": "tools/release-packages.json",

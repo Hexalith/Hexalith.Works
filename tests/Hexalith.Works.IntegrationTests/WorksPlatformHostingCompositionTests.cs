@@ -8,8 +8,6 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>The live fixture extends, never replaces, the hosting values the selected AppHost composed.</summary>
 public sealed class WorksPlatformHostingCompositionTests
 {
-    private const string PlatformHook = "/platform/Hexalith.Platform.Works.Runtime.dll";
-    private const string ProofHook = "/consumer/Hexalith.Works.IntegrationTests.dll";
 
     /// <summary>Two runs with one configured parent resolve only their own mounted issuer child.</summary>
     [Fact]
@@ -37,23 +35,20 @@ public sealed class WorksPlatformHostingCompositionTests
         finally { Directory.Delete(parent, recursive: true); }
     }
 
-    /// <summary>Platform's startup hook and hosting startup stay first; the proof is appended with each list separator.</summary>
+    /// <summary>Platform's hosting startup stays first; declared proof dependencies need no runtime hook.</summary>
     [Fact]
     public void ProofIsAppendedAfterPlatformComposedHostingValues()
     {
         var environment = new Dictionary<string, object>(StringComparer.Ordinal)
         {
-            ["DOTNET_STARTUP_HOOKS"] = PlatformHook,
             ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Hexalith.Platform.Works.Runtime",
         };
-        WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(environment, "DOTNET_STARTUP_HOOKS", ProofHook, ':');
         WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(environment, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Hexalith.Works.IntegrationTests", ';');
-        environment["DOTNET_STARTUP_HOOKS"].ShouldBe(PlatformHook + ":" + ProofHook);
+        environment.ShouldNotContainKey("DOTNET_STARTUP_HOOKS");
         environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"].ShouldBe("Hexalith.Platform.Works.Runtime;Hexalith.Works.IntegrationTests");
 
         // A second evaluation of the same callback cannot register the proof twice.
-        WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(environment, "DOTNET_STARTUP_HOOKS", ProofHook, ':');
-        environment["DOTNET_STARTUP_HOOKS"].ShouldBe(PlatformHook + ":" + ProofHook);
+        environment.ShouldNotContainKey("DOTNET_STARTUP_HOOKS");
     }
 
     /// <summary>A host that composed nothing receives only the proof; blank composed values are treated as absent.</summary>
@@ -61,9 +56,8 @@ public sealed class WorksPlatformHostingCompositionTests
     public void AbsentOrBlankComposedValueReceivesOnlyTheProof()
     {
         var environment = new Dictionary<string, object>(StringComparer.Ordinal) { ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = string.Empty };
-        WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(environment, "DOTNET_STARTUP_HOOKS", ProofHook, ':');
         WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(environment, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Hexalith.Works.IntegrationTests", ';');
-        environment["DOTNET_STARTUP_HOOKS"].ShouldBe(ProofHook);
+        environment.ShouldNotContainKey("DOTNET_STARTUP_HOOKS");
         environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"].ShouldBe("Hexalith.Works.IntegrationTests");
     }
 
@@ -71,13 +65,13 @@ public sealed class WorksPlatformHostingCompositionTests
     [Fact]
     public void UnextendableComposedValueIsRefused()
     {
-        var reference = new Dictionary<string, object>(StringComparer.Ordinal) { ["DOTNET_STARTUP_HOOKS"] = new object() };
+        var reference = new Dictionary<string, object>(StringComparer.Ordinal) { ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = new object() };
         Should.Throw<InvalidOperationException>(() =>
-            WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(reference, "DOTNET_STARTUP_HOOKS", ProofHook, ':'));
-        var malformed = new Dictionary<string, object>(StringComparer.Ordinal) { ["DOTNET_STARTUP_HOOKS"] = PlatformHook + "::" };
+            WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(reference, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Proof", ';'));
+        var malformed = new Dictionary<string, object>(StringComparer.Ordinal) { ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Platform;;" };
         Should.Throw<InvalidOperationException>(() =>
-            WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(malformed, "DOTNET_STARTUP_HOOKS", ProofHook, ':'));
-        malformed["DOTNET_STARTUP_HOOKS"].ShouldBe(PlatformHook + "::");
+            WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(malformed, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Proof", ';'));
+        malformed["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"].ShouldBe("Platform;;");
     }
 
     /// <summary>The HA replica mirrors exactly Platform's composed runtime, SDK-mode, caller and JWT values.</summary>
@@ -91,9 +85,9 @@ public sealed class WorksPlatformHostingCompositionTests
         values.Select(value => value.Name).ShouldBe([
             "DOTNET_ENVIRONMENT", "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Authentication__JwtBearer__Authority", "Authentication__JwtBearer__SigningKey",
             "Authentication__Workload__AllowedCallers__0", "Authentication__Workload__AllowedCallers__1", "Authentication__Workload__Audience",
-            "Authentication__WorkloadIssuer__Workload", "DOTNET_STARTUP_HOOKS", "Dapr__DeclarativeSubscriptions", "Works__Projection__UseSdkDelivery",
+            "Authentication__WorkloadIssuer__Workload", "Dapr__DeclarativeSubscriptions", "Works__Projection__UseSdkDelivery",
             "Works__Query__GatewayWorkloadId", "Works__Recovery__UseSdkRuntime", "WORKS_PLATFORM_RUNTIME"], ignoreOrder: true);
-        values.ShouldContain(("DOTNET_STARTUP_HOOKS", PlatformHook));
+        values.ShouldNotContain(value => value.Name == "DOTNET_STARTUP_HOOKS");
         values.ShouldContain(("Authentication__Workload__AllowedCallers__1", "eventstore-admin"));
         values.ShouldContain(("Authentication__JwtBearer__Authority", string.Empty));
     }
@@ -103,7 +97,6 @@ public sealed class WorksPlatformHostingCompositionTests
     [InlineData("DOTNET_ENVIRONMENT")]
     [InlineData("WORKS_PLATFORM_RUNTIME")]
     [InlineData("Dapr__DeclarativeSubscriptions")]
-    [InlineData("DOTNET_STARTUP_HOOKS")]
     [InlineData("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES")]
     [InlineData("Authentication__Workload__AllowedCallers__0")]
     [InlineData("Works__Recovery__UseSdkRuntime")]
@@ -148,7 +141,6 @@ public sealed class WorksPlatformHostingCompositionTests
     {
         ["DOTNET_ENVIRONMENT"] = "Development",
         ["WORKS_PLATFORM_RUNTIME"] = "1",
-        ["DOTNET_STARTUP_HOOKS"] = PlatformHook,
         ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Hexalith.Platform.Works.Runtime",
         ["Dapr__DeclarativeSubscriptions"] = "true",
         ["Works__Projection__UseSdkDelivery"] = "true",

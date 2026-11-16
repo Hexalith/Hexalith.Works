@@ -8,8 +8,8 @@ namespace Hexalith.Works.ArchitectureTests.FitnessTests;
 
 public sealed class CiCdConfigurationTests
 {
-    private const string ApprovedBuildsSha = "6ad5854aa14a9950e1fbfc32d7e27953a1c4b82b";
-    private const string ReleasePreparationSha = "6ad5854aa14a9950e1fbfc32d7e27953a1c4b82b";
+    private const string ApprovedBuildsSha = "3641d6226b4e6150a4ed43c472c97373378f3679";
+    private const string ReleasePreparationSha = "3641d6226b4e6150a4ed43c472c97373378f3679";
 
     private const string ForceSkipProbeEnvironment = "HEXALITH_WORKS_FORCE_SKIP_PROBE";
 
@@ -702,26 +702,62 @@ public sealed class CiCdConfigurationTests
 
     private static async Task<string> ReadGitObjectAsync(string repository, string objectPath)
     {
-        var start = new ProcessStartInfo("git")
+        async Task<(int ExitCode, string Output, string Error)> RunGitAsync(params string[] arguments)
         {
-            RedirectStandardError = true,
-            RedirectStandardOutput = true,
-            UseShellExecute = false,
-        };
-        start.ArgumentList.Add("-C");
-        start.ArgumentList.Add(repository);
-        start.ArgumentList.Add("show");
-        start.ArgumentList.Add(objectPath);
+            var start = new ProcessStartInfo("git")
+            {
+                RedirectStandardError = true,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+            };
+            foreach (string key in start.Environment.Keys.Where(key => key.StartsWith("GIT_", StringComparison.OrdinalIgnoreCase)).ToArray())
+            {
+                start.Environment.Remove(key);
+            }
 
-        using Process process = Process.Start(start).ShouldNotBeNull();
-        CancellationToken cancellationToken = TestContext.Current.CancellationToken;
-        Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
-        Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
-        await WaitForExitOrKillAsync(process, cancellationToken).ConfigureAwait(true);
-        string output = await outputTask.ConfigureAwait(true);
-        string error = await errorTask.ConfigureAwait(true);
-        process.ExitCode.ShouldBe(0, $"Could not read pinned Builds object {objectPath}: {error}");
-        return output;
+            start.Environment["GIT_NO_REPLACE_OBJECTS"] = "1";
+            start.Environment["GIT_NO_LAZY_FETCH"] = "1";
+            foreach (string argument in arguments)
+            {
+                start.ArgumentList.Add(argument);
+            }
+
+            using Process process = Process.Start(start).ShouldNotBeNull();
+            CancellationToken cancellationToken = TestContext.Current.CancellationToken;
+            Task<string> outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+            Task<string> errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+            await WaitForExitOrKillAsync(process, cancellationToken).ConfigureAwait(true);
+            return (process.ExitCode, await outputTask.ConfigureAwait(true), await errorTask.ConfigureAwait(true));
+        }
+
+        (int exitCode, string output, string error) = await RunGitAsync("-C", repository, "show", objectPath).ConfigureAwait(true);
+        if (exitCode == 0)
+        {
+            return output;
+        }
+
+        // Root submodules can be shallow. Fetch only the approved immutable object
+        // into a private store, preserving the initialized checkout and its boundary.
+        string revision = objectPath[..objectPath.IndexOf(':', StringComparison.Ordinal)];
+        revision.ShouldBe(ApprovedBuildsSha);
+        string temporaryRepository = Path.Combine(Path.GetTempPath(), "works-approved-builds-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            (exitCode, _, error) = await RunGitAsync("clone", "--quiet", "--shared", "--no-checkout", "--", repository, temporaryRepository).ConfigureAwait(true);
+            exitCode.ShouldBe(0, error);
+            (exitCode, _, error) = await RunGitAsync("-C", temporaryRepository, "fetch", "--quiet", "--no-recurse-submodules", "--depth=1", "--", "https://github.com/Hexalith/Hexalith.Builds.git", revision).ConfigureAwait(true);
+            exitCode.ShouldBe(0, error);
+            (exitCode, output, error) = await RunGitAsync("-C", temporaryRepository, "show", objectPath).ConfigureAwait(true);
+            exitCode.ShouldBe(0, $"Could not read pinned Builds object {objectPath}: {error}");
+            return output;
+        }
+        finally
+        {
+            if (Directory.Exists(temporaryRepository))
+            {
+                Directory.Delete(temporaryRepository, recursive: true);
+            }
+        }
     }
 
     private static async Task WaitForExitOrKillAsync(Process process, CancellationToken cancellationToken)

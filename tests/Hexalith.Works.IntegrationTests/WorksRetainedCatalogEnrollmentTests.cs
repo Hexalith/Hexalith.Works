@@ -105,8 +105,14 @@ public sealed class WorksRetainedCatalogEnrollmentTests
     [InlineData("missing-runtime-sdk")]
     [InlineData("missing-runtime-client")]
     [InlineData("foreign-runtime-sdk")]
+    [InlineData("proof-valid")]
+    [InlineData("proof-foreign-body")]
+    [InlineData("proof-missing-transitive")]
+    [InlineData("proof-extra-transitive")]
+    [InlineData("proof-changed-transitive")]
     public void DeploymentIdentityRequiresTheActualProjectAndCompleteEqualOwnedDlls(string fault)
     {
+        ArgumentNullException.ThrowIfNull(fault);
         string directory = Directory.CreateTempSubdirectory("works-retained-closure-").FullName;
         try
         {
@@ -116,7 +122,7 @@ public sealed class WorksRetainedCatalogEnrollmentTests
             File.WriteAllText(project, "<Project />"); File.WriteAllText(other, "<Project />");
             foreach (string name in new[] { "Hexalith.Works.dll", "Hexalith.Works.Contracts.dll", "Hexalith.EventStore.ServiceDefaults.dll", "Hexalith.EventStore.Client.dll" })
             { File.WriteAllBytes(Path.Combine(runtime, name), [1, 2, 3]); File.WriteAllBytes(Path.Combine(consumer, name), [1, 2, 3]); }
-            string manifest = Path.Combine(consumer, "qualified.deps.json");
+            string manifest = Path.Combine(consumer, "Hexalith.Works.IntegrationTests.deps.json");
             var nodes = new Dictionary<string, object>
             {
                 ["Hexalith.Works/1"] = new { dependencies = new Dictionary<string, string> { ["Hexalith.Works.Contracts"] = "1", ["Hexalith.EventStore.ServiceDefaults"] = "1" }, runtime = new Dictionary<string, object> { ["Hexalith.Works.dll"] = new { } } },
@@ -126,6 +132,10 @@ public sealed class WorksRetainedCatalogEnrollmentTests
                 // A test-only consumer node is not part of the actual Works executable dependency graph.
                 ["Hexalith.EventStore.Testing/1"] = new { runtime = new Dictionary<string, object> { ["Hexalith.EventStore.Testing.dll"] = new { } } },
             };
+            bool declaredProof = fault.StartsWith("proof-", StringComparison.Ordinal);
+            if (declaredProof)
+                nodes["Hexalith.Works.IntegrationTests/1"] = new { dependencies = new Dictionary<string, string> { ["Hexalith.Works"] = "1", ["Hexalith.EventStore.Testing"] = "1" },
+                    runtime = new Dictionary<string, object> { ["Hexalith.Works.IntegrationTests.dll"] = new { } } };
             File.WriteAllText(manifest, System.Text.Json.JsonSerializer.Serialize(new { runtimeTarget = new { name = "runtime" }, targets = new Dictionary<string, object> { ["runtime"] = nodes } }));
             File.WriteAllBytes(Path.Combine(consumer, "Hexalith.EventStore.Testing.dll"), [4]);
             if (fault == "missing-runtime-client") File.Delete(Path.Combine(runtime, "Hexalith.EventStore.Client.dll"));
@@ -133,9 +143,45 @@ public sealed class WorksRetainedCatalogEnrollmentTests
             if (fault == "changed-sdk") File.WriteAllBytes(Path.Combine(runtime, "Hexalith.EventStore.ServiceDefaults.dll"), [9]);
             if (fault == "missing-consumer-sdk") File.Delete(Path.Combine(consumer, "Hexalith.EventStore.ServiceDefaults.dll"));
             if (fault == "missing-runtime-sdk") File.Delete(Path.Combine(runtime, "Hexalith.EventStore.ServiceDefaults.dll"));
-            void Verify() => WorksRetainedCatalogEnrollment.RequireQualifiedDeployment(fault == "foreign-project" ? other : project, project, runtime, consumer, manifest);
-            if (fault == "valid") Verify();
+            Hexalith.Platform.Composition.WorksProofRuntimeContext? proofRuntime = null;
+            WorksQualifiedRuntimeContext? qualifiedRuntime = null;
+            if (declaredProof)
+            {
+                string proof = Path.Combine(consumer, "Hexalith.Works.IntegrationTests.dll");
+                File.WriteAllBytes(proof, [5]);
+                File.WriteAllText(Path.ChangeExtension(proof, ".runtimeconfig.json"), "{}");
+                File.Copy(proof, Path.Combine(runtime, Path.GetFileName(proof)));
+                File.Copy(Path.Combine(consumer, "Hexalith.EventStore.Testing.dll"), Path.Combine(runtime, "Hexalith.EventStore.Testing.dll"));
+                string targets = Path.Combine(directory, "tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRuntime.targets");
+                Directory.CreateDirectory(Path.GetDirectoryName(targets)!); File.WriteAllText(targets, "<Project />");
+                string Hash(string path) => Convert.ToHexStringLower(System.Security.Cryptography.SHA256.HashData(File.ReadAllBytes(path)));
+                string binding = Path.Combine(directory, "manifest.json");
+                File.WriteAllText(binding, System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    schema = "hexalith.works-proof-runtime.v1", targetsPath = targets, targetsSha256 = Hash(targets),
+                    assemblyPath = proof, assemblySha256 = Hash(proof),
+                    files = Directory.EnumerateFiles(consumer).ToDictionary(path => path, Hash, StringComparer.Ordinal),
+                }));
+                proofRuntime = Hexalith.Platform.Composition.WorksProofRuntimeContext.Load(binding, directory);
+                string qualifiedBinding = Path.Combine(directory, "qualified-runtime.json");
+                string entry = Path.Combine(runtime, "Hexalith.Works.dll");
+                File.WriteAllText(qualifiedBinding, System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    schema = "hexalith.works-qualified-runtime.v1", projectPath = project, entryPath = entry, entrySha256 = Hash(entry),
+                    files = Directory.EnumerateFiles(runtime).ToDictionary(path => path, Hash, StringComparer.Ordinal),
+                    sourceFiles = new Dictionary<string, string> { [project] = Hash(project) },
+                }));
+                qualifiedRuntime = new WorksQualifiedRuntimeContext(qualifiedBinding, project, runtime);
+                if (fault == "proof-foreign-body") File.WriteAllBytes(Path.Combine(runtime, Path.GetFileName(proof)), [9]);
+                if (fault == "proof-missing-transitive") File.Delete(Path.Combine(runtime, "Hexalith.EventStore.Testing.dll"));
+                if (fault == "proof-extra-transitive") File.WriteAllBytes(Path.Combine(runtime, "Hexalith.Works.Foreign.dll"), [9]);
+                if (fault == "proof-changed-transitive") File.WriteAllBytes(Path.Combine(runtime, "Hexalith.EventStore.Testing.dll"), [9]);
+            }
+            void Verify() => WorksRetainedCatalogEnrollment.RequireQualifiedDeployment(fault == "foreign-project" ? other : project, project, runtime, consumer, manifest, proofRuntime, qualifiedRuntime);
+            if (fault is "valid" or "proof-valid") Verify();
             else Should.Throw<Exception>(Verify);
+            if (fault == "proof-valid") qualifiedRuntime?.Dispose();
+            else qualifiedRuntime?.Unload();
         }
         finally { Directory.Delete(directory, recursive: true); }
     }

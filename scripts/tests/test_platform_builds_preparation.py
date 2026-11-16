@@ -32,7 +32,8 @@ def fixture(root):
     catalog = builds / "Props/Directory.Packages.props"
     catalog.write_text("<Project />\n")
     recorded = commit(builds, "build: record fixture producer")
-    binding = {"producer": {"sourceRevision": recorded, "catalog": {
+    binding = {"schemaVersion": 1, "candidateAcceptance": False, "producer": {
+        "repository": "https://github.com/Hexalith/Hexalith.Builds.git", "sourceRevision": recorded, "catalog": {
         "path": "Props/Directory.Packages.props",
         "blob": git(builds, "rev-parse", "HEAD:Props/Directory.Packages.props"),
         "sha256": hashlib.sha256(catalog.read_bytes()).hexdigest(),
@@ -44,6 +45,8 @@ def fixture(root):
     (owner / "references/Hexalith.Builds").mkdir(parents=True)
     git(owner, "init", "--quiet")
     (owner / "eng/binding.json").write_text(json.dumps(binding))
+    (owner / "eng/builds-tuple.json").write_text(json.dumps(binding))
+    shutil.copyfile(ROOT / "references/Hexalith.Platform/eng/bound_builds.py", owner / "eng/bound_builds.py")
     shutil.copyfile(ROOT / "references/Hexalith.Platform/eng/builds_tuple.py", owner / "eng/builds_tuple.py")
     (owner / "eng/prepare_builds_artifacts.py").write_text(
         "import json, os, pathlib, subprocess, sys\n"

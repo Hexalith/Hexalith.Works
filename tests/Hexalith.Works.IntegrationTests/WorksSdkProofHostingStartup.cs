@@ -31,6 +31,7 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
     {
         ArgumentNullException.ThrowIfNull(builder);
         if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF") != "1") return;
+        _ = WorksDeclaredProofRuntime.Capture();
         builder.ConfigureServices((context, services) =>
         {
             if (context.HostingEnvironment.EnvironmentName != "Development")

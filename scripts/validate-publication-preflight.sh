@@ -3,7 +3,7 @@ set -euo pipefail
 
 version="${1:-}"
 phase="${2:-}"
-expected_builds_sha="6ad5854aa14a9950e1fbfc32d7e27953a1c4b82b"
+expected_builds_sha="3641d6226b4e6150a4ed43c472c97373378f3679"
 expected_package_count=5
 expected_repository="${HEXALITH_RELEASE_EXPECTED_REPOSITORY:-Hexalith/Hexalith.Works}"
 package_manifest="${HEXALITH_RELEASE_PACKAGE_MANIFEST:-}"

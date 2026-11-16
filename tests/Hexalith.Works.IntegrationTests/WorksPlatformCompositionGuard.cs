@@ -11,7 +11,7 @@ namespace Hexalith.Works.IntegrationTests;
 /// The fixture's callbacks are evaluated twice: on an empty environment, which reveals every key they write
 /// unconditionally, and after Platform's values, which reveals a callback that removes or rewrites a key only where
 /// Platform composed it. Only three deliberate fixture interactions with Platform-composed keys are permitted, each with a checked shape:
-/// the proof hosting startup and startup hook <em>extend</em> Platform's composed lists (Platform's entries stay first);
+/// the proof hosting startup <em>extends</em> Platform's composed list (Platform's entry stays first); runtime hooks are refused;
 /// the captured, restorable synthetic app-channel secret replaces Platform's generated per-run secret through the
 /// same public SDK helper; and the telemetry lanes redirect the orchestrator's OTLP export to the proof's owned loopback
 /// collector so recovery metrics can be observed. Every other overlap refuses the start before any resource is built.
@@ -27,7 +27,6 @@ internal static class WorksPlatformCompositionGuard
     /// <summary>Composed list variables the proof may extend, with each list's separator.</summary>
     internal static readonly IReadOnlyDictionary<string, char> ExtendableLists = new Dictionary<string, char>(StringComparer.Ordinal)
     {
-        ["DOTNET_STARTUP_HOOKS"] = Path.PathSeparator,
         ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = ';',
     };
 
@@ -104,6 +103,9 @@ internal static class WorksPlatformCompositionGuard
         ArgumentNullException.ThrowIfNull(combined);
         ArgumentNullException.ThrowIfNull(refusals);
         var permitted = new List<(string Key, string Rule)>();
+        if (fixtureWrites.ContainsKey("DOTNET_STARTUP_HOOKS")
+            || combined.TryGetValue("DOTNET_STARTUP_HOOKS", out object? hooks) && hooks is not "")
+            refusals.Add(resource + ": DOTNET_STARTUP_HOOKS is unsupported; proof assemblies require declared runtime dependencies");
         foreach (string key in AffectedKeys(platform, fixtureWrites, combined))
         {
             if (ExtendableLists.TryGetValue(key, out char separator))

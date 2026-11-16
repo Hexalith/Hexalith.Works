@@ -58,8 +58,8 @@ public sealed class WorksPlatformCompositionGuardTests
                 {
                     if (environment.ContainsKey("EventStore__RateLimiting__PermitLimit")) environment["EventStore__RateLimiting__PermitLimit"] = "100000";
                 }),
-            ("DOTNET_STARTUP_HOOKS", "works: DOTNET_STARTUP_HOOKS does not extend Platform's composed list",
-                environment => environment.Remove("DOTNET_STARTUP_HOOKS")),
+            ("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "works: ASPNETCORE_HOSTINGSTARTUPASSEMBLIES does not extend Platform's composed list",
+                environment => environment.Remove("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES")),
             (WorksPlatformCompositionGuard.AppChannelToken, "works: APP_API_TOKEN is not the captured synthetic app-channel secret",
                 environment => environment.Remove(WorksPlatformCompositionGuard.AppChannelToken)),
         })
@@ -95,14 +95,12 @@ public sealed class WorksPlatformCompositionGuardTests
         Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]> platform = WorksPlatformCompositionGuard.Capture(builder);
         IResourceBuilder<ParameterResource> token = builder.AddParameter("proof-works-app-api-token", () => new string('a', 64), secret: true);
         works.WithEnvironment(context => WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(context.EnvironmentVariables,
-                "DOTNET_STARTUP_HOOKS", "/consumer/Hexalith.Works.IntegrationTests.dll", Path.PathSeparator))
-            .WithEnvironment(context => WorksSdkRecoveryPipelineSmokeTests.ExtendEnvironmentList(context.EnvironmentVariables,
                 "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Hexalith.Works.IntegrationTests", ';'))
             .WithEnvironment(WorksPlatformCompositionGuard.AppChannelToken, token)
             .WithEnvironment("WORKS_SDK_PROOF", "1");
         Dictionary<string, object> evidence = await WorksPlatformCompositionGuard.VerifyAsync(builder, platform, WorksPlatformCompositionGuard.Capture(builder), ct);
         string json = System.Text.Json.JsonSerializer.Serialize(evidence["works"]);
-        json.ShouldContain("\"key\":\"DOTNET_STARTUP_HOOKS\",\"rule\":\"extends-composed-list\"");
+        json.ShouldNotContain("DOTNET_STARTUP_HOOKS");
         json.ShouldContain("\"key\":\"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES\",\"rule\":\"extends-composed-list\"");
         json.ShouldContain("\"key\":\"APP_API_TOKEN\",\"rule\":\"captured-restorable-synthetic-secret\"");
         json.ShouldContain("\"Authentication__Workload__AllowedCallers__0\":\"eventstore\"");
@@ -129,9 +127,11 @@ public sealed class WorksPlatformCompositionGuardTests
             var refusals = new List<string>();
             WorksPlatformCompositionGuard.Overlaps("works", platform, new Dictionary<string, object> { ["DOTNET_STARTUP_HOOKS"] = fixtureValue },
                 Combined(platform, new Dictionary<string, object> { ["DOTNET_STARTUP_HOOKS"] = combined }), refusals).ShouldBeEmpty(name);
-            refusals.ShouldHaveSingleItem(name).ShouldContain("does not extend");
+            refusals.ShouldNotBeEmpty(name);
+            refusals.ShouldContain(refusal => refusal.Contains("DOTNET_STARTUP_HOOKS is unsupported", StringComparison.Ordinal));
         }
 
+        platform.Remove("DOTNET_STARTUP_HOOKS");
         foreach (ParameterResource token in new[]
         {
             new ParameterResource("proof-works-app-api-token", _ => "a", secret: false),
@@ -143,6 +143,16 @@ public sealed class WorksPlatformCompositionGuardTests
             WorksPlatformCompositionGuard.Overlaps("works", platform, write, Combined(platform, write), refusals).ShouldBeEmpty();
             refusals.ShouldHaveSingleItem().ShouldContain("captured synthetic app-channel secret");
         }
+    }
+
+    /// <summary>A newly injected runtime hook is refused even when Platform composed no hook.</summary>
+    [Fact]
+    public void UndeclaredRuntimeHookIsRefused()
+    {
+        var refusals = new List<string>();
+        var injected = new Dictionary<string, object> { ["DOTNET_STARTUP_HOOKS"] = "/foreign/proof.dll" };
+        WorksPlatformCompositionGuard.Overlaps("works", new Dictionary<string, object>(), injected, injected, refusals).ShouldBeEmpty();
+        refusals.ShouldHaveSingleItem().ShouldContain("declared runtime dependencies");
     }
 
     /// <summary>Only a complete redirect to an owned loopback HTTP collector may replace the orchestrator's OTLP export.</summary>
@@ -268,7 +278,6 @@ public sealed class WorksPlatformCompositionGuardTests
             .WithEnvironment("Authentication__Workload__AllowedCallers__0", "eventstore")
             .WithEnvironment("Authentication__Workload__AllowedCallers__1", "eventstore-admin")
             .WithEnvironment("EventStore__RateLimiting__PermitLimit", "8192")
-            .WithEnvironment("DOTNET_STARTUP_HOOKS", PlatformHook)
             .WithEnvironment("ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", "Hexalith.Platform.Works.Runtime")
             .WithEnvironment(WorksPlatformCompositionGuard.AppChannelToken, generated);
         return builder;

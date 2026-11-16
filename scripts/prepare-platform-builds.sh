@@ -10,7 +10,6 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 owner="$root/references/Hexalith.Platform"
 builds="$root/references/Hexalith.Builds"
 owner_revision="$(git -C "$owner" rev-parse --verify HEAD)"
-producer_revision="$(git -C "$owner" rev-parse --verify "$owner_revision:references/Hexalith.Builds")"
 if [[ -n "$(git -C "$owner" status --porcelain --untracked-files=all)" ]]; then
     echo "Published Builds preparation requires clean recorded Platform source." >&2
     exit 1
@@ -23,14 +22,9 @@ mkdir "$workspace"
 # the workspace's current package catalog, without initializing nested submodules.
 git -c submodule.recurse=false clone --quiet --shared --no-checkout -- "$owner" "$workspace/Hexalith.Platform"
 git -C "$workspace/Hexalith.Platform" -c submodule.recurse=false checkout --quiet --detach "$owner_revision"
-git -c submodule.recurse=false clone --quiet --shared --no-checkout -- "$builds" "$workspace/Hexalith.Builds"
-if ! git -C "$workspace/Hexalith.Builds" cat-file -e "$producer_revision^{commit}" 2>/dev/null; then
-    # CI may initialize only the current gitlink. Acquire the immutable producer in
-    # the private clone; never deepen or change the initialized workspace checkout.
-    builds_origin="$(git -C "$builds" remote get-url origin)"
-    git -C "$workspace/Hexalith.Builds" fetch --quiet --no-recurse-submodules --depth=1 -- "$builds_origin" "$producer_revision"
-fi
-git -C "$workspace/Hexalith.Builds" -c submodule.recurse=false checkout --quiet --detach "$producer_revision"
+python3 "$workspace/Hexalith.Platform/eng/bound_builds.py" \
+    --platform-root "$workspace/Hexalith.Platform" --source-root "$builds" \
+    --output "$workspace/Hexalith.Builds" > /dev/null
 tool_root="$(python3 "$workspace/Hexalith.Platform/eng/prepare_builds_artifacts.py" --require-recorded --output "$artifacts/verified")"
 if [[ "$tool_root" = *$'\n'* || "$tool_root" = *$'\r'* || ! -f "$tool_root/Hexalith.Builds.Tooling.dll" ]]; then
     echo "Platform did not return a verified published Builds tool directory." >&2
