@@ -154,3 +154,10 @@ Builds fixture repair07fdb22578ba55e092b2db1b4ff43f253b53fbbf replaces simulated
 - Three independent review lenses identified and closed: foreign self-consistent evidence, missing loaded-proof binding, SDK paths outside the runtime inventory, retained hook evidence, missing startup-event coverage, unbounded framework fallback, non-SDK loaded-image tracking, construction/disposal cleanup, and shared JSON contract identity. All preserve original SDK guards and exact runtime hashes.
 - The one new public-package preparation class is compiled and required only in Release; actual MSBuild Compile-item checks confirm Debug/Release selection, and verifier tests require the class in Release while preserving all prior Debug supporting classes. No new skipped or not-runnable policy was added.
 - Current dependency revisions are frozen for the next canonical run. Full R1–R11/live readiness/retained rollback, exact-source hosted CI and final five-package publication remain pending.
+
+
+## Isolated Public SDK Qualification
+
+Hosted5d5abe1 and local supporting397-case runs exposed the same new-test boundary: the hot fixture process can contain an SDK image with no file identity. The public SDK correctly refuses it. The required Release test now runs all existing preparation, declaration/operation, exact-body, retained-closure and startup-refusal assertions in a clean ordinary console. It builds a separate normalized public-package consumer, freezes that full output inventory, and binds the original launcher assembly separately from the qualified consumer. SDK guards and all exact hashes remain unchanged; no skipped/not-runnable rule was added.
+
+Targeted and hot-pool MTP qualification pass. The complete private CI-layout run passed1433 cases plus the nine explicitly reserved live facts; its single independent symlink-placement Operations build failure passed1/1 after using a physical private SDK checkout. No Operations source or assertions changed. The parent repeats canonical qualification and hosted exact-source CI on the resulting fix commit.

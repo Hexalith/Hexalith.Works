@@ -54,3 +54,4 @@ tests/Hexalith.Works.IntegrationTests/WorksRetainedCatalogEnrollmentTests.cs whi
 tests/Hexalith.Works.IntegrationTests/WorksQualifiedRuntimeContext.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksQualifiedRuntimeContextTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksSdkProofPreparationTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProofPreparationQualification.cs whitespace=cr-at-eol

@@ -12,6 +12,7 @@
        qualified sibling-source tests and does not compile this Release qualification class. -->
   <ItemGroup Condition="'$(Configuration)' != 'Release'">
     <Compile Remove="WorksSdkProofPreparationTests.cs" />
+    <Compile Remove="WorksSdkProofPreparationQualification.cs" />
   </ItemGroup>
 
   <ItemGroup>

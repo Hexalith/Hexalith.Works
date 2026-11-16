@@ -1,96 +1,84 @@
-using System.Reflection;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using System.Security;
 using System.Security.Cryptography;
 using System.Text.Json;
-using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
-using Hexalith.EventStore.Aspire;
-using Hexalith.Platform.Composition;
-using Hexalith.Works.Runtime;
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Exercises the published SDK with the real prebuilt proof and its separately qualified host body.</summary>
+/// <summary>Requires real SDK qualification in a clean console, independent of other test assembly loads.</summary>
 public sealed class WorksSdkProofPreparationTests
 {
-    /// <summary>The original fixture is declared before preparation and remains frozen at the actual start boundary.</summary>
-    [Fact(Timeout = 180000)]
+    /// <summary>The public SDK observes only the console's ordinary file-backed runtime dependencies.</summary>
+    [Fact(Timeout = 300000)]
     public async Task PublishedSdkPreparesTheRealDeclaredProofAndGuardsItsStartAsync()
     {
-        string scratch = Directory.CreateTempSubdirectory("works-proof-prepare-").FullName;
+        string scratch = Directory.CreateTempSubdirectory("works-proof-driver-").FullName;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        deadline.CancelAfter(TimeSpan.FromSeconds(285));
         try
         {
-            string works = SourceRoot();
-            string project = Path.Combine(works, "src/Hexalith.Works/Hexalith.Works.csproj");
             string proof = typeof(WorksSdkProofPreparationTests).Assembly.Location;
-            string consumer = Path.GetDirectoryName(proof)!;
-            string targets = Path.Combine(works, "tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRuntime.targets");
-            string manifest = Path.Combine(scratch, "proof.json");
-            string Digest(string path) => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
-            File.WriteAllText(manifest, JsonSerializer.Serialize(new
-            {
-                schema = "hexalith.works-proof-runtime.v1", targetsPath = targets, targetsSha256 = Digest(targets),
-                assemblyPath = proof, assemblySha256 = Digest(proof),
-                files = Directory.EnumerateFiles(consumer, "*", SearchOption.AllDirectories).ToDictionary(path => path, Digest, StringComparer.Ordinal),
-            }));
-            var context = WorksProofRuntimeContext.Load(manifest, works).ShouldNotBeNull();
-            var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { Args = [], DisableDashboard = true });
-            builder.Environment.EnvironmentName = "Development";
-            var selected = builder.AddProject("works", project);
-#pragma warning disable ASPIREEXTENSION001
-            var launch = (ProjectLaunchConfiguration)await selected.Resource.CreateLaunchConfigurationAsync(ExecutableLaunchMode.NoDebug,
-                TestContext.Current.CancellationToken).ConfigureAwait(true);
-            launch.BuildConfiguration = "Release";
-            string output = Path.Combine(scratch, "artifacts");
-            launch.BuildEnvironment = new Dictionary<string, string>
-            {
-                ["ArtifactsPath"] = output, ["UseArtifactsOutput"] = "true",
-                ["UseHexalithProjectReferences"] = "false", ["UseNuGetDeps"] = "true",
-                ["HexalithEventStoreFromSource"] = "false", ["HexalithPolymorphicSerializationsFromSource"] = "false",
-                ["PathMap"] = output + "=/_/hexalith-works-platform-build",
-            };
-            foreach (string key in new[] { "Version", "MinVerVersionOverride", "HexalithBuildsPublishedToolRoot", "HexalithBuildsRoot", "PlatformWorksRuntimeRoot" })
-                if (Environment.GetEnvironmentVariable(key) is { Length: > 0 } value) launch.BuildEnvironment[key] = value;
-            context.Configure(launch);
-            selected.WithDebugSupport(_ => Task.FromResult(launch), "project");
-#pragma warning restore ASPIREEXTENSION001
-            context.ObserveStarts(builder, [selected.Resource]);
-            context.Verify();
-            var prepared = await selected.PrepareEventStoreDevelopmentOwnerAsync(TimeSpan.FromSeconds(120), TestContext.Current.CancellationToken).ConfigureAwait(true);
-            await using var preparationLifetime = prepared.ConfigureAwait(true);
-            context.Verify();
-            using var receipt = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(prepared.Directory, "preparation.json")));
-            string entry = receipt.RootElement.GetProperty("targetPath").GetString()!;
-            string deployedProof = Path.Combine(Path.GetDirectoryName(entry)!, Path.GetFileName(proof));
-            context.MatchesProofAssembly(deployedProof).ShouldBeTrue();
-            WorksDeclaredProofRuntime.Capture(manifest, Path.ChangeExtension(entry, ".deps.json"), deployedProof)["declared"]!.GetValue<bool>().ShouldBeTrue();
-            Digest(entry).ShouldBe(receipt.RootElement.GetProperty("targetSha256").GetString());
-            string runtimeManifest = Path.Combine(scratch, "runtime.json");
-            File.WriteAllText(runtimeManifest, JsonSerializer.Serialize(new
-            {
-                schema = "hexalith.works-qualified-runtime.v1", projectPath = project, entryPath = entry, entrySha256 = Digest(entry),
-                files = Directory.EnumerateFiles(Path.GetDirectoryName(entry)!, "*", SearchOption.AllDirectories).ToDictionary(path => path, Digest, StringComparer.Ordinal),
-                sourceFiles = new Dictionary<string, string> { [project] = Digest(project) },
-            }));
-            using var qualified = new WorksQualifiedRuntimeContext(runtimeManifest, project, Path.GetDirectoryName(entry)!);
-            Assembly actualOwner = qualified.ReadOwner();
-            actualOwner.ManifestModule.ModuleVersionId.ShouldBe(prepared.Owner.Contracts.ManifestModule.ModuleVersionId);
-            actualOwner.Location.ShouldBe(entry);
-            Hexalith.EventStore.ServiceDefaults.Routing.CompiledRouteCatalogDeclarations.Read([actualOwner]).Count.ShouldBeGreaterThan(0);
-            Hexalith.EventStore.ServiceDefaults.Routing.CompiledRouteCatalogDeclarations.ReadOperations([actualOwner]).Count.ShouldBeGreaterThan(0);
-            Hexalith.EventStore.ServiceDefaults.Routing.CompiledRouteCatalogDeclarations.ReadOperations([actualOwner]).Count
-                .ShouldBe(Hexalith.EventStore.ServiceDefaults.Routing.CompiledRouteCatalogDeclarations.ReadOperations([prepared.Owner.Contracts]).Count);
-            WorksRetainedCatalogEnrollment.RequireQualifiedDeployment(project, project, Path.GetDirectoryName(entry)!, consumer,
-                Path.ChangeExtension(proof, ".deps.json"), context, qualified);
-            qualified.ObserveStarts(builder, selected.Resource);
-            using var application = builder.Build();
-            await builder.Eventing.PublishAsync(new BeforeResourceStartedEvent(selected.Resource, application.Services), TestContext.Current.CancellationToken);
-            File.AppendAllText(manifest, " ");
-            (await Should.ThrowAsync<InvalidOperationException>(() => builder.Eventing.PublishAsync(
-                new BeforeResourceStartedEvent(selected.Resource, application.Services), TestContext.Current.CancellationToken))).Message.ShouldContain("changed");
+            string digest = Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(proof)));
+            string project = Path.Combine(scratch, "WorksSdkProofQualification.csproj");
+            await File.WriteAllTextAsync(project, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup><TargetFramework>net11.0</TargetFramework><RuntimeFrameworkVersion>11.0.0</RuntimeFrameworkVersion>
+                    <OutputType>Exe</OutputType><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
+                  </PropertyGroup>
+                  <ItemGroup><FrameworkReference Include="Microsoft.AspNetCore.App" />
+                    <Reference Include="Hexalith.Works.IntegrationTests"><HintPath>{SecurityElement.Escape(proof)}</HintPath><Private>true</Private></Reference>
+                  </ItemGroup>
+                </Project>
+                """, deadline.Token);
+            await File.WriteAllTextAsync(Path.Combine(scratch, "Program.cs"), """
+                var result = await Hexalith.Works.IntegrationTests.WorksSdkProofPreparationQualification.RunAsync(
+                    args[0], args[1], args[3], CancellationToken.None);
+                await File.WriteAllTextAsync(args[2], result.ToJsonString());
+                """, deadline.Token);
+            string output = Path.Combine(scratch, "output");
+            await RunAsync(["build", project, "-c", "Release", "--output", output,
+                "--artifacts-path", Path.Combine(scratch, "artifacts"), "--disable-build-servers", "-m:1", "-nr:false"], scratch, deadline.Token);
+            string resultPath = Path.Combine(scratch, "qualification.json");
+            string runId = Guid.NewGuid().ToString("N");
+            await RunAsync([Path.Combine(output, "WorksSdkProofQualification.dll"), SourceRoot(), proof, resultPath, runId], scratch, deadline.Token);
+            using var evidence = JsonDocument.Parse(await File.ReadAllBytesAsync(resultPath, deadline.Token));
+            var result = evidence.RootElement;
+            result.GetProperty("schema").GetString().ShouldBe("hexalith.works-sdk-proof-qualification.v1");
+            result.GetProperty("runId").GetString().ShouldBe(runId);
+            result.GetProperty("processId").GetInt32().ShouldNotBe(Environment.ProcessId);
+            result.GetProperty("launcherProofPath").GetString().ShouldBe(proof);
+            result.GetProperty("launcherProofSha256").GetString().ShouldBe(digest);
+            result.GetProperty("proofSha256").GetString()!.Length.ShouldBe(64);
+            result.GetProperty("consumerManifestSha256").GetString()!.Length.ShouldBe(64);
+            result.GetProperty("consumerFileCount").GetInt32().ShouldBeGreaterThan(3);
+            result.GetProperty("runtimeEntrySha256").GetString()!.Length.ShouldBe(64);
+            Guid.Parse(result.GetProperty("moduleVersionId").GetString()!).ShouldNotBe(Guid.Empty);
+            result.GetProperty("declarations").GetInt32().ShouldBeGreaterThan(0);
+            result.GetProperty("operations").GetInt32().ShouldBeGreaterThan(0);
+            result.GetProperty("beforeStartVerified").GetBoolean().ShouldBeTrue();
+            result.GetProperty("changedOriginalRefused").GetBoolean().ShouldBeTrue();
         }
         finally { Directory.Delete(scratch, recursive: true); }
+    }
+
+    private static async Task RunAsync(string[] arguments, string workingDirectory, CancellationToken cancellationToken)
+    {
+        var start = new ProcessStartInfo("dotnet")
+        { WorkingDirectory = workingDirectory, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
+        foreach (string argument in arguments) start.ArgumentList.Add(argument);
+        using var process = Process.Start(start) ?? throw new InvalidOperationException("The isolated SDK proof process did not start.");
+        Task<string> stdout = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        Task<string> stderr = process.StandardError.ReadToEndAsync(cancellationToken);
+        try { await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false); }
+        finally
+        {
+            if (!process.HasExited)
+            { process.Kill(entireProcessTree: true); await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(false); }
+        }
+        string diagnostics = await stdout.ConfigureAwait(false) + await stderr.ConfigureAwait(false);
+        process.ExitCode.ShouldBe(0, diagnostics);
     }
 
     private static string SourceRoot([CallerFilePath] string source = "")
