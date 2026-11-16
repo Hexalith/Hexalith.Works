@@ -173,6 +173,26 @@ class PlatformBuildsPreparationTests(unittest.TestCase):
             self.assertEqual(original, git(owner, "rev-parse", "HEAD"))
             self.assertFalse((root / "foreign-index").exists())
 
+    def test_shallow_workspace_fetches_only_the_recorded_producer_in_the_private_clone(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            owner, builds, original, recorded, current = fixture(root)
+            upstream = root / "builds-origin"
+            builds.rename(upstream)
+            subprocess.run(["git", "clone", "--quiet", "--depth=1", upstream.as_uri(), str(builds)], check=True)
+            absent = ["git", "-C", str(builds), "cat-file", "-e", recorded + "^{commit}"]
+            self.assertNotEqual(0, subprocess.run(absent, capture_output=True).returncode)
+            result, exported = self.run_hook(root)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("existing=preserved\nHexalithBuildsPublishedToolRoot=" + result.stdout, exported)
+            selected = json.loads((Path(result.stdout.strip()) / "selected.json").read_text())
+            self.assertEqual(recorded, selected["producer"])
+            self.assertEqual(current, git(builds, "rev-parse", "HEAD"))
+            self.assertEqual("true", git(builds, "rev-parse", "--is-shallow-repository"))
+            self.assertNotEqual(0, subprocess.run(absent, capture_output=True).returncode)
+            self.assertEqual(original, git(owner, "rev-parse", "HEAD"))
+            self.assertFalse((owner / "references/Hexalith.Builds/.git").exists())
+
 
 if __name__ == "__main__":
     unittest.main()
