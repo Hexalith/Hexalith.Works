@@ -45,7 +45,7 @@
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">4.2.0</HexalithEventStoreVersion>
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">5.2.0</HexalithEventStoreVersion>
     <WorksSdkCandidateFeed Condition="'$(WorksSdkCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
     <WorksPlatformCandidateFeed Condition="'$(WorksPlatformCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
     <!-- Candidate archives are admitted only by an explicit verification invocation. Merely leaving a
@@ -55,7 +55,7 @@
     <!-- Candidate admission must not populate the ordinary public-package cache. An explicit
          RestorePackagesPath remains the caller's isolation choice. -->
     <RestorePackagesPath Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' == 'candidate:true' and '$(RestorePackagesPath)' == ''">$(MSBuildThisFileDirectory).artifacts/sdk-candidate-packages</RestorePackagesPath>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFramework>net11.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

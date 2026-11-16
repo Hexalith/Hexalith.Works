@@ -2291,3 +2291,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `spec-qualify-platform-public-sdk-3-132-1.md`
   summary: Execute the existing complete model/source catalog wiring test in its actual full-source qualification lane rather than package-only tuple preflight.
   evidence: Exact CatalogBootstrapBindsActualKeysPoliciesFilesAndCohortStartWaitsAsync starts mapped Debug/source child builds and currently fails HXW006 from Works inherited edge overrides. Those builds also conflict with package-only CI preflight. Existing older cohorts omitted this full-source test too; original tuple selectors and new44 structural proof controls are preserved.
+
+- source_spec: `spec-release-dependency-refresh-2026-11-16.md`
+  summary: Verify whether an MSBuild metadata-evaluation descendant can retain redirected stream handles after its parent exits.
+  evidence: Unverified review candidate in WorksPlatformRuntimeArtifacts.DefaultDirectoryFor; no reachable selected-project reproducer exists. A process-double that retains a pipe after the launcher exits would settle whether the current process timeout also needs bounded stream completion.

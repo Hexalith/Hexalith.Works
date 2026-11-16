@@ -61,6 +61,7 @@ class Story415SdkVerifierTests(unittest.TestCase):
         result, consumer = self.verify_version_selection("9.8.7")
         self.assertEqual(result.returncode, 73, result.stdout + result.stderr)
         self.assertIn('<PackageReference Include="Hexalith.Parties.Client" Version="9.8.7" />', consumer)
+        self.assertIn("<TargetFramework>net11.0</TargetFramework>", consumer)
 
     def test_empty_effective_parties_version_refuses_before_consumer_restore(self):
         result, consumer = self.verify_version_selection("")

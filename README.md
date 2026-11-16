@@ -1,6 +1,6 @@
 # Hexalith.Works
 
-Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform.
+Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform. Current Works packages require .NET 11 or later; build them with the SDK selected in `global.json`.
 
 ## Local Debug development
 

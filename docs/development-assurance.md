@@ -14,7 +14,18 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-Current maintenance selects EventStore source `aa16227bd07f0564a3026d619a5abd973e02656f`,
+Current maintenance pairs EventStore source `0be0c922883d4ea61b18e843e24472162261d934`
+with Release `5.2.0`, and PolymorphicSerializations source
+`2cbec6a66e2174adc7c5d431c1b1f0d28abd5647` with Release `2.0.0`.
+The official package metadata names producers `8b6d5bee5217b3f4bbd8fd689ad887aca863961b`
+and `52282d023156725c811fa21299f349a6fd62d989`, respectively. These are supported
+source/package pairs, not identical producer revisions or a claim of behavioral equivalence.
+Both complete Debug/source and Release/package solution builds pass on .NET 11
+with zero warnings or errors. The full local source gate and canonical Platform
+parity retain their independent requirements. Historical package authentication
+and live-proof observations below apply only to their recorded producers.
+
+Earlier maintenance selected EventStore source `aa16227bd07f0564a3026d619a5abd973e02656f`,
 the exact producer recorded by the public `v4.2.0` tag and 4.2.0 package metadata.
 Both build defaults, the literal Release pin, source gitlink and reviewed pair manifest
 select this identity. The public Contracts archive passed NuGet signature verification
@@ -25,9 +36,9 @@ canonical Platform parity remain separate required checks.
 
 The previous reviewed EventStore source was `fe974f485fa2c29d9ea055f5597b41ae38d072f1`.
 Its Release pin was public `4.0.4`, produced by `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`.
-PolymorphicSerializations source is `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
+The earlier PolymorphicSerializations source was `bce4eb9f45c6b131b960ab4fa39e50ff01e51960`,
 one npm lockfile refresh after public `v1.19.8` (`2a66be84ac99753713a077a018ba650134396818`);
-Release pins 1.19.8. The current source markers in the API and boundary records bind the consumed
+That Release pinned 1.19.8. The current source markers in the API and boundary records bind the consumed
 EventStore checkout. The nine EventStore 4.0.4 archives consumed by the package graph have verified
 exact versions, official repository/source metadata and signatures; their executed consumer DLLs
 match those archives. This does not extend the prior fourteen-archive 4.0.0 verification to 4.0.4.

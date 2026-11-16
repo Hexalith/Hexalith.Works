@@ -555,7 +555,7 @@ internal static class WorksAppHostSmokeHarness
             if (WorksAppHostSelection.IsPlatform)
             {
                 // Qualification-only: both the current target and immutable retained topology run their
-                // unchanged net10 projects on the same managed runtime as the qualified parent host.
+                // declared project targets on the same managed runtime as the qualified parent host.
                 ConfigureQualificationProjectLaunches(builder);
             }
             app = await builder.BuildAsync(startupToken).ConfigureAwait(true);

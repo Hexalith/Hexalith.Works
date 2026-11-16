@@ -252,16 +252,17 @@ public sealed class WorksSdkProcessRecoveryPolicyTests
 
     private static EventStoreProcessOptions Profile(int workBudget)
     {
+        // Preserve work-unit bounds while allowing fixture overhead inside the SDK's 30-minute freshness cap.
         var options = new EventStoreProcessOptions
         {
             SourcesPerPass = workBudget,
             SupportedCandidateCount = 130,
-            OperationTimeout = TimeSpan.FromMilliseconds(100),
+            OperationTimeout = TimeSpan.FromMilliseconds(250),
             MaxEffectsPerEnvelope = 1,
-            SourceServiceQuantum = TimeSpan.FromMilliseconds(900),
-            LeaseDuration = TimeSpan.FromSeconds(5),
+            SourceServiceQuantum = TimeSpan.FromMilliseconds(2250),
+            LeaseDuration = TimeSpan.FromSeconds(30),
             ReconciliationInterval = TimeSpan.FromSeconds(1),
-            ReadinessMaxAge = TimeSpan.FromMinutes(20),
+            ReadinessMaxAge = TimeSpan.FromMinutes(30),
         };
         options.Validate().ShouldBeEmpty();
         return options;

@@ -48,7 +48,9 @@ public sealed class WorksSdkIntentTranslationTests
                 string[] messages = ["committed-create", "committed-first-suspension", "committed-resume", "committed-second-suspension", "committed-reschedule"];
                 return page with { Events = [.. page.Events.Select((fact, index) => fact with { MessageId = messages[index] })] };
             });
-        var source = new WorksReminderIntentSource(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+        // This provenance fixture permits first-use serialization/JIT work within a finite read deadline.
+        var source = new WorksReminderIntentSource(new WorksSourceStreamReader(gateway,
+            Options.Create(new WorksRecoveryOptions { ContextReadTimeout = TimeSpan.FromSeconds(5) })));
         var target = new ReminderTarget(Tenant, "work", item);
 
         IReadOnlyList<ReminderIntent> first = await source.GetCurrentIntentsAsync(target, TestContext.Current.CancellationToken);

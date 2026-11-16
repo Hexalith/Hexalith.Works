@@ -89,7 +89,7 @@ public sealed class BuildConfigurationTests
         XDocument buildProps = XDocument.Load(Path.Combine(root, "Directory.Build.props"));
         XDocument packageProps = XDocument.Load(Path.Combine(root, "Directory.Packages.props"));
 
-        PropertyValue(buildProps, "TargetFramework").ShouldBe("net10.0");
+        PropertyValue(buildProps, "TargetFramework").ShouldBe("net11.0");
         PropertyValue(buildProps, "Nullable").ShouldBe("enable");
         PropertyValue(buildProps, "ImplicitUsings").ShouldBe("enable");
         PropertyValue(buildProps, "TreatWarningsAsErrors").ShouldBe("true");

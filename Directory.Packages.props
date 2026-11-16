@@ -2,8 +2,8 @@
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-    <!-- Release restores published EventStore 4.2.0. Platform.Identity has no public package, so tests use its sibling project. -->
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">4.2.0</HexalithEventStoreVersion>
+    <!-- Release restores published EventStore 5.2.0. Platform.Identity has no public package, so tests use its sibling project. -->
+    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">5.2.0</HexalithEventStoreVersion>
     <Hexalith1BuildPackageProps>$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith1BuildPackageProps>
     <Hexalith2BuildPackageProps>$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props</Hexalith2BuildPackageProps>
     <Hexalith3BuildPackageProps>$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props</Hexalith3BuildPackageProps>
@@ -13,7 +13,7 @@
   <Import Project="$(Hexalith3BuildPackageProps)" Condition="'$(HexalithVersionsLoaded)' != 'true'" />
   <!-- The shared catalog delegates these architecture-loader versions to the Works wrapper. -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Build" Version="18.9.6" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
+    <PackageVersion Include="Microsoft.Build" Version="18.12.2" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
     <PackageVersion Include="Microsoft.Build.Framework" Version="18.12.2" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
     <PackageVersion Include="Microsoft.Build.Locator" Version="1.11.2" Condition="'$(_HexalithWorksOwnsMSBuildPackageVersions)' == 'true'" />
   </ItemGroup>

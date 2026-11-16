@@ -3,17 +3,25 @@ set -euo pipefail
 repository_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 fixture="$(mktemp -d)"
 trap 'rm -rf "$fixture"' EXIT
-# Compile the selected current source first; stale Release output cannot stand in for this proof.
-dotnet build "$repository_root/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj" --configuration Release -p:NuGetAudit=false -p:CopyLocalLockFileAssemblies=true
+# Build current metadata and assemblies in a private output tree, independently of the net10 baseline.
+current_project="$repository_root/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj"
+dotnet build "$current_project" --configuration Release --artifacts-path "$fixture/current-build" \
+    -p:NuGetAudit=true -p:NuGetAuditMode=all -p:CopyLocalLockFileAssemblies=true -p:GenerateRuntimeConfigurationFiles=true
+dotnet msbuild "$current_project" -nologo -p:Configuration=Release -p:ArtifactsPath="$fixture/current-build" \
+    -getProperty:TargetPath,GeneratedAssemblyInfoFile,TargetFramework > "$fixture/current-project.json"
 python3 - "$repository_root" "$fixture" <<'PY'
-import io, pathlib, re, subprocess, sys, tarfile
+import io, json, pathlib, re, subprocess, sys, tarfile
 root, fixture = map(pathlib.Path, sys.argv[1:])
 archive = subprocess.check_output(['git', 'archive', '8679d7d700925a870e9931b3c43c745c063e459b', 'src/Hexalith.Works.Contracts'], cwd=root)
 with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
     tar.extractall(fixture / 'baseline', filter='data')
 project = fixture / 'baseline/src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj'
 project.write_text('''<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><AssemblyVersion>0.0.0.0</AssemblyVersion></PropertyGroup><ItemGroup><PackageReference Include="Hexalith.EventStore.Contracts" Version="3.122.0"/><PackageReference Include="Hexalith.PolymorphicSerializations" Version="1.19.3"/><PackageReference Include="Hexalith.PolymorphicSerializations.CodeGenerators" Version="1.19.3" IncludeAssets="analyzers;build;buildTransitive" ExcludeAssets="compile;runtime;contentFiles;native" PrivateAssets="all"/></ItemGroup></Project>''')
-info = (root / 'src/Hexalith.Works.Contracts/obj/Release/net10.0/Hexalith.Works.Contracts.AssemblyInfo.cs').read_text()
+properties = json.loads((fixture / 'current-project.json').read_text())['Properties']
+info_path = pathlib.Path(properties['GeneratedAssemblyInfoFile'])
+if not info_path.is_absolute():
+    info_path = root / 'src/Hexalith.Works.Contracts' / info_path
+info = info_path.read_text()
 version = re.search(r'AssemblyVersionAttribute\("([^"]+)"\)', info).group(1)
 project.write_text(project.read_text().replace('<AssemblyVersion>0.0.0.0</AssemblyVersion>', '<AssemblyVersion>' + version + '</AssemblyVersion>'))
 (fixture / 'consumer').mkdir()
@@ -50,13 +58,26 @@ foreach (object payload in new object[]{create,reschedule,expire,created,resched
     Console.WriteLine(payload.GetType().Name + " " + Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(json))));
 }
 CS
-dotnet build "$fixture/consumer/Consumer.csproj" --configuration Release -p:NuGetAudit=false
+dotnet build "$fixture/consumer/Consumer.csproj" --configuration Release -p:NuGetAudit=true -p:NuGetAuditMode=all
 dotnet "$fixture/consumer/bin/Release/net10.0/Consumer.dll" > "$fixture/baseline.txt"
-cp "$repository_root/src/Hexalith.Works.Contracts/bin/Release/net10.0/Hexalith.Works.Contracts.dll" "$fixture/consumer/bin/Release/net10.0/Hexalith.Works.Contracts.dll"
-# The selected Works assembly references the selected SDK assembly version. Supply that current
-# dependency too; the baseline consumer binary and its original ABI calls remain unchanged.
-cp "$repository_root/src/Hexalith.Works.Contracts/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll" "$fixture/consumer/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll"
-dotnet "$fixture/consumer/bin/Release/net10.0/Consumer.dll" > "$fixture/current.txt"
+# Preserve the compiled baseline consumer, then supply the current library's complete runtime closure.
+python3 - "$fixture" <<'STAGE_CURRENT'
+import hashlib, json, pathlib, shutil, sys
+fixture = pathlib.Path(sys.argv[1])
+properties = json.loads((fixture / 'current-project.json').read_text())['Properties']
+current_output = pathlib.Path(properties['TargetPath']).parent
+baseline = fixture / 'consumer/bin/Release/net10.0'
+selected = fixture / 'consumer-selected'
+baseline_hash = hashlib.sha256((baseline / 'Consumer.dll').read_bytes()).hexdigest()
+shutil.copytree(baseline, selected)
+shutil.copytree(current_output, selected, dirs_exist_ok=True)
+if hashlib.sha256((selected / 'Consumer.dll').read_bytes()).hexdigest() != baseline_hash:
+    raise SystemExit('The original Works ABI consumer binary changed')
+print(json.dumps({'selectedFramework': properties['TargetFramework'], 'unchangedConsumerSha256': baseline_hash}))
+STAGE_CURRENT
+dotnet exec --runtimeconfig "$fixture/consumer-selected/Hexalith.Works.Contracts.runtimeconfig.json" \
+    --depsfile "$fixture/consumer-selected/Hexalith.Works.Contracts.deps.json" \
+    "$fixture/consumer-selected/Consumer.dll" > "$fixture/current.txt"
 cmp "$fixture/baseline.txt" "$fixture/current.txt"
 cat "$fixture/current.txt"
 echo "Unchanged baseline Works Contracts binary passed all six constructors/deconstructions and historical payload hashes."

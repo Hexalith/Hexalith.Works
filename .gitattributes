@@ -23,3 +23,17 @@ tests/Hexalith.Works.IntegrationTests/WorksTlsCertificateRefusalTests.cs whitesp
 tests/Hexalith.Works.IntegrationTests/WorksFleetQuiescence.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksFleetQuiescenceTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksQualificationBuildEnvironmentTests.cs whitespace=cr-at-eol
+
+# Recognize CRLF line endings in whitespace checks for the refreshed files.
+Directory.Build.props whitespace=cr-at-eol
+Directory.Packages.props whitespace=cr-at-eol
+README.md whitespace=cr-at-eol
+docs/development-assurance.md whitespace=cr-at-eol
+docs/eventstore-api-surface-constraints.md whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformRuntimeArtifacts.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformSelectedSdkPathsTests.cs whitespace=cr-at-eol
+tools/source-debug-dependencies.json whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksSdkIntentTranslationTests.cs whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksSdkProcessRecoveryPolicyTests.cs whitespace=cr-at-eol

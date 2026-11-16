@@ -190,7 +190,10 @@ class ParallelSolutionNodeIdentityTests(unittest.TestCase):
             for line in record.read_text().splitlines():
                 project, *properties = line.split("|")
                 records.setdefault(Path(project).resolve(), []).append(properties)
-        outputs = [path.parent / "bin" / configuration / "net10.0" / f"{path.stem}.dll" for path in graph]
+        works_framework = ET.parse(works / "Directory.Build.props").findtext(".//TargetFramework")
+        outputs = [path.parent / "bin" / configuration
+                   / (works_framework if path.is_relative_to(works) else "net10.0")
+                   / f"{path.stem}.dll" for path in graph]
         return records, graph, outputs
 
     @staticmethod

@@ -27,7 +27,7 @@ if [[ "$sdk_version" != *-* ]]; then
 fi
 cat >"$fixture/Consumer.csproj" <<PROJECT
 <Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup><TargetFramework>net10.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
+  <PropertyGroup><TargetFramework>net11.0</TargetFramework><Nullable>enable</Nullable><ImplicitUsings>enable</ImplicitUsings><TreatWarningsAsErrors>true</TreatWarningsAsErrors></PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Hexalith.EventStore.DomainService" Version="$sdk_version" />
     <PackageReference Include="Hexalith.EventStore.Testing" Version="$sdk_version" />
@@ -99,7 +99,8 @@ if (!read.IsAvailable || !read.IsDegraded || read.Value!["queue"]![0] != "accept
     || !(await coordinator.GetStatusAsync(scope)).IsDegraded) throw new Exception("durable readiness");
 Console.WriteLine("Isolated package-only host consumer: persisted accepted contents/checkpoint and restart-safe conflict readiness passed.");
 CS
-dotnet run --project "$fixture/Consumer.csproj" --configuration Release -p:NuGetAudit=false
+dotnet run --project "$fixture/Consumer.csproj" --configuration Release -p:NuGetAudit=true -p:NuGetAuditMode=all -p:CopyLocalLockFileAssemblies=true
+dotnet msbuild "$fixture/Consumer.csproj" -nologo -p:Configuration=Release -getProperty:TargetPath,TargetFramework > "$fixture/current-project.json"
 
 python3 - "$fixture" "$verification_feed" "$sdk_version" <<'HASHES'
 import hashlib, json, pathlib, sys, urllib.request
@@ -153,7 +154,7 @@ for suffix in ['Contracts', 'Client', 'DomainService']:
 CONSUMERS
 
 # Compile against the published eleven-parameter contract once, then run the unchanged binary
-# with only the selected Contracts assembly substituted. This proves CLR constructor and
+# with the selected Contracts assembly and its current dependency closure substituted. This proves CLR constructor and
 # Deconstruct compatibility in addition to the current source consumer above.
 mkdir -p "$fixture/abi"
 cat >"$fixture/abi/Abi.csproj" <<'PROJECT'
@@ -180,13 +181,32 @@ if (tenant != "tenant-a" || domain != "widget" || item != "item" || due != DateT
 Console.WriteLine(ReminderIdentityCodec.ComputeReminderName(value));
 Console.WriteLine(Convert.ToHexString(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(value))));
 CS
-dotnet build "$fixture/abi/Abi.csproj" --configuration Release -p:NuGetAudit=false
+dotnet build "$fixture/abi/Abi.csproj" --configuration Release -p:NuGetAudit=true -p:NuGetAuditMode=all
 dotnet "$fixture/abi/bin/Release/net10.0/Abi.dll" >"$fixture/abi-baseline.txt"
-python3 - "$verification_feed/Hexalith.EventStore.Contracts.$sdk_version.nupkg" "$fixture/abi/bin/Release/net10.0/Hexalith.EventStore.Contracts.dll" <<'ASSEMBLY'
-import pathlib, sys, zipfile
-with zipfile.ZipFile(sys.argv[1]) as archive:
-    pathlib.Path(sys.argv[2]).write_bytes(archive.read('lib/net10.0/Hexalith.EventStore.Contracts.dll'))
+python3 - "$fixture" "$verification_feed/Hexalith.EventStore.Contracts.$sdk_version.nupkg" "$sdk_version" <<'ASSEMBLY'
+import hashlib, json, pathlib, shutil, sys, zipfile
+fixture, archive_path = map(pathlib.Path, sys.argv[1:3])
+properties = json.loads((fixture / 'current-project.json').read_text())['Properties']
+current_output = pathlib.Path(properties['TargetPath']).parent
+framework = properties['TargetFramework']
+baseline = fixture / 'abi/bin/Release/net10.0'
+selected = fixture / 'abi-selected'
+baseline_hash = hashlib.sha256((baseline / 'Abi.dll').read_bytes()).hexdigest()
+shutil.copytree(baseline, selected)
+shutil.copytree(current_output, selected, dirs_exist_ok=True)
+assets = json.loads((fixture / 'obj/project.assets.json').read_text())
+identity = f'Hexalith.EventStore.Contracts/{sys.argv[3]}'
+runtime = assets['targets'][framework][identity]['runtime']
+members = [name for name in runtime if name.endswith('/Hexalith.EventStore.Contracts.dll')]
+if len(members) != 1:
+    raise SystemExit('The selected consumer must resolve exactly one Contracts runtime assembly')
+with zipfile.ZipFile(archive_path) as archive:
+    (selected / 'Hexalith.EventStore.Contracts.dll').write_bytes(archive.read(members[0]))
+if hashlib.sha256((selected / 'Abi.dll').read_bytes()).hexdigest() != baseline_hash:
+    raise SystemExit('The original ABI consumer binary changed')
+print(json.dumps({'selectedFramework': framework, 'archiveMember': members[0], 'unchangedConsumerSha256': baseline_hash}))
 ASSEMBLY
-dotnet "$fixture/abi/bin/Release/net10.0/Abi.dll" >"$fixture/abi-selected.txt"
+dotnet exec --runtimeconfig "$fixture/abi-selected/Consumer.runtimeconfig.json" \
+    --depsfile "$fixture/abi-selected/Consumer.deps.json" "$fixture/abi-selected/Abi.dll" >"$fixture/abi-selected.txt"
 cmp "$fixture/abi-baseline.txt" "$fixture/abi-selected.txt"
 echo "Unchanged published-contract binary passed selected constructor/deconstruction and historical identity/serialization hash compatibility."

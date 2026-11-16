@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <IsPackable>false</IsPackable>
-    <!-- SDK11 MSBuild APIs require a compatible test process; product TFMs stay net10. -->
+    <!-- SDK11 MSBuild APIs require a compatible test process; product and test TFMs use net11. -->
+    <TargetFramework>net11.0</TargetFramework>
     <RuntimeFrameworkVersion>11.0.0</RuntimeFrameworkVersion>
   </PropertyGroup>
 

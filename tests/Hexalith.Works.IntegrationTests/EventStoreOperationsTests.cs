@@ -24,7 +24,7 @@ public sealed class EventStoreOperationsTests
             "Hexalith.EventStore.Operations.csproj");
         var startInfo = new ProcessStartInfo("dotnet")
         {
-            WorkingDirectory = root,
+            WorkingDirectory = Path.GetDirectoryName(project)!,
             RedirectStandardError = true,
             RedirectStandardOutput = true,
             UseShellExecute = false,
@@ -71,10 +71,7 @@ public sealed class EventStoreOperationsTests
                 + standardError);
 
         string assembly = Path.Combine(
-            Path.GetDirectoryName(project).ShouldNotBeNull(),
-            "bin",
-            "Release",
-            "net10.0",
+            WorksPlatformRuntimeArtifacts.DirectoryFor(project, "Release"),
             "Hexalith.EventStore.Operations.dll");
         File.Exists(assembly).ShouldBeTrue($"The isolated build did not produce {assembly}.");
 
