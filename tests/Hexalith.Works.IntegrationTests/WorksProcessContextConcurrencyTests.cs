@@ -3,6 +3,7 @@ using System.Text.Json;
 
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Processes;
+using Hexalith.EventStore.Client.Streams;
 using Hexalith.EventStore.Contracts.Effects;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Processes;
@@ -156,8 +157,9 @@ public sealed class WorksProcessContextConcurrencyTests
     }
 
     [Fact]
-    public async Task CancellationStopsLaterBatchesAndLateProviderCompletionCannotReleaseEffectsAsync()
+    public async Task FirstMissingChildRefusesPromptlyWithoutReleasingBlockedProviderAdmissionAsync()
     {
+        CancellationToken token = TestContext.Current.CancellationToken;
         var reads = new ControlledReads();
         await using var cleanup = reads.ConfigureAwait(true);
         IReadOnlyList<ProcessEffect>? effects = null;
@@ -165,9 +167,69 @@ public sealed class WorksProcessContextConcurrencyTests
         await reads.FirstBatchStartedAsync().ConfigureAwait(true);
         reads.Complete("child-a", "missing");
         await reads.Finished("child-a").ConfigureAwait(true);
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(async () =>
+            effects = await translation.WaitAsync(TimeSpan.FromSeconds(3), token).ConfigureAwait(true)).ConfigureAwait(true);
+        effects.ShouldBeNull();
+        reads.Active.ShouldBe(7, "Only the known missing child has terminated; siblings ignore cancellation.");
+        reads.Started.ShouldNotContain("child-i");
+
+        // Seven abandoned providers still own SDK slots. Fill the remaining nine with real
+        // SDK workers, then prove the sixteenth boundary refuses without invoking a provider.
+        var release = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var entered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var deadlines = new List<AuthoritativeStreamReadDeadline>();
+        var workers = new List<Task<int>>();
+        int started = 0;
+        try
+        {
+            for (int index = 0; index < 9; index++)
+            {
+                var deadline = new AuthoritativeStreamReadDeadline(TimeSpan.FromSeconds(10), TimeProvider.System,
+                    token, TimeProvider.System.GetTimestamp());
+                deadlines.Add(deadline);
+                workers.Add(deadline.ReadWithAdmissionAsync(_ =>
+                {
+                    if (Interlocked.Increment(ref started) == 9) entered.TrySetResult();
+                    return release.Task;
+                }));
+            }
+            await entered.Task.WaitAsync(TimeSpan.FromSeconds(3), token).ConfigureAwait(true);
+            using var refused = new AuthoritativeStreamReadDeadline(TimeSpan.FromSeconds(10), TimeProvider.System,
+                token, TimeProvider.System.GetTimestamp());
+            bool invoked = false;
+            await Should.ThrowAsync<AuthoritativeStreamReadAdmissionException>(() => refused.ReadWithAdmissionAsync(_ =>
+            {
+                invoked = true;
+                return Task.FromResult(0);
+            })).ConfigureAwait(true);
+            invoked.ShouldBeFalse();
+            reads.Active.ShouldBe(7);
+            reads.Started.ShouldNotContain("child-i");
+        }
+        finally
+        {
+            release.TrySetResult(1);
+            foreach (string child in ControlledReads.Sorted.Take(8)) reads.Complete(child);
+            try { await Task.WhenAll(workers).ConfigureAwait(true); }
+            finally { foreach (AuthoritativeStreamReadDeadline deadline in deadlines) deadline.Dispose(); }
+        }
+        await Task.WhenAll(ControlledReads.Sorted.Take(8).Select(reads.Finished)).ConfigureAwait(true);
+        effects.ShouldBeNull();
+        reads.Started.ShouldNotContain("child-i");
+    }
+
+    [Fact]
+    public async Task CancellationStopsLaterBatchesAndLateProviderCompletionCannotReleaseEffectsAsync()
+    {
+        var reads = new ControlledReads();
+        await using var cleanup = reads.ConfigureAwait(true);
+        IReadOnlyList<ProcessEffect>? effects = null;
+        Task<IReadOnlyList<ProcessEffect>> translation = reads.Start();
+        await reads.FirstBatchStartedAsync().ConfigureAwait(true);
         reads.Cancel();
         await Should.ThrowAsync<OperationCanceledException>(async () => effects = await translation.ConfigureAwait(true)).ConfigureAwait(true);
         reads.Started.ShouldNotContain("child-i");
+        reads.Complete("child-a", "missing");
         foreach (string child in ControlledReads.Sorted.Take(8)) reads.Complete(child);
         await Task.WhenAll(ControlledReads.Sorted.Take(8).Select(reads.Finished)).ConfigureAwait(true);
         effects.ShouldBeNull();

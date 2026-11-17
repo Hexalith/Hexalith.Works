@@ -60,6 +60,7 @@ internal sealed class ControlledReads : IAsyncDisposable
     internal string[] Children { get; }
     internal string[] Started => _started.ToArray();
     internal int Peak => Volatile.Read(ref _peak);
+    internal int Active => Volatile.Read(ref _active);
     internal Task<IReadOnlyList<ProcessEffect>> Start() => _translation = _translator.TranslateAsync(
         new ProcessSource(Tenant, "work", Parent), _parent.Events[^1], _caller.Token).AsTask();
     internal Task Entered(string child) => _entered[child].Task.WaitAsync(TimeSpan.FromSeconds(5), _caller.Token);

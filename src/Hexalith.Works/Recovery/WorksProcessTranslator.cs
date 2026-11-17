@@ -99,21 +99,34 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
         // Only one fixed-size batch is retained, and sorted validation preserves failure precedence.
         foreach (ChildSpawned[] batch in children.Chunk(8))
         {
-            var contexts = await Task.WhenAll(batch.Select(ReadChildAsync)).ConfigureAwait(false);
-            cancellationToken.ThrowIfCancellationRequested();
-            for (int index = 0; index < batch.Length; index++)
+            using var batchCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var contexts = batch.Select(child => ReadChildAsync(child, batchCancellation.Token)).ToArray();
+            try
             {
-                ChildSpawned child = batch[index];
-                contexts[index].Failure?.Throw();
-                IReadOnlyList<WorksCommittedEvent> related = contexts[index].Facts!;
-                WorkItemCreated? creation = related.Select(fact => fact.Payload).OfType<WorkItemCreated>().SingleOrDefault();
-                if (creation is null) throw new ProcessEvidenceUnavailableException();
-                if (creation.Parent is null || creation.Parent.TenantId.Value != source.Tenant
-                    || creation.Parent.WorkItemId.Value != source.Aggregate)
-                    throw new InvalidOperationException("Works cascade relationship evidence is inconsistent.");
-                // Current terminal state cannot remove a planned effect after a target commit.
-                // Every direct target keeps its immutable intent and receipt-backed replay.
-                descendants.Add(new CascadeDescendant(child.TenantId, child.ChildWorkItemId, IsTerminal: false));
+                for (int index = 0; index < batch.Length; index++)
+                {
+                    var context = await contexts[index].ConfigureAwait(false);
+                    cancellationToken.ThrowIfCancellationRequested();
+                    ChildSpawned child = batch[index];
+                    context.Failure?.Throw();
+                    IReadOnlyList<WorksCommittedEvent> related = context.Facts!;
+                    WorkItemCreated? creation = related.Select(fact => fact.Payload).OfType<WorkItemCreated>().SingleOrDefault();
+                    if (creation is null) throw new ProcessEvidenceUnavailableException();
+                    if (creation.Parent is null || creation.Parent.TenantId.Value != source.Tenant
+                        || creation.Parent.WorkItemId.Value != source.Aggregate)
+                        throw new InvalidOperationException("Works cascade relationship evidence is inconsistent.");
+                    // Current terminal state cannot remove a planned effect after a target commit.
+                    // Every direct target keeps its immutable intent and receipt-backed replay.
+                    descendants.Add(new CascadeDescendant(child.TenantId, child.ChildWorkItemId, IsTerminal: false));
+                }
+            }
+            finally
+            {
+                // Drain contextual wrappers, not their noncooperative providers: the SDK retains
+                // provider admission until actual termination and discards every late result.
+                await batchCancellation.CancelAsync().ConfigureAwait(false);
+                await Task.WhenAll(contexts).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
             }
         }
 
@@ -126,11 +139,11 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
             _ => [],
         };
 
-        async Task<(IReadOnlyList<WorksCommittedEvent>? Facts, ExceptionDispatchInfo? Failure)> ReadChildAsync(ChildSpawned child)
+        async Task<(IReadOnlyList<WorksCommittedEvent>? Facts, ExceptionDispatchInfo? Failure)> ReadChildAsync(ChildSpawned child, CancellationToken batchToken)
         {
             try
             {
-                return (await _streams.ReadAsync(source.Tenant, child.ChildWorkItemId.Value, cancellationToken).ConfigureAwait(false), null);
+                return (await _streams.ReadAsync(source.Tenant, child.ChildWorkItemId.Value, batchToken).ConfigureAwait(false), null);
             }
             catch (EventStoreGatewayException exception) when (exception.StatusCode == 404
                 && (exception.Code == StreamReplayReasonCodes.MissingStream || exception.ReasonCode == StreamReplayReasonCodes.MissingStream))
