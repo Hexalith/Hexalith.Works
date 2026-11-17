@@ -728,8 +728,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     /// The finite synthetic process profile's supported retained sources: the five-child cascade fixture's eleven sources
     /// plus one executor-visible source for delegated queries. SDK validation couples it with the operation timeout,
     /// source quantum and freshness window configured in <see cref="Configure"/>: the quantum must cover
-    /// (4 + 5 x 5 effects) x 1.9 s = 55.1 s, and twelve sources x (2 x 56 s + 16 x 1.9 s) plus twelve catalog reads and one
-    /// twenty-second interval, 1,751.6 s, must fit within the 30-minute window less one interval.
+    /// (4 + 5 x 5 effects) x 1.97 s = 57.13 s, and twelve sources x (2 x 57.13 s + 16 x 1.97 s) plus twelve catalog reads and one
+    /// ten-second interval, 1,783 s, must fit within the 30-minute window less one interval.
     /// </summary>
     internal const int SupportedCandidates = 12;
 
@@ -966,13 +966,13 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             .WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:20")
             .WithEnvironment("EventStore__Reminders__CatalogOperationTimeout", "00:00:03")
             .WithEnvironment("EventStore__Reminders__CatalogServiceBudget", "00:00:30")
-            .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:20")
+            .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:10")
             .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
             .WithEnvironment("EventStore__Processes__RetryLimit", "10")
             .WithEnvironment("EventStore__Processes__SupportedCandidateCount", SupportedCandidates.ToString(System.Globalization.CultureInfo.InvariantCulture))
-            .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:01.9000000")
+            .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:01.9700000")
             .WithEnvironment("EventStore__Processes__LeaseDuration", "00:00:30")
-            .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:00:56")
+            .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:00:57.1300000")
             .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
     }
 

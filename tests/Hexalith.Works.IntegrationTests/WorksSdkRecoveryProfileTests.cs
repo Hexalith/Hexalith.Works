@@ -27,10 +27,10 @@ public sealed class WorksSdkRecoveryProfileTests
         EventStoreProcessOptions options = services.GetRequiredService<IOptions<EventStoreProcessOptions>>().Value;
         options.SupportedCandidateCount.ShouldBe(12);
         options.MaxEffectsPerEnvelope.ShouldBe(5);
-        options.OperationTimeout.ShouldBe(TimeSpan.FromMilliseconds(1900));
-        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromSeconds(56));
+        options.OperationTimeout.ShouldBe(TimeSpan.FromMilliseconds(1970));
+        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromMilliseconds(57130));
         options.ReadinessMaxAge.ShouldBe(TimeSpan.FromMinutes(30));
-        options.ReconciliationInterval.ShouldBe(TimeSpan.FromSeconds(20));
+        options.ReconciliationInterval.ShouldBe(TimeSpan.FromSeconds(10));
         options.LeaseDuration.ShouldBe(TimeSpan.FromSeconds(30));
         options.RetryLimit.ShouldBe(10);
         options.Validate().ShouldBeEmpty();
@@ -46,11 +46,11 @@ public sealed class WorksSdkRecoveryProfileTests
         // resources; the HA replica receives the same real emitted and SDK-bound options.
         reminders.CatalogServiceBudget.ShouldBeGreaterThan(TimeSpan.FromSeconds(options.SupportedCandidateCount * 2));
 
-        // The registered five-effect contract needs 29 operation deadlines per envelope (55.1 s).
-        // Whole-cycle work is 12 * (2 * 56 + 17 * 1.9) + 20 = 1751.6 s, below 1780 s.
-        options.SourceServiceQuantum.ShouldBeGreaterThan(TimeSpan.FromSeconds(55.1));
+        // The registered five-effect contract needs 29 operation deadlines per envelope (57.13 s).
+        // Whole-cycle work is 12 * (2 * 57.13 + 17 * 1.97) + 10 = 1783 s, below 1790 s.
+        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromTicks(29 * options.OperationTimeout.Ticks));
         options.ReadinessMaxAge.Subtract(options.ReconciliationInterval)
-            .ShouldBeGreaterThan(TimeSpan.FromSeconds(1751.6));
+            .ShouldBeGreaterThan(TimeSpan.FromSeconds(1783));
     }
 
     /// <summary>The superseded profile fits eleven sources but cannot silently admit the executor-visible twelfth.</summary>
@@ -77,11 +77,11 @@ public sealed class WorksSdkRecoveryProfileTests
     public async Task ExactFiveEffectQuantumIsAccepted()
     {
         Dictionary<string, string?> settings = await ComposedSettingsAsync("works");
-        settings["EventStore:Processes:SourceServiceQuantum"] = "00:00:55.1000000";
+        settings["EventStore:Processes:SourceServiceQuantum"] = "00:00:57.1300000";
         using ServiceProvider services = Services(settings);
         EventStoreProcessOptions options = services.GetRequiredService<IOptions<EventStoreProcessOptions>>().Value;
         options.MaxEffectsPerEnvelope.ShouldBe(5);
-        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromMilliseconds(55100));
+        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromMilliseconds(57130));
         options.Validate().ShouldBeEmpty();
     }
 
@@ -90,7 +90,7 @@ public sealed class WorksSdkRecoveryProfileTests
     /// <param name="value">The unsafe replacement.</param>
     /// <param name="failurePrefix">The independently expected SDK validation boundary.</param>
     [Theory]
-    [InlineData("SourceServiceQuantum", "00:00:55.0999999", "SourceServiceQuantum must fit")]
+    [InlineData("SourceServiceQuantum", "00:00:57.1299999", "SourceServiceQuantum must fit")]
     [InlineData("SupportedCandidateCount", "13", "SupportedCandidateCount cannot fit")]
     public async Task UnsafeEffectOrPopulationBudgetIsRefused(string field, string value, string failurePrefix)
     {
