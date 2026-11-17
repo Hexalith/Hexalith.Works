@@ -30,6 +30,17 @@ public static class WorksSdkProofPreparationQualification
             string project = Path.Combine(works, "src/Hexalith.Works/Hexalith.Works.csproj");
             string consumer = Path.GetDirectoryName(proof)!;
             string targets = Path.Combine(works, "tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRuntime.targets");
+            using var assets = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(consumerOutput, "obj/Hexalith.Works.IntegrationTests/project.assets.json")));
+            using var dependencies = JsonDocument.Parse(File.ReadAllBytes(Path.ChangeExtension(proof, ".deps.json")));
+            foreach (var dependency in System.Xml.Linq.XDocument.Load(targets).Descendants("PackageVersion").Where(item => item.Attribute("AssemblyVersion") is not null))
+            {
+                string name = dependency.Attribute("Include")!.Value, version = dependency.Attribute("Version")!.Value;
+                string package = name + "/" + version;
+                assets.RootElement.GetProperty("libraries").GetProperty(package).GetProperty("type").GetString().ShouldBe("package");
+                dependencies.RootElement.GetProperty("libraries").GetProperty(package).GetProperty("type").GetString().ShouldBe("package");
+                AssemblyName.GetAssemblyName(Path.Combine(consumer, name + ".dll")).Version!.ToString()
+                    .ShouldBe(dependency.Attribute("AssemblyVersion")!.Value);
+            }
             string manifest = Path.Combine(scratch, "proof.json");
             string Digest(string path) => Convert.ToHexStringLower(SHA256.HashData(File.ReadAllBytes(path)));
             File.WriteAllText(manifest, JsonSerializer.Serialize(new
@@ -55,6 +66,8 @@ public static class WorksSdkProofPreparationQualification
                 ["UseHexalithProjectReferences"] = "false", ["UseNuGetDeps"] = "true",
                 ["HexalithEventStoreFromSource"] = "false", ["HexalithPolymorphicSerializationsFromSource"] = "false",
                 ["PathMap"] = output + "=/_/hexalith-works-platform-build",
+                ["MSBuildWarningsAsErrors"] = "MSB3277", ["TreatWarningsAsErrors"] = "true",
+                ["NuGetAudit"] = "true", ["NuGetAuditMode"] = "all", ["NuGetAuditLevel"] = "low",
             };
             foreach (string key in new[] { "Version", "MinVerVersionOverride", "HexalithBuildsPublishedToolRoot", "HexalithBuildsRoot", "PlatformWorksRuntimeRoot" })
                 if (Environment.GetEnvironmentVariable(key) is { Length: > 0 } value) launch.BuildEnvironment[key] = value;
@@ -115,7 +128,8 @@ public static class WorksSdkProofPreparationQualification
         var start = new ProcessStartInfo("dotnet")
         { WorkingDirectory = works, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         foreach (string argument in new[] { "build", Path.Combine(works, "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj"),
-            "-c", "Release", "--artifacts-path", output, "--disable-build-servers", "-m:1", "-nr:false",
+            "-c", "Release", "-p:MSBuildWarningsAsErrors=MSB3277", "-p:TreatWarningsAsErrors=true",
+            "-p:NuGetAudit=true", "-p:NuGetAuditMode=all", "-p:NuGetAuditLevel=low", "--artifacts-path", output, "--disable-build-servers", "-m:1", "-nr:false",
             "-p:PathMap=" + output + "=/_/hexalith-works-platform-build", "-p:CustomAfterMicrosoftCommonTargets=", "-p:HexalithWorksProofAssembly=",
             "-p:UseHexalithProjectReferences=false", "-p:UseNuGetDeps=true", "-p:HexalithEventStoreFromSource=false",
             "-p:HexalithPolymorphicSerializationsFromSource=false", "-p:WorksAllowLocalEventStoreCandidate=false" }) start.ArgumentList.Add(argument);
