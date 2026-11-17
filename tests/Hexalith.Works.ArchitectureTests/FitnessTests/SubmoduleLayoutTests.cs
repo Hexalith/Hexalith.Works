@@ -21,6 +21,7 @@ public sealed class SubmoduleLayoutTests
             "references/Hexalith.AI.Tools",
             "references/Hexalith.Builds",
             "references/Hexalith.Chatbot",
+            "references/Hexalith.CiCd",
             "references/Hexalith.Commons",
             "references/Hexalith.Conversations",
             "references/Hexalith.EventStore",
