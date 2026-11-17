@@ -40,3 +40,6 @@
 [submodule "references/Hexalith.Memories"]
 	path = references/Hexalith.Memories
 	url = https://github.com/Hexalith/Hexalith.Memories.git
+[submodule "references/Hexalith.CiCd"]
+	path = references/Hexalith.CiCd
+	url = https://github.com/Hexalith/Hexalith.CiCd.git
