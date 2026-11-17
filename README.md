@@ -47,7 +47,22 @@ CI restores and builds Release assets with centrally pinned NuGet references for
 Ordinary push/PR CI keeps the blocking compilation, package, consumer and test suites above. The `Qualification` workflow (`qualification.yml`) runs nightly at 02:23 UTC and manually on the selected source. Its `platform-parity` job runs Platform's complete canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. A release requires both a successful push CI run and a successful nightly or manual Qualification run for its exact current `main` SHA. If nightly qualification covered an older SHA, run Qualification manually on current `main` and wait for it to pass before releasing. Qualification from another source is never reused. Run the same complete CI profile locally after initializing the dependencies above:
 
 ```bash
-run-with-temp bash -c 'bash scripts/verify-platform-parity-ci.sh --artifacts-path "$TMPDIR/works-platform-proof"'
+run-with-temp bash -c '
+  proof="$TMPDIR/works-platform-proof"
+  mkdir -p artifacts
+  saved="$(mktemp -d "$PWD/artifacts/works-platform-proof.XXXXXX")"
+  status=0
+  bash scripts/verify-platform-parity-ci.sh --artifacts-path "$proof" > "$saved/run.log" 2>&1 || status=$?
+  for directory in . gate; do
+    [ -d "$proof/$directory" ] || continue
+    mkdir -p "$saved/$directory"
+    find "$proof/$directory" -maxdepth 1 -type f \
+      \( -name "*.json" -o -name "*.jsonl" -o -name "*.xml" -o -name "*.log" \) \
+      -exec cp {} "$saved/$directory/" \;
+  done
+  printf "Evidence: %s\n" "$saved"
+  exit "$status"
+'
 ```
 
 For an independently obtained official SDK source export, add `--runtime-sdk-root /absolute/path/to/export`. The bootstrap copies it into the run-owned workspace and records an unknown checkout commit; the canonical verifier still requires its exact runtime/build inputs to match the selected public package producer and official release tag. This option does not select a different package version or qualify a candidate Builds catalog.

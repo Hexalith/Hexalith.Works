@@ -2299,3 +2299,13 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-release-dependency-refresh-2026-11-16.md`
   summary: The default runtime artifact resolver still assumes the standard bin/configuration/framework layout; arbitrary custom output or RID layouts need evaluated TargetDir.
   evidence: The baseline resolver already reconstructed this layout. Current canonical nondefault builds use WORKS_PLATFORM_RUNTIME_ARTIFACTS, while the default branch has no evaluated OutputPath/RID handling.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-reduce-works-ci-duration.md`
+  summary: Requalify the complete Works parity and rollback gate from stable, immutable repository identities.
+  evidence: The canonical attempt exited 1 at retained rollback after external commits changed Works/Platform/CiCd during execution; source bytes matched but deployed Works DLL/PDB bytes drifted. Later live lanes and final closure did not execute. Keep all integrity checks and require exact-source success before release.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-reduce-works-ci-duration.md`
+  summary: Move bulk qualification diagnostics committed by concurrent workspace synchronization to owner-approved artifact storage.
+  evidence: External /pushall committed the interrupted run's large inventories while this build was active. This session preserves those external commits and changes rather than deleting user work; subsequent useful evidence should remain outside source commits.
+
+Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification: the complete immutable four-processor run passed all eleven rows, 44 proof kinds, full rollback and final integrity closure. Evidence: `/home/administrator/.codex/artifacts/works-ci-duration-stable4-20261117T114900Z`. The earlier unstable and Redis-startup attempts remain nonqualifying history.
