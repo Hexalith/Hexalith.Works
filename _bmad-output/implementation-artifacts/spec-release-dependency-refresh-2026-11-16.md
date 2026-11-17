@@ -174,3 +174,10 @@ Targeted and hot-pool MTP qualification pass. The complete private CI-layout run
 - External dependency CI failures are recorded under the external source-rebind evidence directory. Unpublished Projects.Contracts2.0.0-story66.3, an incompatible Projects API edge and missing EventStore qualification/attestation authority are not claimed resolved by Works' local qualification.
 
 The final Builds synchronization is af3752ddcbe94c007630703ab3803df5654f9933, a merge preserving the concurrent local and remote histories with a tree identical to audited upstream a1e0c310. The317-package/157-family audit and seven focused catalog/guard checks pass. CiCd owner proposal9b7fa8dbb1e9abedad9161bf0b5691b164d5aed9 closes the exact root07→af3752dd gitlink delta, including the sole OpenAPI3.11.1 catalog change, while preserving the root index and all product edits. All14 selected direct dependency commits are published and clean; no nested submodule is initialized.
+
+
+## Native Owner Listener Isolation
+
+Exact-source fe426ba hosted compilation/tests, lint, CodeQL and commit policy pass. Its complete canonical run passes397 supporting checks, all six strict runtime prebuilds, binary/telemetry checks and actual retained-host readiness, then rejects both live recovery starts. The SDK correctly detects that the harness cleared the gateway HTTP listener after preparation captured it.
+
+The harness now preserves that selected gateway listener for current Platform and retained starts. Other application/sidecar ports remain dynamic; mTLS, discovery isolation and unchanged SDK identity/credential guards remain active. The actual published SDK5.2 observer and Dapr toolkit regression proves preserved48123 succeeds and the old null rewrite is refused. All25 focused discovery cases pass, the Release build has zero warnings/errors with audits enabled, and independent review reports no findings. A new complete canonical run and exact-source hosted CI remain required.

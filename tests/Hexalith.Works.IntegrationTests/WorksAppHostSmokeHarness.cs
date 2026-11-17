@@ -118,6 +118,7 @@ internal static class WorksAppHostSmokeHarness
         }
         // Control-plane endpoints remain fixed and ownership-checked. Application and sidecar
         // proxies are disposable: never route synthetic proof traffic to another local AppHost.
+        // The catalog already captured the gateway's run-owned native-read HTTP listener; retain that identity.
         // Name resolution is isolated too: default mDNS discovery would round-robin this start's
         // app IDs with any unrelated local sidecar that shares them.
         string registry = Path.Combine(discovery, WorksAppHostDiscoveryIsolation.RegistryFileName);
@@ -160,7 +161,7 @@ internal static class WorksAppHostSmokeHarness
             dapr.Sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(annotation.Options with
             {
                 AppPort = null,
-                DaprHttpPort = preserveGatewayHttpPort && project.Name == "eventstore" ? annotation.Options.DaprHttpPort : null,
+                DaprHttpPort = (platform || preserveGatewayHttpPort) && project.Name == "eventstore" ? annotation.Options.DaprHttpPort : null,
                 DaprGrpcPort = null,
                 DaprInternalGrpcPort = null,
                 MetricsPort = null,

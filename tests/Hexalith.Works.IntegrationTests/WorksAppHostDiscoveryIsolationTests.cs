@@ -1,8 +1,14 @@
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
+using Aspire.Hosting.Eventing;
+using Aspire.Hosting.Lifecycle;
 
 using CommunityToolkit.Aspire.Hosting.Dapr;
 using System.Text.Json.Nodes;
+
+using Hexalith.EventStore.Aspire;
+
+using Microsoft.Extensions.DependencyInjection;
 
 using Shouldly;
 
@@ -153,7 +159,7 @@ public sealed class WorksAppHostDiscoveryIsolationTests
                 DaprSidecarOptions options = sidecar.Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options;
                 options.AppId.ShouldBe(project.Name);
                 options.AppPort.ShouldBeNull();
-                options.DaprHttpPort.ShouldBeNull();
+                options.DaprHttpPort.ShouldBe(project.Name == "eventstore" ? 42001 : (int?)null);
                 options.DaprGrpcPort.ShouldBeNull();
                 options.DaprInternalGrpcPort.ShouldBeNull();
                 options.MetricsPort.ShouldBeNull();
@@ -201,6 +207,85 @@ public sealed class WorksAppHostDiscoveryIsolationTests
             Directory.Delete(discovery, recursive: true);
             Directory.Delete(fixture, recursive: true);
         }
+    }
+
+    /// <summary>The real SDK owner guard observes the same selected listener after the actual harness rewrite and toolkit rendering.</summary>
+    /// <param name="changeCapturedListener">Whether to reproduce the old rewrite that discarded the captured listener.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task NativeOwnerListenerSurvivesIsolationThroughTheActualSdkBeforeStartGuard(bool changeCapturedListener)
+    {
+        string fixture = Directory.CreateTempSubdirectory("works-native-owner-listener-").FullName;
+        try
+        {
+            string discovery = Directory.CreateDirectory(Path.Combine(fixture, "discovery")).FullName;
+            string policy = Path.Combine(fixture, "configuration.yaml"); File.WriteAllText(policy, Policy);
+            string project = Path.Combine(fixture, "ModelOnly.csproj"); File.WriteAllText(project, "<Project />");
+            var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { DisableDashboard = true });
+            builder.Configuration["DcpPublisher:CliPath"] = Path.Combine(fixture, "model-only-dcp-not-started");
+            builder.Configuration["DcpPublisher:DashboardPath"] = Path.Combine(fixture, "model-only-dashboard-not-started");
+            builder.AddDapr(options => options.DaprPath = Path.Combine(fixture, "model-only-dapr-not-started"));
+            foreach (string name in new[] { "dapr-sentry", "dapr-placement-mtls", "dapr-scheduler-mtls" })
+                builder.AddContainer(name, "model-only-image-not-started").WithEndpoint(targetPort: 50001, name: "grpc");
+            var gateway = builder.AddProject("eventstore", project).WithHttpEndpoint(port: 42000)
+                .WithDaprSidecar(sidecar => sidecar.WithOptions(new DaprSidecarOptions
+                { AppId = "eventstore", Config = policy, DaprHttpPort = 48123, DaprGrpcPort = 48124 }));
+            var admin = builder.AddProject("eventstore-admin", project).WithDaprSidecar(sidecar => sidecar.WithOptions(new DaprSidecarOptions
+                { AppId = "eventstore-admin", Config = policy }));
+            DevelopmentRouteCatalogReceiver[] receivers = [new(gateway, []) { TechnicalHttp = true },
+                new(admin, []) { TechnicalHttp = true, ActorStateOwners = [gateway] }];
+            var applications = new Dictionary<ProjectResource, string> { [gateway.Resource] = "eventstore", [admin.Resource] = "eventstore-admin" };
+            // Use the published SDK's own observer; reflection exposes no replacement implementation or weakened check.
+            Type observerType = typeof(DevelopmentRouteCatalogReceiver).Assembly.GetType(
+                "Hexalith.EventStore.Aspire.DevelopmentRouteCatalogOwnerReadObserver", throwOnError: true)!;
+            var observer = (IDistributedApplicationEventingSubscriber)Activator.CreateInstance(observerType,
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, binder: null,
+                args: [builder, receivers, applications, fixture], culture: null)!;
+            IDaprSidecarResource sidecar = gateway.Resource.Annotations.OfType<DaprSidecarAnnotation>().Single().Sidecar;
+            var captured = sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options;
+            WorksAppHostSmokeHarness.IsolateApplicationPorts(builder, discovery, true, (61001, 61005, 61006), null);
+            var selected = sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single();
+            if (changeCapturedListener)
+            {
+                sidecar.Annotations.Remove(selected);
+                sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(selected.Options with { DaprHttpPort = null }));
+            }
+            await using var application = builder.Build();
+            var eventing = application.Services.GetRequiredService<IDistributedApplicationEventing>();
+            foreach (var renderer in application.Services.GetServices<IDistributedApplicationEventingSubscriber>()
+                .Where(subscriber => subscriber.GetType().Name == "DaprDistributedApplicationLifecycleHook"))
+                await renderer.SubscribeAsync(eventing, builder.ExecutionContext, TestContext.Current.CancellationToken);
+            await observer.SubscribeAsync(eventing, builder.ExecutionContext, TestContext.Current.CancellationToken);
+            var model = application.Services.GetRequiredService<DistributedApplicationModel>();
+            Task Render() => eventing.PublishAsync(new BeforeStartEvent(application.Services, model), TestContext.Current.CancellationToken);
+            if (changeCapturedListener)
+                (await Should.ThrowAsync<InvalidOperationException>(Render)).Message.ShouldContain("actual rendered owner sidecar identity or HTTP listener changed");
+            else await Render();
+            var executable = model.Resources.OfType<ExecutableResource>().Single(resource => resource.Name == "eventstore-dapr-cli");
+            var listener = executable.Annotations.OfType<EndpointAnnotation>().Single(endpoint => endpoint.Name == "http");
+            listener.Port.ShouldBe(changeCapturedListener ? null : captured.DaprHttpPort);
+            int nextPort = 48200;
+            foreach (var resource in model.Resources)
+                foreach (var endpoint in resource.Annotations.OfType<EndpointAnnotation>())
+                    endpoint.AllocatedEndpoint = new AllocatedEndpoint(endpoint, "127.0.0.1", endpoint.Port ?? nextPort++,
+                        targetPortExpression: (endpoint.TargetPort ?? nextPort++).ToString(System.Globalization.CultureInfo.InvariantCulture));
+            List<object> arguments = [];
+            foreach (var callback in executable.Annotations.OfType<CommandLineArgsCallbackAnnotation>())
+                await callback.Callback(new CommandLineArgsCallbackContext(arguments, executable, TestContext.Current.CancellationToken));
+            List<string?> rendered = [];
+            foreach (object argument in arguments)
+                rendered.Add(argument is IValueProvider provider ? await provider.GetValueAsync(TestContext.Current.CancellationToken) : argument.ToString());
+            TestContext.Current.TestOutputHelper!.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
+            {
+                changeCapturedListener, sdk = observerType.Assembly.FullName,
+                capturedAppId = captured.AppId, capturedHttpPort = captured.DaprHttpPort,
+                actualHttpPort = listener.Port, allocatedHttpPort = listener.AllocatedEndpoint!.Port,
+                renderedArguments = rendered,
+            }));
+            File.Exists(Path.Combine(fixture, "eventstore-admin.actor-state-owners.json")).ShouldBeFalse();
+        }
+        finally { Directory.Delete(fixture, recursive: true); }
     }
 
     private const string Registry = "/tmp/works-sdk416-discovery-fixture/name-resolution.db";
