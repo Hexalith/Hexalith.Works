@@ -290,6 +290,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
         await WaitAsync(async () =>
         {
             using var statusRequest = new HttpRequestMessage(HttpMethod.Get, "/api/v1/commands/status/" + Uri.EscapeDataString(message));
+            statusRequest.Headers.Add("X-Hexalith-Tenant", tenant);
             statusRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", WorksAppHostSmokeHarness.MintToken(tenant));
             using HttpResponseMessage status = await client.SendAsync(statusRequest, token).ConfigureAwait(false);
             if (status.StatusCode == HttpStatusCode.NotFound) return false;

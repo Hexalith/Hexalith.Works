@@ -67,3 +67,6 @@ tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.
 tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksRecoveryStartupDiagnostics.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksFixtureDaprAuthenticationTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the SDK command-status scope regression.
+tests/Hexalith.Works.IntegrationTests/WorksCommandStatusScopeTests.cs whitespace=cr-at-eol

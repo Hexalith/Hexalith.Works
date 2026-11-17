@@ -204,3 +204,10 @@ The f20ccbf complete run now passes live startup/readiness, confirming the prepa
 All live fixture SDK/HTTP factories now resolve the selected app-model resource's endpoints and `DAPR_API_TOKEN` together through the supported Aspire execution configuration API. They refuse configuration errors and unselected resource objects, ignore masked/forged snapshots, and clear ambient SDK-token fallback for tokenless resources. HTTP credentials stay on the selected endpoint, redirects are disabled, explicit wrong headers remain unchanged, and private proof IPC never traverses the credential handler. Existing wrong-sender/mTLS assertions remain intact.
 
 Audited Release build0warnings/errors,24 focused tests and actual Dapr1.19.1 HTTP/gRPC checks pass. Selected owner succeeds; foreign and tokenless clients remain401/Unauthenticated even when the ambient probe token is valid. Independent review reports no findings. Complete recovery/rollback and exact-source CI remain pending; no public release is claimed yet.
+
+
+## Explicit Tenant Status Selection
+
+The3a62b97 live run passes startup/readiness and authenticated Dapr state access, then the recovery command poller reports unknown. The actual Gateway rejects its bearer-only status request with403 because SDK5.2 requires an explicit tenant selector before reading command status. The response schema and Completed state remain compatible.
+
+Both legitimate live status pollers now send `X-Hexalith-Tenant` with their existing tenant and bearer token. Deadlines, final status assertions and intentional unauthorized requests remain unchanged. An actual published SDK controller/Kestrel regression invokes the real submit/poll helper and proves own200/Completed, missingselector403 and foreignselector403, with no unauthorized store read. Audited Release build0warnings/errors and the focused regression pass. Complete live recovery/rollback and exact-source CI remain pending.

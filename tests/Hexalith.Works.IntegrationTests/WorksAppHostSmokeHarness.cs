@@ -1013,6 +1013,7 @@ internal static class WorksAppHostSmokeHarness
         while (DateTime.UtcNow < deadline)
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, $"/api/v1/commands/status/{correlationId}");
+            request.Headers.Add("X-Hexalith-Tenant", tenantId);
             request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", MintToken(tenantId));
 
             using HttpResponseMessage response = await client.SendAsync(request, cancellationToken).ConfigureAwait(false);
