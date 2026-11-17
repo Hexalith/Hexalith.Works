@@ -181,3 +181,10 @@ The final Builds synchronization is af3752ddcbe94c007630703ab3803df5654f9933, a 
 Exact-source fe426ba hosted compilation/tests, lint, CodeQL and commit policy pass. Its complete canonical run passes397 supporting checks, all six strict runtime prebuilds, binary/telemetry checks and actual retained-host readiness, then rejects both live recovery starts. The SDK correctly detects that the harness cleared the gateway HTTP listener after preparation captured it.
 
 The harness now preserves that selected gateway listener for current Platform and retained starts. Other application/sidecar ports remain dynamic; mTLS, discovery isolation and unchanged SDK identity/credential guards remain active. The actual published SDK5.2 observer and Dapr toolkit regression proves preserved48123 succeeds and the old null rewrite is refused. All25 focused discovery cases pass, the Release build has zero warnings/errors with audits enabled, and independent review reports no findings. A new complete canonical run and exact-source hosted CI remain required.
+
+
+## Direct Notification and Declarative Subscription Alignment
+
+Exact5254bb5 passes hosted build/tests, lint and toolchain; the local canonical run passes399 supporting checks, six strict prebuilds, binary/telemetry and retained startup. Current Gateway starts but stays unready: its SDK technical transport refuses admission while its unused programmatic `*.*.projection-changed` subscription is denied by the deliberately bounded broker policy. Exact hosted evidence is retained separately.
+
+Platform1ead34c65619c064e8e5fd374d5e6a56be19e830 explicitly retains the SDK's existing `Direct` projection notification transport and enables supported declarative subscriptions for Gateway. ETag regeneration and broadcasts remain direct; the three broker topic grants and scopes are byte-identical. The public SDK5.2 HTTP probe confirms programmatic mode advertises the wildcard while declarative mode removes that metadata and returns404 for discovery. All30 model/policy tests pass with a clean audited Release build; independent review finds no issues. Full live readiness and exact-source CI still require a new run.
