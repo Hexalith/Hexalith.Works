@@ -15,8 +15,8 @@ public sealed class WorksPlatformRollbackBinaryTests
         WorksPlatformRollbackChecks.RuntimeBinaryHashes().OrderBy(pair => pair.Key).ShouldBe(before.OrderBy(pair => pair.Key));
         if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_EVIDENCE_PATH") is { Length: > 0 } evidence)
             File.AppendAllText(evidence, System.Text.Json.JsonSerializer.Serialize(new { phase = "selected-runtime-binary-capture-preflight",
-                files = before.Count, totalBytes = before.Keys.Sum(path => new FileInfo(path).Length),
-                inventorySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(before.OrderBy(pair => pair.Key)))) }) + "\n");
+                state = new { files = before.Count, totalBytes = before.Keys.Sum(path => new FileInfo(path).Length),
+                    inventorySha256 = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(before.OrderBy(pair => pair.Key)))) } }) + "\n");
     }
 
     [Fact]

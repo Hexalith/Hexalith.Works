@@ -477,7 +477,7 @@ internal static class WorksPlatformProjectionChecks
         string channelToken = (JsonSerializer.Deserialize<Dictionary<string, string>>(await File.ReadAllBytesAsync(tokens, cancellationToken).ConfigureAwait(false))
             ?? throw new InvalidOperationException("Captured synthetic channel tokens are unavailable."))["works"];
         using HttpClient direct = app.CreateHttpClient("works");
-        HttpRequestMessage Legacy(bool channel)
+        HttpRequestMessage Legacy(bool channel, bool generationBound)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, "/project")
             {
@@ -486,16 +486,29 @@ internal static class WorksPlatformProjectionChecks
             request.Headers.TryAddWithoutValidation(EventStoreWorkloadAuthenticationDefaults.AssertionHeaderName,
                 WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]));
             if (channel) request.Headers.TryAddWithoutValidation(DaprAppChannelToken.HeaderName, channelToken);
+            if (generationBound)
+            {
+                request.Headers.TryAddWithoutValidation(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.RootHeader, servingBefore.Root);
+                request.Headers.TryAddWithoutValidation(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.EpochHeader, servingBefore.Epoch);
+                // This is the actual SDK authority readback, already matched to the serving metadata's root/epoch.
+                if (runtime.Generation.ActivationBindingDigest is { } binding)
+                    request.Headers.TryAddWithoutValidation(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.BindingHeader, binding);
+            }
             return request;
         }
 
-        using HttpRequestMessage credentialed = Legacy(channel: true);
-        credentialed.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.RootHeader).ShouldBeFalse();
-        credentialed.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.EpochHeader).ShouldBeFalse();
+        using HttpRequestMessage unbound = Legacy(channel: true, generationBound: false);
+        unbound.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.RootHeader).ShouldBeFalse();
+        unbound.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.EpochHeader).ShouldBeFalse();
+        unbound.Headers.Contains(Hexalith.EventStore.ServiceDefaults.Routing.RouteCatalogInvocationHandler.BindingHeader).ShouldBeFalse();
+        using HttpResponseMessage missingGeneration = await direct.SendAsync(unbound, cancellationToken).ConfigureAwait(false);
+        missingGeneration.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable,
+            "The unbound legacy control must be refused before any handler. Body: " + await ReadFailureBodyAsync(missingGeneration, cancellationToken).ConfigureAwait(false));
+        using HttpRequestMessage credentialed = Legacy(channel: true, generationBound: true);
         using HttpResponseMessage legacy = await direct.SendAsync(credentialed, cancellationToken).ConfigureAwait(false);
-        legacy.StatusCode.ShouldBe(HttpStatusCode.ServiceUnavailable,
-            "The raw legacy probe has no generation binding; the active catalog must refuse it before any handler. Body: " + await ReadFailureBodyAsync(legacy, cancellationToken).ConfigureAwait(false));
-        using HttpRequestMessage uncredentialed = Legacy(channel: false);
+        legacy.StatusCode.ShouldBe(HttpStatusCode.NotFound,
+            "The credentialed serving-generation probe must reach the SDK's absent legacy receiver decision. Body: " + await ReadFailureBodyAsync(legacy, cancellationToken).ConfigureAwait(false));
+        using HttpRequestMessage uncredentialed = Legacy(channel: false, generationBound: true);
         using HttpResponseMessage missingChannel = await direct.SendAsync(uncredentialed, cancellationToken).ConfigureAwait(false);
         missingChannel.StatusCode.ShouldBe(HttpStatusCode.Unauthorized);
         var after = await SnapshotAsync(coordinator, scope, histories, cancellationToken).ConfigureAwait(false);
@@ -518,9 +531,13 @@ internal static class WorksPlatformProjectionChecks
         {
             tenant, aggregateId, legacyRoute = "/project", namedRoute = "/project/v2",
             legacyRouteStatus = (int)legacy.StatusCode, missingChannelStatus = (int)missingChannel.StatusCode,
+            unboundGenerationStatus = (int)missingGeneration.StatusCode,
             acceptedGeneration = before.Generation, acceptedFamilySha256 = before.Digest, unchangedFamilySha256 = after.Digest,
             unchangedCheckpoints = after.Checkpoints,
-            actualRuntime = runtime, servingBefore, servingAfter, namedAfterPublicCommand = namedAfter,
+            actualRuntime = runtime,
+            servingBefore = new { servingBefore.Root, servingBefore.Epoch },
+            servingAfter = new { servingAfter.Root, servingAfter.Epoch },
+            namedAfterPublicCommand = new { namedAfter.Generation, namedAfter.Digest, namedAfter.Checkpoints },
         };
     }
 

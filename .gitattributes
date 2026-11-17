@@ -91,3 +91,6 @@ tests/Hexalith.Works.IntegrationTests/WorksAppHostSelectionTests.cs whitespace=c
 
 # Recognize authored CRLF in the calibrated recovery profile verification.
 tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryProfileTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the binary preflight evidence writer.
+tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackBinaryTests.cs whitespace=cr-at-eol
