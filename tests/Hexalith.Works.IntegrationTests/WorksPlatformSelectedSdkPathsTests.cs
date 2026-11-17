@@ -70,4 +70,31 @@ public sealed class WorksPlatformSelectedSdkPathsTests
             Directory.Delete(directory, true);
         }
     }
+
+    [Fact]
+    public void RelativeProjectInputUsesItsNormalizedSelectedDirectory()
+    {
+        string directory = Directory.CreateTempSubdirectory("works-relative-sdk-").FullName;
+        try
+        {
+            string project = Path.Combine(directory, "Host.csproj");
+            File.WriteAllText(project, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup></Project>");
+            string relative = Path.GetRelativePath(Environment.CurrentDirectory, project);
+            WorksPlatformRuntimeArtifacts.DefaultDirectoryFor(relative, "Release").ShouldBe(Path.Combine(directory, "bin", "Release", "net11.0"));
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
+    [Fact]
+    public async Task ExitedLauncherCannotLeaveInheritedOutputPipesPastTheDeadlineAsync()
+    {
+        using WorksIsolatedFixtureProcess fixture = await WorksIsolatedFixtureProcess.CreateAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var start = fixture.StartInfo("pipes", Path.Combine(fixture.DirectoryPath, "descendant.pid"));
+        var elapsed = System.Diagnostics.Stopwatch.StartNew();
+        Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.InspectFramework(start, TimeSpan.FromSeconds(5)))
+            .Message.ShouldContain("deadline");
+        elapsed.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(8));
+        File.Exists(Path.Combine(fixture.DirectoryPath, "descendant.pid")).ShouldBeTrue();
+    }
+
 }

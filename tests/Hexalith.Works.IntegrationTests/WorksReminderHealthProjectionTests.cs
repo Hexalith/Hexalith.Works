@@ -93,4 +93,61 @@ public sealed class WorksReminderHealthProjectionTests
         actual.RootElement.GetProperty("results").GetProperty("eventstore-reminders-unresolved").GetProperty("data").EnumerateObject().ShouldBeEmpty();
         json.ShouldNotContain("private-");
     }
+
+    [Fact]
+    public void ProcessProjectionRetainsActualRetryReasonsAndCountsWithoutExposingPrivateState()
+    {
+        var report = new HealthReport(new Dictionary<string, HealthReportEntry>
+        {
+            ["eventstore-processes-unresolved"] = new(HealthStatus.Degraded, "Actual retained process failure.", TimeSpan.Zero, null,
+                new Dictionary<string, object>
+                {
+                    ["complete"] = true, ["unresolved"] = 1, ["cycle"] = 28L, ["retainedCandidates"] = 12L,
+                    ["pendingDispositions"] = 0, ["pendingPublications"] = 0, ["pendingTransitions"] = 1, ["pendingObservations"] = 0,
+                    ["reasonCounts"] = new Dictionary<string, int> { ["effect-unknown"] = 1, ["private-reason"] = 2 },
+                    ["secret"] = "private-key", ["source"] = new { payload = "private-payload" },
+                }),
+        }, TimeSpan.Zero);
+        string json = JsonSerializer.Serialize(WorksReminderHealthProjection.Project(report));
+        using var document = JsonDocument.Parse(json);
+        JsonElement process = document.RootElement.GetProperty("results").GetProperty("eventstore-processes-unresolved");
+        process.GetProperty("status").GetString().ShouldBe("Degraded");
+        process.GetProperty("description").GetString().ShouldBe("Actual retained process failure.");
+        JsonElement data = process.GetProperty("data");
+        data.GetProperty("complete").GetBoolean().ShouldBeTrue();
+        data.GetProperty("cycle").GetInt64().ShouldBe(28);
+        data.GetProperty("unresolved").GetInt32().ShouldBe(1);
+        data.GetProperty("pendingTransitions").GetInt32().ShouldBe(1);
+        data.GetProperty("reasonCounts").GetProperty("effect-unknown").GetInt32().ShouldBe(1);
+        data.GetProperty("reasonCounts").EnumerateObject().Count().ShouldBe(2);
+        json.ShouldNotContain("private-");
+    }
+
+    [Fact]
+    public void ProcessProjectionRejectsInvalidCounterAndReasonShapes()
+    {
+        var data = new Dictionary<string, object>
+        {
+            ["complete"] = "private-state", ["unresolved"] = -1, ["cycle"] = "private-cursor",
+            ["reasonCounts"] = new Dictionary<string, object> { ["effect-unknown"] = "private-secret" },
+        };
+        WorksProcessFailureEvidence.ProjectHealthData(data).ShouldBeEmpty();
+    }
+
+
+    [Fact]
+    public void CappedProcessReasonsAreDeterministicAndReportOmissions()
+    {
+        var reasons = Enumerable.Range(0, 20).ToDictionary(index => "private-reason-" + index.ToString("D2"), index => index);
+        var reversed = reasons.Reverse().ToDictionary(pair => pair.Key, pair => pair.Value);
+        string Project(Dictionary<string, int> selected) => JsonSerializer.Serialize(WorksProcessFailureEvidence.ProjectHealthData(
+            new Dictionary<string, object> { ["reasonCounts"] = selected }));
+        string first = Project(reasons);
+        first.ShouldBe(Project(reversed));
+        using var result = JsonDocument.Parse(first);
+        result.RootElement.GetProperty("reasonCounts").EnumerateObject().Count().ShouldBe(16);
+        result.RootElement.GetProperty("omittedReasonCount").GetInt32().ShouldBe(4);
+        first.ShouldNotContain("private-reason");
+    }
+
 }

@@ -511,6 +511,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             checkpoint.PendingPlan!.Effects.Count.ShouldBe(5);
             await EvidenceAsync("cascade-target-commit-before-checkpoint", new { committedEffect, checkpoint, childCancelled }, token).ConfigureAwait(false);
             await WaitForNamedProjectionLifecycleIdleAsync(app, tenant, recoveryGrants, token).ConfigureAwait(false);
+            await EvidenceAsync("cascade-after-named-projection-idle-before-stop",
+                await WorksProcessFailureEvidence.CaptureAsync(store, cascadeSource, token).ConfigureAwait(false), token).ConfigureAwait(false);
         }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory,
             developmentCatalogProfilePath: WorksAppHostSelection.IsPlatform ? isolation.DevelopmentCatalogProfilePath : null).ConfigureAwait(true);
 

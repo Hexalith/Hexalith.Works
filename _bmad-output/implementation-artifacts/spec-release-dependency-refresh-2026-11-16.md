@@ -2,7 +2,7 @@
 title: 'Refresh dependencies and publish a verified Works release'
 type: 'chore'
 created: '2026-11-16'
-status: 'in-progress'
+status: 'in-review'
 route: 'dispatch'
 review_loop_iteration: 3
 baseline_commit: 'bbbb1edf17a21066d79e1a4a8bd359feb51b378e'
@@ -92,6 +92,24 @@ context:
 | Verification 3: Works ABI paths | high | Same confirmed current-output defect as Blind 3; retain a separate finding record and patch the shared cause. |
 
 Edge-case reviewer reported no additional findings.
+
+Final release review (2026-11-17):
+
+| Finding | Verdict | Evidence and disposition |
+| --- | --- | --- |
+| Final blind 1: absolute untracked review hunk | low | The exported new-test hunk contains an absolute path prefix. Regenerate the review artifact with repository-relative paths; this changes no product files. |
+| Final blind 2: hidden original Platform index flags | medium | Preparation checks original-owner status before and after, but clones committed HEAD into a fresh index before its stronger producer checks. Original assume-unchanged/skip-worktree edits can therefore escape the stated clean-owner refusal. Reject those flags at both original-owner checks and exercise real Git cases without changing source or export on refusal. |
+| Final blind 3: relative runtime project argument | low | The helper computes an absolute project directory but passes the original relative argument from that new cwd. Normalize the argument before both uses and preserve the selected SDK context. |
+| Final blind 4: inherited output pipes | medium | The added MSBuild query bounds launcher exit but waits on stdout/stderr without a deadline. The edge reviewer compiled the actual helper and reproduced a33s return under its30s limit using an exited launcher and an inherited pipe. Bound both streams under the same operational deadline. |
+| Final blind 5: custom output layout | medium | Default output reconstruction predates this change: baseline DirectoryFor already assumed bin/configuration/net10. Current nondefault qualification uses the explicit artifacts branch. Defer the pre-existing general custom-layout limitation; future OutputPath/RID layouts require evaluated TargetDir instead of reconstruction. |
+| Final blind 6: manifest bound after parsing | medium | Qualified-runtime code reads/parses before its16MiB check; declared-runtime capture lacks an equivalent pre-read limit. Apply a bounded manifest read before parsing and on subsequent manifest verification, retaining exact hashes and refusal behavior. |
+| Final blind 7: truncated reason selection | low | More than16 valid reasons are selected in dictionary insertion order without recording omission. Make selection deterministic and retain a bounded omitted count while preserving all health decisions. |
+| Final blind 8: ambient token regression | medium | The committed transport test never supplies its valid server credential as ambient DAPR_API_TOKEN, so removing explicit empty-token clearing can escape assertions. Add isolated-process coverage. |
+| Final blind 9: last-batch evidence failure | medium | Controlled failures cover only the first batch. Exercise a fifth-child failure after four valid descendants and assert that no effects escape. |
+| Final blind 10: additional nested C# types | low | The baseline explicitly requires additional C# types in separately named files. Move SidecarApiTokenHandler, StatusControllerOnly, BrokenCredential and ControlledReads without widening their public surface or behavior. |
+| Final edge 1: inherited output pipes | medium | Independently reproduced the same launcher-exit/pipe-completion defect as final blind4 with the actual helper; fix the shared deadline boundary. |
+| Final verification 1: ambient token regression | medium | Pre-verified gap: the installed Dapr builder captures ambient DAPR_API_TOKEN, while committed tests leave the valid random server token out of that environment. Group with final blind8 and add the isolated regression. |
+| Final verification 2: redirect credential isolation | medium | Pre-verified gap: both test servers return only200/401, so enabling automatic redirects survives the existing direct-foreign-URI assertion. Exercise an actual redirect to a second endpoint and require the redirect response plus zero destination requests. |
 
 ## Verification
 
@@ -211,3 +229,13 @@ Audited Release build0warnings/errors,24 focused tests and actual Dapr1.19.1 HTT
 The3a62b97 live run passes startup/readiness and authenticated Dapr state access, then the recovery command poller reports unknown. The actual Gateway rejects its bearer-only status request with403 because SDK5.2 requires an explicit tenant selector before reading command status. The response schema and Completed state remain compatible.
 
 Both legitimate live status pollers now send `X-Hexalith-Tenant` with their existing tenant and bearer token. Deadlines, final status assertions and intentional unauthorized requests remain unchanged. An actual published SDK controller/Kestrel regression invokes the real submit/poll helper and proves own200/Completed, missingselector403 and foreignselector403, with no unauthorized store read. Audited Release build0warnings/errors and the focused regression pass. Complete live recovery/rollback and exact-source CI remain pending.
+
+
+## Bounded Cascade Context Acquisition
+
+Private diagnostic revision27a60035 (not published) passed all399 supporting tests, telemetry and retained startup, then reproduced the five-child recovery failure. The durable parent reached checkpoint6/Attempts10/Parked with reason translation-timeout and no pending plan; process readiness reported complete=true/unresolved1 while reminders were Healthy. No parent trusted-effect submission occurred. Actual translation observations repeatedly cancelled at1897–1902ms, while successful individual gateway reads commonly took300–570ms. Expiry receipt replay succeeded with HTTP200 in about444ms. Redacted read-only process/HTTP observations and complete canonical evidence are preserved in the external release-refresh evidence directory.
+
+The Works translator currently reads source history and five independent child histories sequentially inside the unchanged SDK1.9s translation deadline. Implement bounded batches of four child-context reads through the existing authoritative stream reader and shared SDK admission. Validate the parent first, preserve sorted effect and failure ordering, and construct no effects until every child validates. Keep all source, byte, page, lease, retry, deadline, freshness and health requirements unchanged. Controlled concurrency, missing/corrupt relationship evidence, cancellation and late completion tests plus full canonical and hosted qualification remain required.
+
+
+Final review patches passed the audited Release build with zero warnings/errors,66 focused C# cases, the final18 affected process/auth cases,8 real-Git preparation cases, focused Ruff and whitespace checks. Accepted fixes retain existing recovery budgets, authority/hash guards, configuration and output-layout semantics. Full canonical live parity, exact-source hosted CI and public release verification are still pending.

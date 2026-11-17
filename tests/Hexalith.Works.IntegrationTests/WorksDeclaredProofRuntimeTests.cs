@@ -14,6 +14,7 @@ public sealed class WorksDeclaredProofRuntimeTests
     [InlineData("changed")]
     [InlineData("targets")]
     [InlineData("foreign")]
+    [InlineData("oversized")]
     public void RuntimeDependencyMustMatchItsFrozenInput(string mutation)
     {
         string root = Directory.CreateTempSubdirectory("works-declared-proof-").FullName;
@@ -43,6 +44,7 @@ public sealed class WorksDeclaredProofRuntimeTests
                         : new Dictionary<string, object> { ["Hexalith.Works.IntegrationTests.dll"] = new { } } },
                 } },
             }));
+            if (mutation == "oversized") using (var file = File.OpenWrite(manifest)) file.SetLength(WorksManifestReader.MaximumBytes + 1L);
             if (mutation == "changed") File.AppendAllText(child, "changed");
             if (mutation == "targets") File.AppendAllText(targets, "changed");
             if (mutation == "foreign") child = original;

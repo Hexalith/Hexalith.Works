@@ -2295,3 +2295,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `spec-release-dependency-refresh-2026-11-16.md`
   summary: Verify whether an MSBuild metadata-evaluation descendant can retain redirected stream handles after its parent exits.
   evidence: Unverified review candidate in WorksPlatformRuntimeArtifacts.DefaultDirectoryFor; no reachable selected-project reproducer exists. A process-double that retains a pipe after the launcher exits would settle whether the current process timeout also needs bounded stream completion.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-release-dependency-refresh-2026-11-16.md`
+  summary: The default runtime artifact resolver still assumes the standard bin/configuration/framework layout; arbitrary custom output or RID layouts need evaluated TargetDir.
+  evidence: The baseline resolver already reconstructed this layout. Current canonical nondefault builds use WORKS_PLATFORM_RUNTIME_ARTIFACTS, while the default branch has no evaluated OutputPath/RID handling.

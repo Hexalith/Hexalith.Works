@@ -90,10 +90,54 @@ public sealed class WorksFixtureDaprAuthenticationTests
         await Should.ThrowAsync<InvalidOperationException>(() => WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, resource, TestContext.Current.CancellationToken)).ConfigureAwait(true);
     }
 
-    private sealed class BrokenCredential : IValueProvider
+
+
+    [Fact]
+    public async Task TokenlessSdkRefusesValidAmbientCredentialInAnIsolatedProcessAsync()
     {
-        public ValueTask<string?> GetValueAsync(CancellationToken cancellationToken = default)
-            => ValueTask.FromException<string?>(new InvalidOperationException("Credential unavailable."));
+        CancellationToken token = TestContext.Current.CancellationToken;
+        string credential = Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(32));
+        WebApplication http = await ServerAsync(credential, grpc: false, token).ConfigureAwait(true);
+        await using var httpLifetime = http.ConfigureAwait(true);
+        WebApplication grpc = await ServerAsync(credential, grpc: true, token).ConfigureAwait(true);
+        await using var grpcLifetime = grpc.ConfigureAwait(true);
+        using WorksIsolatedFixtureProcess fixture = await WorksIsolatedFixtureProcess.CreateAsync(token).ConfigureAwait(true);
+        var start = fixture.StartInfo("ambient", http.Urls.Single(), grpc.Urls.Single());
+        start.Environment["DAPR_API_TOKEN"] = credential;
+        var result = await WorksIsolatedFixtureProcess.RunAsync(start, token).ConfigureAwait(true);
+        result.ExitCode.ShouldBe(0, result.Output);
+        result.Output.ShouldContain("ambient-token-refused");
+        result.Output.ShouldNotContain(credential);
+    }
+
+    [Fact]
+    public async Task SidecarRedirectIsReturnedWithoutSendingAnyRequestToItsDestinationAsync()
+    {
+        CancellationToken token = TestContext.Current.CancellationToken;
+        int destinationRequests = 0;
+        var destinationBuilder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = [] });
+        destinationBuilder.WebHost.UseUrls("http://127.0.0.1:0");
+        WebApplication destination = destinationBuilder.Build();
+        await using var destinationLifetime = destination.ConfigureAwait(true);
+        destination.Run(context => { Interlocked.Increment(ref destinationRequests); return Task.CompletedTask; });
+        await destination.StartAsync(token).ConfigureAwait(true);
+        var sourceBuilder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = [] });
+        sourceBuilder.WebHost.UseUrls("http://127.0.0.1:0");
+        WebApplication source = sourceBuilder.Build();
+        await using var sourceLifetime = source.ConfigureAwait(true);
+        string target = destination.Urls.Single() + "/destination";
+        source.Run(context => { context.Response.Redirect(target); return Task.CompletedTask; });
+        await source.StartAsync(token).ConfigureAwait(true);
+        var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { Args = [], DisableDashboard = true });
+        var owner = builder.AddResource(new ProjectResource("eventstore"))
+            .WithEnvironment("DAPR_HTTP_ENDPOINT", source.Urls.Single()).WithEnvironment("DAPR_API_TOKEN", "owned-token");
+        using var app = builder.Build();
+        var resource = new ResourceEvent(owner.Resource, owner.Resource.Name, new CustomResourceSnapshot { ResourceType = "project", Properties = [] });
+        using HttpClient client = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, resource, "Owner", token).ConfigureAwait(true);
+        using HttpResponseMessage response = await client.GetAsync("/redirect", token).ConfigureAwait(true);
+        response.StatusCode.ShouldBe(HttpStatusCode.Redirect);
+        response.Headers.Location!.AbsoluteUri.ShouldBe(target);
+        Volatile.Read(ref destinationRequests).ShouldBe(0);
     }
 
     private static async Task<WebApplication> ServerAsync(string credential, bool grpc, CancellationToken token)

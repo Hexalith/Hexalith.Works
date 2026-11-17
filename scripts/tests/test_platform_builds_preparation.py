@@ -71,6 +71,11 @@ def fixture(root):
         "if os.environ.get('FIXTURE_ADVANCE_SOURCE'):\n"
         "    subprocess.run(['git', '-C', os.environ['FIXTURE_ADVANCE_SOURCE'], 'checkout', '--quiet',\n"
         "                    '--detach', os.environ['FIXTURE_ADVANCE_REVISION']], check=True)\n"
+        "if os.environ.get('FIXTURE_HIDE_SOURCE'):\n"
+        "    path = pathlib.Path(os.environ['FIXTURE_HIDE_SOURCE'])\n"
+        "    subprocess.run(['git', '-C', str(path.parent.parent), 'update-index',\n"
+        "                    os.environ['FIXTURE_INDEX_FLAG'], '--', 'eng/binding.json'], check=True)\n"
+        "    path.write_text('hidden during verification')\n"
         "print(tool)\n"
     )
     git(owner, "update-index", "--add", "--cacheinfo", "160000", recorded, "references/Hexalith.Builds")
@@ -160,6 +165,43 @@ class PlatformBuildsPreparationTests(unittest.TestCase):
             self.assertEqual("existing=preserved\n", exported)
             self.assertEqual(future, git(owner, "rev-parse", "HEAD"))
             self.assertEqual("", git(owner, "status", "--porcelain"))
+
+    def test_hidden_original_owner_index_flags_refuse_before_cloning(self):
+        for flag in ("--assume-unchanged", "--skip-worktree"):
+            with self.subTest(flag=flag), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                owner, _, revision, _, _ = fixture(root)
+                path = owner / "eng/binding.json"
+                git(owner, "update-index", flag, "--", "eng/binding.json")
+                path.write_text("hidden owner input")
+                self.assertEqual("", git(owner, "status", "--porcelain"))
+                result, exported = self.run_hook(root)
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("clean recorded Platform source", result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertEqual("existing=preserved\n", exported)
+                self.assertEqual("hidden owner input", path.read_text())
+                self.assertEqual(revision, git(owner, "rev-parse", "HEAD"))
+                self.assertFalse(list(root.glob("works-published-builds.*")))
+
+    def test_hidden_original_owner_index_flags_added_during_preparation_refuse(self):
+        for flag in ("--assume-unchanged", "--skip-worktree"):
+            with self.subTest(flag=flag), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                owner, _, revision, _, _ = fixture(root)
+                path = owner / "eng/binding.json"
+                result, exported = self.run_hook(root, {
+                    "FIXTURE_HIDE_SOURCE": str(path), "FIXTURE_INDEX_FLAG": flag,
+                })
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("Platform source changed", result.stderr)
+                self.assertEqual("", result.stdout)
+                self.assertEqual("existing=preserved\n", exported)
+                self.assertEqual("hidden during verification", path.read_text())
+                self.assertEqual(revision, git(owner, "rev-parse", "HEAD"))
+                self.assertEqual("", git(owner, "status", "--porcelain"))
+                self.assertTrue(all(not (entry / "workspace").exists()
+                                    for entry in root.glob("works-published-builds.*")))
 
     def test_ambient_git_selectors_cannot_replace_the_physical_repositories(self):
         with tempfile.TemporaryDirectory() as temporary:

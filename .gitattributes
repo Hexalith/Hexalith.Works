@@ -70,3 +70,19 @@ tests/Hexalith.Works.IntegrationTests/WorksFixtureDaprAuthenticationTests.cs whi
 
 # Recognize authored CRLF in the SDK command-status scope regression.
 tests/Hexalith.Works.IntegrationTests/WorksCommandStatusScopeTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the bounded process-readiness evidence.
+tests/Hexalith.Works.IntegrationTests/WorksProcessFailureEvidence.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksReminderHealthProjection.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksReminderHealthProjectionTests.cs whitespace=cr-at-eol
+
+src/Hexalith.Works/Recovery/WorksProcessTranslator.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksProcessContextConcurrencyTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the focused review corrections.
+tests/Hexalith.Works.IntegrationTests/BrokenCredential.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/ControlledReads.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/SidecarApiTokenHandler.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/StatusControllerOnly.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksIsolatedFixtureProcess.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksManifestReader.cs whitespace=cr-at-eol

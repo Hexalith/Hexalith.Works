@@ -24,6 +24,7 @@ internal static class WorksPlatformRuntimeArtifacts
     /// <summary>Uses the selected project's framework, including an explicitly retained historical SDK target.</summary>
     internal static string DefaultDirectoryFor(string project, string configuration)
     {
+        project = Path.GetFullPath(project);
         var start = new ProcessStartInfo("dotnet")
         {
             RedirectStandardOutput = true,
@@ -33,19 +34,36 @@ internal static class WorksPlatformRuntimeArtifacts
         };
         foreach (string argument in new[] { "msbuild", project, "-nologo", "-nr:false", "-getProperty:TargetFramework", "-p:Configuration=" + configuration })
             start.ArgumentList.Add(argument);
+        string framework = InspectFramework(start, TimeSpan.FromSeconds(30));
+        return Path.Combine(Path.GetDirectoryName(project)!, "bin", configuration, framework);
+    }
+
+    internal static string InspectFramework(ProcessStartInfo start, TimeSpan timeout)
+    {
+        using var deadline = new CancellationTokenSource(timeout);
         using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not inspect the selected runtime project.");
-        Task<string> output = process.StandardOutput.ReadToEndAsync();
-        Task<string> diagnostic = process.StandardError.ReadToEndAsync();
-        if (!process.WaitForExit(30_000))
+        Task<string> output = process.StandardOutput.ReadToEndAsync(deadline.Token);
+        Task<string> diagnostic = process.StandardError.ReadToEndAsync(deadline.Token);
+        try
         {
-            process.Kill(entireProcessTree: true);
-            process.WaitForExit();
-            throw new InvalidOperationException("Selected runtime project framework inspection exceeded 30 seconds.");
+            Task.WhenAll(output, diagnostic, process.WaitForExitAsync(deadline.Token)).WaitAsync(deadline.Token).GetAwaiter().GetResult();
+        }
+        catch (OperationCanceledException) when (deadline.IsCancellationRequested)
+        {
+            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            try
+            {
+                Task.WhenAll(output, diagnostic, process.WaitForExitAsync(cleanup.Token)).WaitAsync(cleanup.Token).GetAwaiter().GetResult();
+            }
+            catch (OperationCanceledException) when (!cleanup.IsCancellationRequested) { }
+            throw new InvalidOperationException("Selected runtime project framework inspection exceeded its finite deadline.");
         }
         string framework = output.GetAwaiter().GetResult().Trim();
         string errors = diagnostic.GetAwaiter().GetResult();
         if (process.ExitCode != 0 || framework is not ("net10.0" or "net11.0"))
             throw new InvalidOperationException($"Cannot establish the selected runtime project's supported framework: {framework} {errors}");
-        return Path.Combine(Path.GetDirectoryName(project)!, "bin", configuration, framework);
+        return framework;
     }
+
 }

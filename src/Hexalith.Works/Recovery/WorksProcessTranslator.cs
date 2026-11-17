@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 
 using System.Text.Json;
 
@@ -94,29 +95,26 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
             .Select(fact => fact.Payload).OfType<ChildSpawned>()
             .DistinctBy(child => child.ChildWorkItemId.Value).OrderBy(child => child.ChildWorkItemId.Value, StringComparer.Ordinal)];
         var descendants = new List<CascadeDescendant>();
-        foreach (ChildSpawned child in children)
+        // Independent child histories share the existing SDK admission limit and caller deadline.
+        // Only one fixed-size batch is retained, and sorted validation preserves failure precedence.
+        foreach (ChildSpawned[] batch in children.Chunk(4))
         {
-            IReadOnlyList<WorksCommittedEvent> related;
-            try
+            var contexts = await Task.WhenAll(batch.Select(ReadChildAsync)).ConfigureAwait(false);
+            cancellationToken.ThrowIfCancellationRequested();
+            for (int index = 0; index < batch.Length; index++)
             {
-                related = await _streams.ReadAsync(source.Tenant, child.ChildWorkItemId.Value, cancellationToken).ConfigureAwait(false);
+                ChildSpawned child = batch[index];
+                contexts[index].Failure?.Throw();
+                IReadOnlyList<WorksCommittedEvent> related = contexts[index].Facts!;
+                WorkItemCreated? creation = related.Select(fact => fact.Payload).OfType<WorkItemCreated>().SingleOrDefault();
+                if (creation is null) throw new ProcessEvidenceUnavailableException();
+                if (creation.Parent is null || creation.Parent.TenantId.Value != source.Tenant
+                    || creation.Parent.WorkItemId.Value != source.Aggregate)
+                    throw new InvalidOperationException("Works cascade relationship evidence is inconsistent.");
+                // Current terminal state cannot remove a planned effect after a target commit.
+                // Every direct target keeps its immutable intent and receipt-backed replay.
+                descendants.Add(new CascadeDescendant(child.TenantId, child.ChildWorkItemId, IsTerminal: false));
             }
-            catch (EventStoreGatewayException exception) when (exception.StatusCode == 404
-                && (exception.Code == StreamReplayReasonCodes.MissingStream || exception.ReasonCode == StreamReplayReasonCodes.MissingStream))
-            {
-                // SpawnChild commits the parent relationship before the separate child CreateWorkItem.
-                // Only this known related-child read can interpret canonical MissingStream as a creation gap.
-                throw new ProcessEvidenceUnavailableException(exception);
-            }
-            WorkItemCreated? creation = related.Select(fact => fact.Payload).OfType<WorkItemCreated>().SingleOrDefault();
-            if (creation is null) throw new ProcessEvidenceUnavailableException();
-            if (creation.Parent is null || creation.Parent.TenantId.Value != source.Tenant
-                || creation.Parent.WorkItemId.Value != source.Aggregate)
-                throw new InvalidOperationException("Works cascade relationship evidence is inconsistent.");
-            // Source membership is immutable. Current terminal state cannot remove a planned effect after a
-            // target commit: all direct targets receive the same intent and their aggregate returns a receipt
-            // for success, rejection, or no-op. This preserves receipt replay before source checkpoint advance.
-            descendants.Add(new CascadeDescendant(child.TenantId, child.ChildWorkItemId, IsTerminal: false));
         }
 
         return payload switch
@@ -127,6 +125,24 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
                 .Select(command => Effect(EffectKindCatalog.CascadeExpire, command.WorkItemId.Value, nameof(ExpireWorkItem), command))],
             _ => [],
         };
+
+        async Task<(IReadOnlyList<WorksCommittedEvent>? Facts, ExceptionDispatchInfo? Failure)> ReadChildAsync(ChildSpawned child)
+        {
+            try
+            {
+                return (await _streams.ReadAsync(source.Tenant, child.ChildWorkItemId.Value, cancellationToken).ConfigureAwait(false), null);
+            }
+            catch (EventStoreGatewayException exception) when (exception.StatusCode == 404
+                && (exception.Code == StreamReplayReasonCodes.MissingStream || exception.ReasonCode == StreamReplayReasonCodes.MissingStream))
+            {
+                // SpawnChild can precede the separate child creation; this is retryable evidence loss.
+                return (null, ExceptionDispatchInfo.Capture(new ProcessEvidenceUnavailableException(exception)));
+            }
+            catch (Exception exception) when (exception is not OutOfMemoryException)
+            {
+                return (null, ExceptionDispatchInfo.Capture(exception));
+            }
+        }
     }
 
     private async Task<IReadOnlyList<ProcessEffect>> ChildResumeAsync(ProcessSource source, StreamReadEvent envelope,

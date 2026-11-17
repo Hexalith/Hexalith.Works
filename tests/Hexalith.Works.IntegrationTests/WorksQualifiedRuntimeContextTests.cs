@@ -13,6 +13,7 @@ public sealed class WorksQualifiedRuntimeContextTests
     [InlineData("source")]
     [InlineData("manifest")]
     [InlineData("extra")]
+    [InlineData("oversized-manifest")]
     public void ChangedRuntimeStillUnloadsAtDisposal(string mutation)
     {
         string root = Directory.CreateTempSubdirectory("works-qualified-runtime-").FullName;
@@ -36,11 +37,27 @@ public sealed class WorksQualifiedRuntimeContextTests
                 case "entry": File.AppendAllText(entry, "changed"); break;
                 case "source": File.AppendAllText(project, "changed"); break;
                 case "manifest": File.AppendAllText(manifest, " "); break;
+                case "oversized-manifest": using (var file = File.OpenWrite(manifest)) file.SetLength(WorksManifestReader.MaximumBytes + 1L); break;
                 case "extra": File.WriteAllText(Path.Combine(directory, "Foreign.dll"), "foreign"); break;
             }
-            Should.Throw<InvalidOperationException>(context.Dispose).Message.ShouldContain("changed");
+            Should.Throw<InvalidOperationException>(context.Dispose).Message.ShouldContain(mutation == "oversized-manifest" ? "16 MiB" : "changed");
             unloaded.ShouldBeTrue();
         }
         finally { Directory.Delete(root, recursive: true); }
     }
+
+    [Fact]
+    public void OversizedManifestRefusesBeforeJsonParsing()
+    {
+        string directory = Directory.CreateTempSubdirectory("works-oversized-runtime-").FullName;
+        try
+        {
+            string manifest = Path.Combine(directory, "manifest.json");
+            using (var file = File.Create(manifest)) file.SetLength(WorksManifestReader.MaximumBytes + 1L);
+            Should.Throw<InvalidOperationException>(() => new WorksQualifiedRuntimeContext(manifest,
+                Path.Combine(directory, "Host.csproj"), directory)).Message.ShouldContain("16 MiB");
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
 }

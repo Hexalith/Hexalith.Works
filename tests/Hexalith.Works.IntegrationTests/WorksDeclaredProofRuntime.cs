@@ -30,7 +30,9 @@ internal static class WorksDeclaredProofRuntime
     /// <returns>Bound paths and SHA256 identities for the live verifier.</returns>
     internal static JsonObject Capture(string manifest, string dependencies, string assembly)
     {
-        using JsonDocument binding = JsonDocument.Parse(File.ReadAllBytes(manifest));
+        byte[] manifestBytes = WorksManifestReader.Read(manifest);
+        string manifestHash = Convert.ToHexStringLower(SHA256.HashData(manifestBytes));
+        using JsonDocument binding = JsonDocument.Parse(manifestBytes);
         JsonElement root = binding.RootElement;
         string original = root.GetProperty("assemblyPath").GetString()!;
         string expected = root.GetProperty("assemblySha256").GetString()!;
@@ -48,11 +50,13 @@ internal static class WorksDeclaredProofRuntime
             || Path.GetDirectoryName(Path.GetFullPath(assembly)) != Path.GetDirectoryName(Path.GetFullPath(dependencies))
             || Digest(original) != expected || Digest(assembly) != expected || Digest(targets) != targetsHash)
             throw new InvalidOperationException("The running proof assembly is not the declared frozen runtime dependency.");
+        if (Convert.ToHexStringLower(SHA256.HashData(WorksManifestReader.Read(manifest))) != manifestHash)
+            throw new InvalidOperationException("The declared proof manifest changed during verification.");
         return new JsonObject
         {
             ["declared"] = true, ["dependenciesPath"] = dependencies, ["dependenciesSha256"] = Digest(dependencies),
             ["assemblyPath"] = assembly, ["assemblySha256"] = expected,
-            ["manifestPath"] = manifest, ["manifestSha256"] = Digest(manifest),
+            ["manifestPath"] = manifest, ["manifestSha256"] = manifestHash,
             ["targetsPath"] = targets, ["targetsSha256"] = targetsHash,
         };
     }

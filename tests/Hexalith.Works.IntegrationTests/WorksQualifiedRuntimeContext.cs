@@ -26,11 +26,11 @@ internal sealed class WorksQualifiedRuntimeContext : AssemblyLoadContext, IDispo
     {
         _manifest = Path.GetFullPath(manifest); _directory = Path.GetFullPath(directory);
         _entry = Path.Combine(_directory, "Hexalith.Works.dll");
-        byte[] bytes = File.ReadAllBytes(_manifest); _manifestHash = Digest(bytes);
+        byte[] bytes = WorksManifestReader.Read(_manifest); _manifestHash = Digest(bytes);
         using var document = JsonDocument.Parse(bytes);
         var root = document.RootElement;
         string[] keys = ["schema", "projectPath", "entryPath", "entrySha256", "files", "sourceFiles"];
-        if (bytes.Length > 16 * 1024 * 1024 || !root.EnumerateObject().Select(value => value.Name).Order(StringComparer.Ordinal).SequenceEqual(keys.Order(StringComparer.Ordinal))
+        if (!root.EnumerateObject().Select(value => value.Name).Order(StringComparer.Ordinal).SequenceEqual(keys.Order(StringComparer.Ordinal))
             || root.GetProperty("schema").GetString() != "hexalith.works-qualified-runtime.v1"
             || root.GetProperty("projectPath").GetString() != Path.GetFullPath(project) || root.GetProperty("entryPath").GetString() != _entry)
             throw new InvalidOperationException("The retained metadata requires its exact qualified Works runtime context.");
@@ -66,7 +66,7 @@ internal sealed class WorksQualifiedRuntimeContext : AssemblyLoadContext, IDispo
     internal bool Matches(string path) => _files.TryGetValue(path, out string? hash) && Ordinary(path) && Digest(File.ReadAllBytes(path)) == hash;
     internal void Verify()
     {
-        if (!Ordinary(_manifest) || Digest(File.ReadAllBytes(_manifest)) != _manifestHash
+        if (!Ordinary(_manifest) || Digest(WorksManifestReader.Read(_manifest)) != _manifestHash
             || _files.Any(file => !Matches(file.Key)) || _sources.Any(file => !Ordinary(file.Key) || Digest(File.ReadAllBytes(file.Key)) != file.Value)
             || !Directory.EnumerateFiles(_directory, "*", SearchOption.AllDirectories).ToHashSet(StringComparer.Ordinal).SetEquals(_files.Keys)
             || _shared.Any(shared => LoadedDigest(shared.Key) != shared.Value)

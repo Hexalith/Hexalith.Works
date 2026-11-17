@@ -10,10 +10,11 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Hexalith.Works.IntegrationTests;
 
-/// <summary>Exports only known reminder booleans/counts while preserving the actual health status and description.</summary>
+/// <summary>Exports bounded reminder and process counters while preserving the actual health status and description.</summary>
 internal static class WorksReminderHealthProjection
 {
     private const string Reminder = "eventstore-reminders-unresolved";
+    private const string Process = "eventstore-processes-unresolved";
     private static readonly string[] BooleanFields = ["passCompleted", "passPending", "callbackTokenConfigured"];
     private static readonly string[] CountFields = ["incompleteScans", "unresolvedItems", "unresolved", "quarantined"];
 
@@ -44,7 +45,8 @@ internal static class WorksReminderHealthProjection
             data = entry.Key == Reminder ? entry.Value.Data.Where(pair =>
                 BooleanFields.Contains(pair.Key, StringComparer.Ordinal) && pair.Value is bool
                 || CountFields.Contains(pair.Key, StringComparer.Ordinal) && pair.Value is int count && count >= 0)
-                .ToDictionary(pair => pair.Key, pair => pair.Value) : [],
+                .ToDictionary(pair => pair.Key, pair => pair.Value)
+                : entry.Key == Process ? WorksProcessFailureEvidence.ProjectHealthData(entry.Value.Data) : [],
         }),
     };
 
@@ -56,6 +58,7 @@ internal static class WorksReminderHealthProjection
         JsonElement body = await response.Content.ReadFromJsonAsync<JsonElement>(token).ConfigureAwait(false);
         return JsonSerializer.Serialize(new { observedAt = DateTimeOffset.UtcNow, httpStatus = (int)response.StatusCode,
             status = body.GetProperty("status"), reminder = body.GetProperty("results").GetProperty(Reminder),
+            process = body.GetProperty("results").TryGetProperty(Process, out JsonElement process) ? process : (JsonElement?)null,
             reminderPasses = body.GetProperty("reminderPasses") });
     }
 

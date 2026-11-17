@@ -82,12 +82,5 @@ public sealed class WorksCommandStatusScopeTests
         store.ReceivedCalls().Count(call => call.GetMethodInfo().Name == nameof(ICommandStatusStore.ReadStatusAsync)).ShouldBe(2);
     }
 
-    private sealed class StatusControllerOnly : IApplicationFeatureProvider<ControllerFeature>
-    {
-        public void PopulateFeature(IEnumerable<ApplicationPart> parts, ControllerFeature feature)
-        {
-            foreach (TypeInfo controller in feature.Controllers.Where(controller => controller.AsType() != typeof(CommandStatusController)).ToArray())
-                feature.Controllers.Remove(controller);
-        }
-    }
+
 }

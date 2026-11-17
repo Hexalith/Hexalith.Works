@@ -10,7 +10,12 @@ root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 owner="$root/references/Hexalith.Platform"
 builds="$root/references/Hexalith.Builds"
 owner_revision="$(git -C "$owner" rev-parse --verify HEAD)"
-if [[ -n "$(git -C "$owner" status --porcelain --untracked-files=all)" ]]; then
+owner_index_is_visible() {
+    local entries
+    entries="$(git -C "$owner" ls-files -v)" || return 1
+    [[ ! "$entries" =~ (^|$'\n')([a-z]|S)' ' ]]
+}
+if [[ -n "$(git -C "$owner" status --porcelain --untracked-files=all)" ]] || ! owner_index_is_visible; then
     echo "Published Builds preparation requires clean recorded Platform source." >&2
     exit 1
 fi
@@ -30,7 +35,7 @@ if [[ "$tool_root" = *$'\n'* || "$tool_root" = *$'\r'* || ! -f "$tool_root/Hexal
     echo "Platform did not return a verified published Builds tool directory." >&2
     exit 1
 fi
-if [[ "$(git -C "$owner" rev-parse --verify HEAD)" != "$owner_revision" || -n "$(git -C "$owner" status --porcelain --untracked-files=all)" ]]; then
+if [[ "$(git -C "$owner" rev-parse --verify HEAD)" != "$owner_revision" || -n "$(git -C "$owner" status --porcelain --untracked-files=all)" ]] || ! owner_index_is_visible; then
     echo "Platform source changed during published Builds preparation; rerun on settled inputs." >&2
     exit 1
 fi

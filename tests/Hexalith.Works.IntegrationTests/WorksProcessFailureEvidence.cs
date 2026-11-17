@@ -18,6 +18,7 @@ internal static class WorksProcessFailureEvidence
         "candidate-publication", "source-busy", "retry-exhausted", "invalid-evidence", "read-worker-exhausted", "source-read",
         "evidence-unavailable", "translation-timeout", "plan-unavailable", "delegation-unavailable", "invalid-receipt",
         "effect-conflict", "effect-unknown", "catalog-unavailable", "catalog-incomplete", "candidate-page-missing", "other",
+        "hosted-pass-failed", "reconciliation-disabled", "reconciler-stopped",
     };
 
     internal static async Task<object> CaptureAsync(IReadModelStore store, ProcessSource source, CancellationToken token)
@@ -56,6 +57,24 @@ internal static class WorksProcessFailureEvidence
             sweepReasons = sweep?.Reasons.ToDictionary(pair => Reason(pair.Key)!, pair => pair.Value),
             pendingObservations = sweep?.PendingObservations.Count, pendingPublications = sweep?.PendingPublications.Count,
         };
+
+    /// <summary>Retains only bounded SDK process-health counters and redacted reason identities.</summary>
+    internal static Dictionary<string, object> ProjectHealthData(IReadOnlyDictionary<string, object> data)
+    {
+        string[] flags = ["complete", "capacityExceeded", "stateAvailable"];
+        string[] counts = ["cycle", "unresolved", "pendingDispositions", "pendingPublications", "pendingTransitions", "pendingObservations", "retainedCandidates"];
+        Dictionary<string, object> result = data.Where(pair => flags.Contains(pair.Key, StringComparer.Ordinal) && pair.Value is bool
+            || counts.Contains(pair.Key, StringComparer.Ordinal) && (pair.Value is int count && count >= 0 || pair.Value is long total && total >= 0))
+            .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+        if (data.TryGetValue("reasonCounts", out object? value) && value is IReadOnlyDictionary<string, int> reasons)
+        {
+            var retained = reasons.Where(pair => pair.Value >= 0).OrderBy(pair => pair.Key, StringComparer.Ordinal).Take(16)
+                .ToDictionary(pair => Reason(pair.Key)!, pair => pair.Value, StringComparer.Ordinal);
+            result["reasonCounts"] = retained;
+            result["omittedReasonCount"] = reasons.Count(pair => pair.Value >= 0) - retained.Count;
+        }
+        return result;
+    }
 
     private static string? Reason(string? reason) => reason is null || KnownReasons.Contains(reason) ? reason : "unrecognized-sha256-" + Hash(reason);
     private static string Hash(string value) => Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(value)));
