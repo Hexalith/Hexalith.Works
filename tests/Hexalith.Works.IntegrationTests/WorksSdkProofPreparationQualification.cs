@@ -105,6 +105,7 @@ public static class WorksSdkProofPreparationQualification
             WorksRetainedCatalogEnrollment.RequireQualifiedDeployment(project, project, Path.GetDirectoryName(entry)!, consumer,
                 Path.ChangeExtension(proof, ".deps.json"), context, qualified);
             qualified.ObserveStarts(builder, selected.Resource);
+            WorksAppHostSmokeHarness.ConfigureQualificationProjectLaunches(builder, useRetainedHost: false);
             using var application = builder.Build();
             await builder.Eventing.PublishAsync(new BeforeResourceStartedEvent(selected.Resource, application.Services), cancellationToken).ConfigureAwait(false);
             File.AppendAllText(manifest, " ");

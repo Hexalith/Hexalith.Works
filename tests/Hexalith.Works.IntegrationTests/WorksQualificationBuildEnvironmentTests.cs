@@ -11,6 +11,34 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Exercises the actual SDK interpretation of the finite qualification worker policy.</summary>
 public sealed class WorksQualificationBuildEnvironmentTests
 {
+    /// <summary>Current Platform launch callbacks and their selected environment remain unchanged after preparation.</summary>
+    [Fact]
+    public async Task CurrentPlatformLaunchEnvironmentRemainsUnchangedAsync()
+    {
+        string directory = Directory.CreateTempSubdirectory("works-current-launch-").FullName;
+        try
+        {
+            string project = Path.Combine(directory, "Probe.csproj");
+            await File.WriteAllTextAsync(project, "<Project Sdk=\"Microsoft.NET.Sdk\" />", TestContext.Current.CancellationToken).ConfigureAwait(true);
+            IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder([]);
+            ProjectResource owned = builder.AddProject("works", project)
+                .WithEnvironment("DOTNET_ROLL_FORWARD", "Disable")
+                .WithEnvironment("MSBUILDDISABLENODEREUSE", "1").Resource;
+            EnvironmentCallbackAnnotation[] before = owned.Annotations.OfType<EnvironmentCallbackAnnotation>().ToArray();
+            WorksAppHostSmokeHarness.ConfigureQualificationProjectLaunches(builder, useRetainedHost: false);
+            owned.Annotations.OfType<EnvironmentCallbackAnnotation>().ShouldBe(before);
+            Dictionary<string, object> environment = [];
+            var context = new EnvironmentCallbackContext(builder.ExecutionContext, owned, environment, TestContext.Current.CancellationToken);
+            foreach (EnvironmentCallbackAnnotation annotation in owned.Annotations.OfType<EnvironmentCallbackAnnotation>())
+                await annotation.Callback(context).ConfigureAwait(true);
+            environment["DOTNET_ROLL_FORWARD"].ShouldBe("Disable");
+            environment["MSBUILDDISABLENODEREUSE"].ShouldBe("1");
+            environment.ContainsKey("DOTNET_CLI_USE_MSBUILD_SERVER").ShouldBeFalse();
+            environment.ContainsKey("UseSharedCompilation").ShouldBeFalse();
+        }
+        finally { Directory.Delete(directory, recursive: true); }
+    }
+
     /// <summary>Both installed SDKs honor compiler isolation; unrelated model resources receive no qualification override.</summary>
     /// <param name="sdk">The actual selected SDK, without a download or fallback.</param>
     [Theory]
@@ -29,12 +57,13 @@ public sealed class WorksQualificationBuildEnvironmentTests
             ProjectResource owned = builder.AddProject("works", project).Resource;
             ProjectResource unrelated = builder.AddProject("unrelated", project).Resource;
             EnvironmentCallbackAnnotation[] unrelatedBefore = unrelated.Annotations.OfType<EnvironmentCallbackAnnotation>().ToArray();
-            WorksAppHostSmokeHarness.ConfigureQualificationProjectLaunches(builder);
+            WorksAppHostSmokeHarness.ConfigureQualificationProjectLaunches(builder, useRetainedHost: true);
             unrelated.Annotations.OfType<EnvironmentCallbackAnnotation>().ShouldBe(unrelatedBefore);
             Dictionary<string, object> environment = [];
             var context = new EnvironmentCallbackContext(builder.ExecutionContext, owned, environment, TestContext.Current.CancellationToken);
             foreach (EnvironmentCallbackAnnotation annotation in owned.Annotations.OfType<EnvironmentCallbackAnnotation>())
                 await annotation.Callback(context).ConfigureAwait(true);
+            environment["DOTNET_ROLL_FORWARD"].ShouldBe("LatestMajor");
             environment["UseSharedCompilation"].ShouldBe("false");
             environment["DOTNET_CLI_USE_MSBUILD_SERVER"].ShouldBe("0");
             environment["MSBUILDDISABLENODEREUSE"].ShouldBe("1");

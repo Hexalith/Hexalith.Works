@@ -408,9 +408,10 @@ internal static class WorksAppHostSmokeHarness
         return output.ToString();
     }
 
-    /// <summary>Scopes managed runtime and non-reusable build workers to the exact owned qualification services.</summary>
-    internal static void ConfigureQualificationProjectLaunches(IDistributedApplicationBuilder builder)
+    /// <summary>Scopes retained-runtime launch overrides to the exact owned qualification services.</summary>
+    internal static void ConfigureQualificationProjectLaunches(IDistributedApplicationBuilder builder, bool useRetainedHost)
     {
+        if (!useRetainedHost) return;
         foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>()
             .Where(project => WorksManagedRuntimeEvidence.IsRuntimeResource(project.Name)))
         {
@@ -555,9 +556,9 @@ internal static class WorksAppHostSmokeHarness
             }
             if (WorksAppHostSelection.IsPlatform)
             {
-                // Qualification-only: both the current target and immutable retained topology run their
-                // declared project targets on the same managed runtime as the qualified parent host.
-                ConfigureQualificationProjectLaunches(builder);
+                // The retained topology needs explicit managed-runtime compatibility. Current Platform
+                // already froze its selected launch environment during SDK owner preparation.
+                ConfigureQualificationProjectLaunches(builder, useRetainedHost);
             }
             app = await builder.BuildAsync(startupToken).ConfigureAwait(true);
             try
