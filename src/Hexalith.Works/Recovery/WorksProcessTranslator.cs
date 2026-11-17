@@ -99,8 +99,7 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
         // Only one fixed-size batch is retained, and sorted validation preserves failure precedence.
         foreach (ChildSpawned[] batch in children.Chunk(8))
         {
-            using var batchCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            var contexts = batch.Select(child => ReadChildAsync(child, batchCancellation.Token)).ToArray();
+            var contexts = batch.Select(child => ReadChildAsync(child, cancellationToken)).ToArray();
             try
             {
                 for (int index = 0; index < batch.Length; index++)
@@ -122,10 +121,12 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
             }
             finally
             {
-                // Drain contextual wrappers, not their noncooperative providers: the SDK retains
-                // provider admission until actual termination and discards every late result.
-                await batchCancellation.CancelAsync().ConfigureAwait(false);
-                await Task.WhenAll(contexts).ConfigureAwait(false);
+                // A known evidence failure must not cancel healthy read-only siblings: that artificial
+                // failure burst can open the shared Dapr invocation circuit. Observe this bounded batch
+                // as it finishes under each reader's existing context deadline or caller cancellation.
+                // No late result reaches validation/effects; the SDK retains provider slots until termination.
+                _ = Task.WhenAll(contexts).ContinueWith(static completed => { _ = completed.Exception; },
+                    CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
                 cancellationToken.ThrowIfCancellationRequested();
             }
         }

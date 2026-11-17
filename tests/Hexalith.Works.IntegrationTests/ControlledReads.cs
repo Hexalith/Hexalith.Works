@@ -24,6 +24,9 @@ internal sealed class ControlledReads : IAsyncDisposable
         _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
     private readonly Dictionary<string, TaskCompletionSource> _finished = Sorted.ToDictionary(child => child,
         _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
+    private readonly ConcurrentDictionary<string, CancellationToken> _providerTokens = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, TaskCompletionSource> _providerCancelled = Sorted.ToDictionary(child => child,
+        _ => new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously));
     private readonly CancellationTokenSource _caller = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
     private readonly ConcurrentBag<Task<StreamReadPage>> _workers = [];
     private readonly ConcurrentQueue<string> _started = [];
@@ -50,7 +53,7 @@ internal sealed class ControlledReads : IAsyncDisposable
         {
             string child = call.Arg<StreamReadRequest>().AggregateId!;
             if (child == Parent) return Task.FromResult(_parent);
-            Task<StreamReadPage> worker = ReadAsync(child); _workers.Add(worker); return worker;
+            Task<StreamReadPage> worker = ReadAsync(child, call.Arg<CancellationToken>()); _workers.Add(worker); return worker;
         });
         _translator = new WorksProcessTranslator(new WorksSourceStreamReader(gateway,
             Options.Create(new WorksRecoveryOptions { ContextReadTimeout = TimeSpan.FromSeconds(10) })));
@@ -61,6 +64,9 @@ internal sealed class ControlledReads : IAsyncDisposable
     internal string[] Started => _started.ToArray();
     internal int Peak => Volatile.Read(ref _peak);
     internal int Active => Volatile.Read(ref _active);
+    internal bool CallerCancelled => _caller.IsCancellationRequested;
+    internal CancellationToken ProviderToken(string child) => _providerTokens[child];
+    internal Task ProviderCancelled(string child) => _providerCancelled[child].Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
     internal Task<IReadOnlyList<ProcessEffect>> Start() => _translation = _translator.TranslateAsync(
         new ProcessSource(Tenant, "work", Parent), _parent.Events[^1], _caller.Token).AsTask();
     internal Task Entered(string child) => _entered[child].Task.WaitAsync(TimeSpan.FromSeconds(5), _caller.Token);
@@ -83,8 +89,10 @@ internal sealed class ControlledReads : IAsyncDisposable
         new WorkItemCreated(child, 1, new TenantId(Tenant), new WorkItemId(child), new Obligation("child"),
             Parent: new ParentWorkItemReference(new TenantId(Tenant), new WorkItemId(parent))));
 
-    private async Task<StreamReadPage> ReadAsync(string child)
+    private async Task<StreamReadPage> ReadAsync(string child, CancellationToken token)
     {
+        _providerTokens[child] = token;
+        using var registration = token.Register(() => _providerCancelled[child].TrySetResult());
         int active = Interlocked.Increment(ref _active);
         int peak;
         do { peak = Volatile.Read(ref _peak); } while (peak < active && Interlocked.CompareExchange(ref _peak, active, peak) != peak);

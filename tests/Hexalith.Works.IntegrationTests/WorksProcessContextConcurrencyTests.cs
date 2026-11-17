@@ -156,6 +156,54 @@ public sealed class WorksProcessContextConcurrencyTests
         reads.Started.ShouldNotContain("child-i");
     }
 
+    [Theory]
+    [InlineData(5)]
+    [InlineData(9)]
+    public async Task KnownMissingEvidenceLeavesHealthyAdmittedSiblingsUncancelledAsync(int childCount)
+    {
+        var reads = new ControlledReads(childCount);
+        await using var cleanup = reads.ConfigureAwait(true);
+        IReadOnlyList<ProcessEffect>? effects = null;
+        Task<IReadOnlyList<ProcessEffect>> translation = reads.Start();
+        await reads.FirstBatchStartedAsync().ConfigureAwait(true);
+        reads.Complete("child-a", "missing");
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(async () =>
+            effects = await translation.WaitAsync(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken).ConfigureAwait(true)).ConfigureAwait(true);
+        reads.CallerCancelled.ShouldBeFalse();
+        string[] siblings = [.. reads.Children.Take(8).Skip(1)];
+        reads.Active.ShouldBe(siblings.Length);
+        foreach (string child in siblings) reads.ProviderToken(child).IsCancellationRequested.ShouldBeFalse();
+        reads.Started.ShouldNotContain("child-i");
+        foreach (string child in siblings.Reverse()) reads.Complete(child);
+        await Task.WhenAll(siblings.Select(reads.Finished)).ConfigureAwait(true);
+        foreach (string child in siblings) reads.ProviderToken(child).IsCancellationRequested.ShouldBeFalse();
+        effects.ShouldBeNull();
+        reads.Started.ShouldNotContain("child-i");
+    }
+
+    [Fact]
+    public async Task CallerCancellationStillReachesSiblingsAfterKnownEvidenceFailureAsync()
+    {
+        var reads = new ControlledReads();
+        await using var cleanup = reads.ConfigureAwait(true);
+        IReadOnlyList<ProcessEffect>? effects = null;
+        Task<IReadOnlyList<ProcessEffect>> translation = reads.Start();
+        await reads.FirstBatchStartedAsync().ConfigureAwait(true);
+        reads.Complete("child-a", "missing");
+        await Should.ThrowAsync<ProcessEvidenceUnavailableException>(async () =>
+            effects = await translation.WaitAsync(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken).ConfigureAwait(true)).ConfigureAwait(true);
+        string[] siblings = [.. ControlledReads.Sorted.Take(8).Skip(1)];
+        foreach (string child in siblings) reads.ProviderToken(child).IsCancellationRequested.ShouldBeFalse();
+        reads.Cancel();
+        await Task.WhenAll(siblings.Select(reads.ProviderCancelled)).ConfigureAwait(true);
+        foreach (string child in siblings) reads.ProviderToken(child).IsCancellationRequested.ShouldBeTrue();
+        reads.Active.ShouldBe(7, "Noncooperative providers retain SDK admission after real caller cancellation.");
+        foreach (string child in siblings) reads.Complete(child, child == "child-b" ? "missing" : null);
+        await Task.WhenAll(siblings.Select(reads.Finished)).ConfigureAwait(true);
+        effects.ShouldBeNull();
+        reads.Started.ShouldNotContain("child-i");
+    }
+
     [Fact]
     public async Task FirstMissingChildRefusesPromptlyWithoutReleasingBlockedProviderAdmissionAsync()
     {
@@ -170,7 +218,9 @@ public sealed class WorksProcessContextConcurrencyTests
         await Should.ThrowAsync<ProcessEvidenceUnavailableException>(async () =>
             effects = await translation.WaitAsync(TimeSpan.FromSeconds(3), token).ConfigureAwait(true)).ConfigureAwait(true);
         effects.ShouldBeNull();
-        reads.Active.ShouldBe(7, "Only the known missing child has terminated; siblings ignore cancellation.");
+        reads.Active.ShouldBe(7, "Only the known missing child has terminated; admitted siblings remain in flight.");
+        foreach (string child in ControlledReads.Sorted.Take(8).Skip(1))
+            reads.ProviderToken(child).IsCancellationRequested.ShouldBeFalse();
         reads.Started.ShouldNotContain("child-i");
 
         // Seven abandoned providers still own SDK slots. Fill the remaining nine with real
@@ -228,6 +278,8 @@ public sealed class WorksProcessContextConcurrencyTests
         await reads.FirstBatchStartedAsync().ConfigureAwait(true);
         reads.Cancel();
         await Should.ThrowAsync<OperationCanceledException>(async () => effects = await translation.ConfigureAwait(true)).ConfigureAwait(true);
+        await Task.WhenAll(ControlledReads.Sorted.Take(8).Select(reads.ProviderCancelled)).ConfigureAwait(true);
+        foreach (string child in ControlledReads.Sorted.Take(8)) reads.ProviderToken(child).IsCancellationRequested.ShouldBeTrue();
         reads.Started.ShouldNotContain("child-i");
         reads.Complete("child-a", "missing");
         foreach (string child in ControlledReads.Sorted.Take(8)) reads.Complete(child);
