@@ -59,9 +59,7 @@ public sealed class WorksMtlsAuthorizationSmokeTests
                 token).ConfigureAwait(false);
 
             ResourceEvent worksResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
-            string Endpoint(string name) => worksResource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == name).Value!;
-            using DaprClient dapr = new DaprClientBuilder().UseHttpEndpoint(Endpoint("DAPR_HTTP_ENDPOINT"))
-                .UseGrpcEndpoint(Endpoint("DAPR_GRPC_ENDPOINT")).Build();
+            using DaprClient dapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, worksResource, token).ConfigureAwait(false);
             var store = new DaprReadModelStore(dapr);
             var coordinator = new SharedProjectionEpochCoordinator(store, store);
             var scope = new SharedProjectionScope("statestore", tenant, "work", WorksReadModelKeys.RuntimeFamily, ["works-runtime-v3-writer"]);
@@ -92,9 +90,7 @@ public sealed class WorksMtlsAuthorizationSmokeTests
             ResourceEvent adminResource = await WorksAppHostTestReadiness
                 .WaitForResourceHealthyAsync(app, "eventstore-admin", adminReadinessCts.Token, token)
                 .ConfigureAwait(false);
-            using HttpClient unauthorizedSidecar = WorksAppHostTestReadiness.CreateDaprClient(
-                adminResource,
-                "EventStore Admin");
+            using HttpClient unauthorizedSidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, adminResource, "EventStore Admin", token).ConfigureAwait(false);
             using var request = new HttpRequestMessage(HttpMethod.Post, "/v1.0/invoke/works/method/process")
             {
                 Content = JsonContent.Create(new { TenantId = tenant, WorkItemId = authorizedItem, Obligation = "mTLS authorization proof" }),

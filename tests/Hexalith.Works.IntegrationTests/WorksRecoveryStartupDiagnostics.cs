@@ -4,6 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
+using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 
 using Dapr.Client;
@@ -16,10 +17,9 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Read-only bounded projection of existing recovery control state, never domain payloads or credentials.</summary>
 internal static class WorksRecoveryStartupDiagnostics
 {
-    internal static async Task<string> CaptureAsync(ResourceEvent resource, CancellationToken token)
+    internal static async Task<string> CaptureAsync(DistributedApplication app, ResourceEvent resource, CancellationToken token)
     {
-        string Value(string name) => resource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == name).Value!;
-        using var dapr = new DaprClientBuilder().UseHttpEndpoint(Value("DAPR_HTTP_ENDPOINT")).UseGrpcEndpoint(Value("DAPR_GRPC_ENDPOINT")).Build();
+        using var dapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, resource, token).ConfigureAwait(false);
         var store = new DaprReadModelStore(dapr);
         var reads = new Dictionary<string, object?>();
         async Task<JsonObject?> ReadAsync(string label, string key)

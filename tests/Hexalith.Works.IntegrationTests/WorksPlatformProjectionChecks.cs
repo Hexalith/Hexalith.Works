@@ -47,8 +47,8 @@ internal static class WorksPlatformProjectionChecks
         int identityCallsBefore = executor.Calls;
         ResourceEvent worksResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", cancellationToken, cancellationToken).ConfigureAwait(false);
         ResourceEvent gatewayResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
-        using HttpClient gatewaySidecar = WorksAppHostTestReadiness.CreateDaprClient(gatewayResource, "EventStore");
-        using HttpClient worksSidecar = WorksAppHostTestReadiness.CreateDaprClient(worksResource, "Works");
+        using HttpClient gatewaySidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gatewayResource, "EventStore", cancellationToken).ConfigureAwait(false);
+        using HttpClient worksSidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, worksResource, "Works", cancellationToken).ConfigureAwait(false);
         using HttpResponseMessage metadataResponse = await WorksPlatformProofRequests.PostAsync(gatewaySidecar, "works", "/admin/operational-index-metadata",
             new AdminOperationalIndexMetadata.Request(["work"]) { AppId = "works", ServiceVersion = "v1" },
             WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceMetadata]), cancellationToken).ConfigureAwait(false);
@@ -444,7 +444,7 @@ internal static class WorksPlatformProjectionChecks
         actualObservation.ExecutableOwners![typeof(WorksHost).Assembly.FullName!].ShouldBe(runtime.AssemblySha256);
         actualObservation.Targets.ShouldBe(runtime.Targets);
         ResourceEvent actualGateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
-        using HttpClient ownedSender = WorksAppHostTestReadiness.CreateDaprClient(actualGateway, "EventStore");
+        using HttpClient ownedSender = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, actualGateway, "EventStore", cancellationToken).ConfigureAwait(false);
         async Task<(string Root, string Epoch)> ServingNamedMetadataAsync()
         {
             using var response = await WorksPlatformProofRequests.PostAsync(ownedSender, "works", "/admin/operational-index-metadata",
@@ -531,7 +531,7 @@ internal static class WorksPlatformProjectionChecks
     {
         ArgumentNullException.ThrowIfNull(executor);
         ResourceEvent gatewayResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
-        using HttpClient sidecar = WorksAppHostTestReadiness.CreateDaprClient(gatewayResource, "EventStore");
+        using HttpClient sidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gatewayResource, "EventStore", cancellationToken).ConfigureAwait(false);
         string assertion = WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]);
         using HttpResponseMessage metadataResponse = await WorksPlatformProofRequests.PostAsync(sidecar, "works", "/admin/operational-index-metadata",
             new AdminOperationalIndexMetadata.Request(["work"]) { AppId = "works", ServiceVersion = "v1" },

@@ -332,7 +332,7 @@ internal static class WorksAppHostSmokeHarness
                             if (catalog is not null) _ = output.Append(resource).Append(" catalog structure: ").AppendLine(catalog);
                             if (resource is "works" or "works-ha")
                                 _ = output.Append(resource).Append(" recovery state: ").AppendLine(
-                                    await WorksRecoveryStartupDiagnostics.CaptureAsync(current, resourceBudget.Token).ConfigureAwait(false));
+                                    await WorksRecoveryStartupDiagnostics.CaptureAsync(app, current, resourceBudget.Token).ConfigureAwait(false));
                         }
                         catch (Exception exception) when (exception is not OutOfMemoryException)
                         { _ = output.Append(resource).Append(" catalog structure capture failed: ").AppendLine(exception.GetType().Name); }
@@ -622,7 +622,7 @@ internal static class WorksAppHostSmokeHarness
             await WorksAppHostTestReadiness
                 .WaitForEventStoreCommandRuntimeAsync(client, startupToken)
                 .ConfigureAwait(true);
-            using HttpClient sidecarClient = WorksAppHostTestReadiness.CreateWorksDaprClient(worksResource);
+            using HttpClient sidecarClient = await WorksAppHostTestReadiness.CreateWorksDaprClientAsync(app, worksResource, startupToken).ConfigureAwait(true);
             await WorksAppHostTestReadiness
                 .WaitForWorksActorRuntimeAsync(sidecarClient, startupToken,
                     actorTypeName)

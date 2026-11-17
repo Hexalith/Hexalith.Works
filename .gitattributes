@@ -57,3 +57,13 @@ tests/Hexalith.Works.IntegrationTests/WorksSdkProofPreparationTests.cs whitespac
 tests/Hexalith.Works.IntegrationTests/WorksSdkProofPreparationQualification.cs whitespace=cr-at-eol
 
 tests/Hexalith.Works.IntegrationTests/WorksAppHostDiscoveryIsolationTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the selected-sidecar authentication fixtures.
+tests/Hexalith.Works.IntegrationTests/WorksAppHostTestReadiness.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksMtlsAuthorizationSmokeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformHistoricalPipelineSmokeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionChecks.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformProjectionPipelineSmokeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackChecks.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksRecoveryStartupDiagnostics.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksFixtureDaprAuthenticationTests.cs whitespace=cr-at-eol

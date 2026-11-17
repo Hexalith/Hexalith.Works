@@ -124,8 +124,8 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
             await AwaitProjectionSourceHeadsAsync(coordinator, scope, gateway, ids, token).ConfigureAwait(false);
             ResourceEvent gatewayResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", token, token).ConfigureAwait(false);
             ResourceEvent worksResource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
-            using HttpClient gatewaySidecar = WorksAppHostTestReadiness.CreateDaprClient(gatewayResource, "EventStore");
-            using HttpClient worksSidecar = WorksAppHostTestReadiness.CreateDaprClient(worksResource, "Works");
+            using HttpClient gatewaySidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gatewayResource, "EventStore", token).ConfigureAwait(false);
+            using HttpClient worksSidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, worksResource, "Works", token).ConfigureAwait(false);
             int identityCallsBefore = identity.Calls;
             QueryEnvelope executorQuery = ExecutorQuery(tenant, mine);
             QueryResult list = await QueryAsync(gatewaySidecar, executorQuery, token).ConfigureAwait(false);
@@ -387,8 +387,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
     private static async Task<DaprClient> DaprAsync(DistributedApplication app, CancellationToken token)
     {
         ResourceEvent resource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
-        string Endpoint(string key) => resource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == key).Value!;
-        return new DaprClientBuilder().UseHttpEndpoint(Endpoint("DAPR_HTTP_ENDPOINT")).UseGrpcEndpoint(Endpoint("DAPR_GRPC_ENDPOINT")).Build();
+        return await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, resource, token).ConfigureAwait(false);
     }
 
     private static async Task WaitAsync(Func<Task<bool>> condition, CancellationToken token)

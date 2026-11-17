@@ -38,11 +38,9 @@ internal static class WorksPlatformRollbackChecks
         ArgumentNullException.ThrowIfNull(executor);
         ResourceEvent works = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", cancellationToken, cancellationToken).ConfigureAwait(false);
         ResourceEvent eventStore = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", cancellationToken, cancellationToken).ConfigureAwait(false);
-        using HttpClient worksSidecar = WorksAppHostTestReadiness.CreateDaprClient(works, "Works");
-        using HttpClient gatewaySidecar = WorksAppHostTestReadiness.CreateDaprClient(eventStore, "EventStore");
-        using Dapr.Client.DaprClient dapr = new Dapr.Client.DaprClientBuilder()
-            .UseHttpEndpoint(works.Snapshot.EnvironmentVariables.Single(variable => variable.Name == "DAPR_HTTP_ENDPOINT").Value!)
-            .UseGrpcEndpoint(works.Snapshot.EnvironmentVariables.Single(variable => variable.Name == "DAPR_GRPC_ENDPOINT").Value!).Build();
+        using HttpClient worksSidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, works, "Works", cancellationToken).ConfigureAwait(false);
+        using HttpClient gatewaySidecar = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, eventStore, "EventStore", cancellationToken).ConfigureAwait(false);
+        using Dapr.Client.DaprClient dapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, works, cancellationToken).ConfigureAwait(false);
         var store = new DaprReadModelStore(dapr);
         WorksSdkProofFaultState fault = (await store.GetAsync<WorksSdkProofFaultState>("statestore",
             "story415:fail-after-commit:" + tenant, cancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull();

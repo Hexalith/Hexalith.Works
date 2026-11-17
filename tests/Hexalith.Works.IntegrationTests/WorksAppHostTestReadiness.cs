@@ -1,5 +1,7 @@
 using System.Text.Json;
 
+using Dapr.Client;
+
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
@@ -158,39 +160,74 @@ internal static class WorksAppHostTestReadiness
     }
 
     /// <summary>
-    /// Opens the Works Dapr HTTP endpoint exported by the running resource snapshot.
+    /// Opens the Works sidecar using its actual selected resource configuration.
     /// </summary>
-    public static HttpClient CreateWorksDaprClient(ResourceEvent worksResource)
-        => CreateDaprClient(worksResource, "Works");
+    public static Task<HttpClient> CreateWorksDaprClientAsync(DistributedApplication app, ResourceEvent worksResource, CancellationToken token)
+        => CreateDaprClientAsync(app, worksResource, "Works", token);
 
     /// <summary>
-    /// Opens the Dapr HTTP endpoint exported by a running resource snapshot.
+    /// Opens the selected sidecar with its evaluated endpoint and private API credential.
     /// </summary>
-    public static HttpClient CreateDaprClient(ResourceEvent resource, string resourceDisplayName)
+    public static async Task<HttpClient> CreateDaprClientAsync(DistributedApplication app, ResourceEvent resource, string resourceDisplayName, CancellationToken token)
     {
         ArgumentNullException.ThrowIfNull(resource);
         ArgumentException.ThrowIfNullOrWhiteSpace(resourceDisplayName);
 
-        string? endpoint = resource.Snapshot.EnvironmentVariables
-            .FirstOrDefault(static variable => string.Equals(
-                variable.Name,
-                "DAPR_HTTP_ENDPOINT",
-                StringComparison.Ordinal))
-            ?.Value;
-
-        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? address))
-        {
-            throw new InvalidOperationException(
-                $"[startup/readiness] The healthy {resourceDisplayName} resource did not expose a valid DAPR_HTTP_ENDPOINT.");
-        }
-
-        string? callerDirectory = resource.Snapshot.EnvironmentVariables.FirstOrDefault(variable => variable.Name == WorksProofCallerProtocol.DirectoryKey)?.Value;
-        string? session = resource.Snapshot.EnvironmentVariables.FirstOrDefault(variable => variable.Name == WorksProofCallerProtocol.SessionKey)?.Value;
-        HttpClient client = callerDirectory is null ? new HttpClient() : new HttpClient(new WorksProofCallerTransport(callerDirectory,
-            session ?? throw new InvalidOperationException("The actual proof caller lacks its run binding."), address));
+        IReadOnlyDictionary<string, string> environment = await DaprEnvironmentAsync(app, resource, token).ConfigureAwait(false);
+        Uri address = DaprEndpoint(environment, "DAPR_HTTP_ENDPOINT");
+        string? callerDirectory = environment.GetValueOrDefault(WorksProofCallerProtocol.DirectoryKey);
+        string? session = environment.GetValueOrDefault(WorksProofCallerProtocol.SessionKey);
+        string? apiToken = environment.GetValueOrDefault("DAPR_API_TOKEN");
+        var transport = new SidecarApiTokenHandler(address, apiToken);
+        HttpClient client = callerDirectory is null ? new HttpClient(transport) : new HttpClient(new WorksProofCallerTransport(callerDirectory,
+            session ?? throw new InvalidOperationException("The actual proof caller lacks its run binding."), address, transport));
         client.BaseAddress = address;
         client.Timeout = TimeSpan.FromSeconds(10);
         return client;
+    }
+
+    /// <summary>Creates an SDK client with only the selected resource's actual evaluated sidecar credential.</summary>
+    internal static async Task<DaprClient> CreateSdkDaprClientAsync(DistributedApplication app, ResourceEvent resource, CancellationToken token)
+    {
+        IReadOnlyDictionary<string, string> environment = await DaprEnvironmentAsync(app, resource, token).ConfigureAwait(false);
+        return new DaprClientBuilder().UseHttpEndpoint(DaprEndpoint(environment, "DAPR_HTTP_ENDPOINT").AbsoluteUri)
+            .UseGrpcEndpoint(DaprEndpoint(environment, "DAPR_GRPC_ENDPOINT").AbsoluteUri)
+            .UseDaprApiToken(environment.GetValueOrDefault("DAPR_API_TOKEN") ?? string.Empty).Build();
+    }
+
+    private static async Task<IReadOnlyDictionary<string, string>> DaprEnvironmentAsync(DistributedApplication app, ResourceEvent resource, CancellationToken token)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(resource);
+        if (!app.Services.GetRequiredService<DistributedApplicationModel>().Resources.Any(selected => ReferenceEquals(selected, resource.Resource)))
+            throw new InvalidOperationException("The selected sidecar resource does not belong to this application.");
+        var configuration = await ExecutionConfigurationBuilder.Create(resource.Resource).WithEnvironmentVariablesConfig()
+            .BuildAsync(app.Services.GetRequiredService<DistributedApplicationExecutionContext>(), cancellationToken: token).ConfigureAwait(false);
+        if (configuration.Exception is not null)
+            throw new InvalidOperationException("The selected sidecar environment could not be evaluated.");
+        return configuration.EnvironmentVariables.ToDictionary(variable => variable.Key, variable => variable.Value, StringComparer.Ordinal);
+    }
+
+    private static Uri DaprEndpoint(IReadOnlyDictionary<string, string> environment, string name)
+    {
+        if (!Uri.TryCreate(environment.GetValueOrDefault(name), UriKind.Absolute, out Uri? address)
+            || address.Scheme is not ("http" or "https") || address.UserInfo.Length != 0
+            || address.AbsolutePath != "/" || address.Query.Length != 0 || address.Fragment.Length != 0)
+            throw new InvalidOperationException("The selected resource did not expose a valid " + name + ".");
+        return address;
+    }
+
+    private sealed class SidecarApiTokenHandler(Uri sidecar, string? apiToken) : DelegatingHandler(new SocketsHttpHandler { AllowAutoRedirect = false })
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            if (request.RequestUri is not { IsAbsoluteUri: true } address || address.Scheme != sidecar.Scheme
+                || address.Authority != sidecar.Authority || address.UserInfo.Length != 0)
+                throw new InvalidOperationException("A selected sidecar credential cannot be sent to another endpoint.");
+            if (!string.IsNullOrEmpty(apiToken) && !request.Headers.Contains("dapr-api-token"))
+                request.Headers.Add("dapr-api-token", apiToken);
+            return base.SendAsync(request, cancellationToken);
+        }
     }
 
     /// <summary>

@@ -3,9 +3,9 @@ using System.Text.Json;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>Private test IPC, never an authority or a remote HTTP receiver.</summary>
-internal sealed class WorksProofCallerTransport(string directory, string session, Uri sidecar) : HttpMessageHandler
+internal sealed class WorksProofCallerTransport(string directory, string session, Uri sidecar, HttpMessageHandler? rawTransport = null) : HttpMessageHandler
 {
-    private readonly HttpMessageInvoker _raw = new(new SocketsHttpHandler { AllowAutoRedirect = false });
+    private readonly HttpMessageInvoker _raw = new(rawTransport ?? new SocketsHttpHandler { AllowAutoRedirect = false });
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
     {

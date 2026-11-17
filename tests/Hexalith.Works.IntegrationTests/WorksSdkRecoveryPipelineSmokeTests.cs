@@ -382,7 +382,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             int childExpired = await CountAsync(client, tenant, expiryItem, nameof(WorkItemExpired), token).ConfigureAwait(false);
             childExpired.ShouldBe(1);
             ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", token, token).ConfigureAwait(false);
-            using HttpClient actorState = WorksAppHostTestReadiness.CreateDaprClient(gateway, "EventStore");
+            using HttpClient actorState = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gateway, "EventStore", token).ConfigureAwait(false);
             string expiryActor = new AggregateIdentity(tenant, "work", expiryItem).ActorId;
             using HttpResponseMessage persisted = await actorState.GetAsync($"v1.0/actors/AggregateActor/{Uri.EscapeDataString(expiryActor)}/state/effect_receipt_{expiryCascadeEffect}", token).ConfigureAwait(false);
             persisted.EnsureSuccessStatusCode();
@@ -532,7 +532,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             (await CountAsync(client, tenant, expiryItem, nameof(WorkItemExpired), token).ConfigureAwait(false)).ShouldBe(1);
             (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, dateItem, token).ConfigureAwait(false)).ShouldBe(1);
             ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", token, token).ConfigureAwait(false);
-            using HttpClient actorState = WorksAppHostTestReadiness.CreateDaprClient(gateway, "EventStore");
+            using HttpClient actorState = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gateway, "EventStore", token).ConfigureAwait(false);
             string actorId = new AggregateIdentity(tenant, "work", childId).ActorId;
             using HttpResponseMessage receipt = await actorState.GetAsync(
                 $"v1.0/actors/AggregateActor/{Uri.EscapeDataString(actorId)}/state/effect_receipt_{committedEffect}", token).ConfigureAwait(false);
@@ -617,7 +617,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value?.Checkpoint >= 4, token).ConfigureAwait(false);
             (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, resumeParent, token).ConfigureAwait(false)).ShouldBe(1);
             ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", token, token).ConfigureAwait(false);
-            using HttpClient actorState = WorksAppHostTestReadiness.CreateDaprClient(gateway, "EventStore");
+            using HttpClient actorState = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gateway, "EventStore", token).ConfigureAwait(false);
             using HttpResponseMessage receipt = await actorState.GetAsync($"v1.0/actors/AggregateActor/{Uri.EscapeDataString(new AggregateIdentity(tenant, "work", resumeParent).ActorId)}/state/effect_receipt_{resumedEffect}", token).ConfigureAwait(false);
             receipt.EnsureSuccessStatusCode();
             string body = await receipt.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -1017,8 +1017,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             resource = current.ShouldNotBeNull();
         }
         else resource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, name, token, token).ConfigureAwait(false);
-        string Endpoint(string name) => resource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == name).Value!;
-        return new DaprClientBuilder().UseHttpEndpoint(Endpoint("DAPR_HTTP_ENDPOINT")).UseGrpcEndpoint(Endpoint("DAPR_GRPC_ENDPOINT")).Build();
+        return await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, resource, token).ConfigureAwait(false);
     }
 
     private static async Task<int> CountAsync(HttpClient client, string tenant, string item, string type, CancellationToken token)
@@ -1088,7 +1087,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         using var idleDeadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         idleDeadline.CancelAfter(TimeSpan.FromMinutes(4));
         ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", idleDeadline.Token, token).ConfigureAwait(false);
-        using HttpClient actorState = WorksAppHostTestReadiness.CreateDaprClient(gateway, "EventStore");
+        using HttpClient actorState = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gateway, "EventStore", token).ConfigureAwait(false);
         string[] actorIds = [.. sources.Select(source => $"{tenant}:work:{source.Aggregate}:works-runtime-v3").Distinct(StringComparer.Ordinal)];
         int consecutiveIdle = 0;
         try

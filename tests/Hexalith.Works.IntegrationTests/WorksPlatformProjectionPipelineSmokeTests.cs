@@ -62,8 +62,7 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
                 }
             }
             ResourceEvent resource = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", token, token).ConfigureAwait(false);
-            string Endpoint(string name) => resource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == name).Value!;
-            using DaprClient dapr = new DaprClientBuilder().UseHttpEndpoint(Endpoint("DAPR_HTTP_ENDPOINT")).UseGrpcEndpoint(Endpoint("DAPR_GRPC_ENDPOINT")).Build();
+            using DaprClient dapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, resource, token).ConfigureAwait(false);
             var store = new DaprReadModelStore(dapr);
             var coordinator = new SharedProjectionEpochCoordinator(store, store);
             var scope = new SharedProjectionScope("statestore", tenant, "work", WorksReadModelKeys.RuntimeFamily, ["works-runtime-v3-writer"]);

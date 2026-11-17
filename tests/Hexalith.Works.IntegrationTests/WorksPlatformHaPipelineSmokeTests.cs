@@ -52,8 +52,7 @@ public sealed class WorksPlatformHaPipelineSmokeTests
             primary.ResourceId.ShouldNotBe(secondary.ResourceId);
             string Endpoint(ResourceEvent resource, string name) => resource.Snapshot.EnvironmentVariables.Single(variable => variable.Name == name).Value!;
             Endpoint(primary, "DAPR_HTTP_ENDPOINT").ShouldNotBe(Endpoint(secondary, "DAPR_HTTP_ENDPOINT"));
-            using DaprClient dapr = new DaprClientBuilder().UseHttpEndpoint(Endpoint(primary, "DAPR_HTTP_ENDPOINT"))
-                .UseGrpcEndpoint(Endpoint(primary, "DAPR_GRPC_ENDPOINT")).Build();
+            using DaprClient dapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, primary, token).ConfigureAwait(false);
             var store = new DaprReadModelStore(dapr);
             DateTimeOffset due = DateTimeOffset.UtcNow.AddSeconds(60);
             await WorksAppHostSmokeHarness.ParkSuspendedOnDateAsync(gateway, tenant, item, due, token).ConfigureAwait(false);
@@ -85,9 +84,8 @@ public sealed class WorksPlatformHaPipelineSmokeTests
             int resumed;
             while ((resumed = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, deadline.Token).ConfigureAwait(false)) != 1)
                 await Task.Delay(200, deadline.Token).ConfigureAwait(false);
-            using HttpClient survivor = WorksAppHostTestReadiness.CreateDaprClient(secondary, "Surviving Works");
-            using DaprClient survivorDapr = new DaprClientBuilder().UseHttpEndpoint(Endpoint(secondary, "DAPR_HTTP_ENDPOINT"))
-                .UseGrpcEndpoint(Endpoint(secondary, "DAPR_GRPC_ENDPOINT")).Build();
+            using HttpClient survivor = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, secondary, "Surviving Works", token).ConfigureAwait(false);
+            using DaprClient survivorDapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, secondary, token).ConfigureAwait(false);
             var survivorStore = new DaprReadModelStore(survivorDapr);
             string callbackKey = WorksPlatformReminderCallbackProbe.Key(actor);
             int beforeCallbacks = (await survivorStore.GetAsync<System.Text.Json.Nodes.JsonObject>("statestore", callbackKey, token).ConfigureAwait(false)).Value?["calls"]?.GetValue<int>() ?? 0;
