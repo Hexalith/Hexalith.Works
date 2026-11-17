@@ -1,0 +1,45 @@
+name: Platform R1–R11 parity and rollback
+description: Run the complete canonical Platform Works proof using extra root gitlinks and published Builds artifacts.
+runs:
+  using: composite
+  steps:
+    - name: Initialize required root dependencies
+      shell: bash
+      run: >-
+        git --literal-pathspecs -c protocol.file.allow=never -c submodule.recurse=false
+        submodule update --init --checkout --
+        references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons
+        references/Hexalith.McpCli references/Hexalith.Memories
+        references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
+        references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+    - name: Prepare verified published Builds artifacts
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+      run: bash scripts/prepare-platform-builds.sh
+    - name: Run complete canonical Platform gate
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: bash scripts/verify-platform-parity-ci.sh --artifacts-path "$RUNNER_TEMP/works-platform-parity"
+    - name: Preserve parity results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: works-platform-parity
+        if-no-files-found: error
+        path: |
+          ${{ runner.temp }}/works-platform-parity/bootstrap.json
+          ${{ runner.temp }}/works-platform-parity/platform-source-binding.json
+          ${{ runner.temp }}/works-platform-parity/gate/*.json
+          ${{ runner.temp }}/works-platform-parity/gate/*.log
+          ${{ runner.temp }}/works-platform-parity/gate/*.xml
+          ${{ runner.temp }}/works-platform-parity/gate/*.jsonl
+          ${{ runner.temp }}/works-platform-parity/gate/*.md
+          ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.json
+          ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.log
+          ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.xml
+          ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.jsonl
+          ${{ runner.temp }}/works-platform-parity/gate/agents-full/**/*.md
+          ${{ runner.temp }}/works-platform-parity/gate/isolated-daprd*/binding.json
+          ${{ runner.temp }}/works-platform-parity/gate/isolated-daprd*/launches.jsonl
