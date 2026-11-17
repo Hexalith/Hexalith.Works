@@ -38,6 +38,7 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
         using RSA authority = RSA.Create(2048);
         string key = Convert.ToBase64String(authority.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        await isolation.CaptureDevelopmentCatalogProfileAsync(digestKey, ct).ConfigureAwait(true);
         // Test-only Parties identity for the delegated Executor queries; neither host composes coordinator authority.
         WorksPlatformIdentityFixture identity = await WorksPlatformIdentityFixture.StartAsync(tenant,
             WorksPlatformIdentityFixture.SyntheticExecutorParty, WorksPlatformIdentityFixture.SyntheticExecutorActor, ct).ConfigureAwait(true);
@@ -85,6 +86,7 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
             WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath, isolation.RedisEndpoint, sources, identity: identity);
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "works"))
                 .WithEnvironment("WORKS_SDK_PROOF_CALLBACKS", "1");
-        }, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
+        }, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory,
+            developmentCatalogProfilePath: isolation.DevelopmentCatalogProfilePath).ConfigureAwait(true);
     }
 }

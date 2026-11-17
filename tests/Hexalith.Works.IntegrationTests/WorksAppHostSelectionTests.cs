@@ -68,6 +68,19 @@ public sealed class WorksAppHostSelectionTests
     public void OwnedSdkFixtureIsAccepted()
         => WorksAppHostSmokeHarness.RequireOwnedPlatformFixture(true, true, "works-sdk416-owned", Path.GetFullPath("owned-certificates"));
 
+    /// <summary>The actual startup entry refuses its missing owner profile before SDK selection or composition.</summary>
+    [Fact]
+    public async Task MissingCatalogProfileIsRefusedBeforeCompositionInAnIsolatedProcessAsync()
+    {
+        CancellationToken token = TestContext.Current.CancellationToken;
+        using WorksIsolatedFixtureProcess fixture = await WorksIsolatedFixtureProcess.CreateAsync(token).ConfigureAwait(true);
+        var start = fixture.StartInfo("missing-catalog-profile");
+        start.Environment["WORKS_PLATFORM_APPHOST_ASSEMBLY"] = Path.Combine(fixture.DirectoryPath, "absent-apphost.dll");
+        var result = await WorksIsolatedFixtureProcess.RunAsync(start, token).ConfigureAwait(true);
+        result.ExitCode.ShouldBe(0, result.Output);
+        result.Output.ShouldContain("missing-profile-refused-before-composition");
+    }
+
     /// <summary>An explicit but absent artifact is a hard failure.</summary>
     [Theory]
     [InlineData("")]

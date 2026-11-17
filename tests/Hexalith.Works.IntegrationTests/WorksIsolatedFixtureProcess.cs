@@ -15,7 +15,7 @@ internal sealed class WorksIsolatedFixtureProcess(string directory, string assem
         {
             string project = Path.Combine(directory, "Fixture.csproj");
             string proofDirectory = Path.GetDirectoryName(typeof(WorksFixtureDaprAuthenticationTests).Assembly.Location)!;
-            string references = string.Join(Environment.NewLine, new[] { "Hexalith.Works.IntegrationTests", "Aspire.Hosting", "Dapr.Client", "Dapr.Common", "Grpc.Core.Api" }
+            string references = string.Join(Environment.NewLine, new[] { "Hexalith.Works.IntegrationTests", "Aspire.Hosting", "Aspire.Hosting.Testing", "Dapr.Client", "Dapr.Common", "Grpc.Core.Api" }
                 .Select(name => $"<Reference Include=\"{name}\"><HintPath>{SecurityElement.Escape(Path.Combine(proofDirectory, name + ".dll"))}</HintPath><Private>true</Private></Reference>"));
             await File.WriteAllTextAsync(project, $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -90,6 +90,7 @@ internal sealed class WorksIsolatedFixtureProcess(string directory, string assem
         using System.Reflection;
         using Aspire.Hosting;
         using Aspire.Hosting.ApplicationModel;
+        using Aspire.Hosting.Testing;
         using Dapr;
         using Dapr.Client;
         using Grpc.Core;
@@ -101,6 +102,26 @@ internal sealed class WorksIsolatedFixtureProcess(string directory, string assem
             using var child = Process.Start(start)!;
             File.WriteAllText(args[1], child.Id + "|" + child.StartTime.ToUniversalTime().Ticks);
             Console.Write("net11.0"); Console.Error.Write("held pipe"); return;
+        }
+        if (args[0] == "missing-catalog-profile")
+        {
+            var harness = typeof(Hexalith.Works.IntegrationTests.WorksAppHostSelectionTests).Assembly
+                .GetType("Hexalith.Works.IntegrationTests.WorksAppHostSmokeHarness")!;
+            using var canceled = new CancellationTokenSource(); canceled.Cancel();
+            Func<DistributedApplication, HttpClient, HttpClient, CancellationToken, Task> body = (_, _, _, _) =>
+                throw new InvalidOperationException("The acceptance body must never run.");
+            Action<IDistributedApplicationTestingBuilder> configure = _ =>
+                throw new InvalidOperationException("Composition must never run.");
+            try
+            {
+                await (Task)harness.GetMethod("WithAppHostAsync", BindingFlags.Static | BindingFlags.Public)!
+                    .Invoke(null, [canceled.Token, body, configure, "WorksSdkReminderActor", false,
+                        "works-sdk416-isolated", Path.GetFullPath("owned-certificates"), false, null])!;
+            }
+            catch (InvalidOperationException error) when (error.Message ==
+                "The canonical Platform proof requires its owned catalog profile before composition.")
+            { Console.Write("missing-profile-refused-before-composition"); return; }
+            throw new InvalidOperationException("A current Platform fixture reached startup without its owned profile.");
         }
         var builder = DistributedApplication.CreateBuilder(new DistributedApplicationOptions { Args = [], DisableDashboard = true });
         var resource = builder.AddResource(new ProjectResource("tokenless"))

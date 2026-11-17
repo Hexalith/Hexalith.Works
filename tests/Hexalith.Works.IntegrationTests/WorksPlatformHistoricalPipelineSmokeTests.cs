@@ -65,6 +65,7 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
         using RSA authority = RSA.Create(2048);
         string key = Convert.ToBase64String(authority.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        await isolation.CaptureDevelopmentCatalogProfileAsync(digestKey, ct).ConfigureAwait(true);
         WorksPlatformIdentityFixture identity = await WorksPlatformIdentityFixture.StartAsync(tenant, Party, Actor, ct).ConfigureAwait(true);
         await using var identityCleanup = identity.ConfigureAwait(false);
         ProcessSource[] grants = [.. ids.Select(id => new ProcessSource(tenant, "work", id))];
@@ -219,7 +220,8 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
                 tenant, lifecycle, raceStream, parentStream, topology, familyDigest = persistedDigest,
                 claimOutcomes, replay = new { replay.Status, replay.InitialEffort, replay.Remaining, replay.ExecutorBinding },
             }, token).ConfigureAwait(false);
-        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
+        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory,
+            developmentCatalogProfilePath: isolation.DevelopmentCatalogProfilePath).ConfigureAwait(true);
 
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, gateway, _sidecar, token) =>
         {
@@ -241,7 +243,8 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
             {
                 tenant, familyDigest = restartedDigest, claimCount, completed = rolledUp == WorkItemStatus.Completed && replayed == WorkItemStatus.Completed,
             }, token).ConfigureAwait(false);
-        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
+        }, configure, "WorksSdkReminderActor", schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory,
+            developmentCatalogProfilePath: isolation.DevelopmentCatalogProfilePath).ConfigureAwait(true);
     }
 
     private static QueryEnvelope ExecutorQuery(string tenant, string owner)

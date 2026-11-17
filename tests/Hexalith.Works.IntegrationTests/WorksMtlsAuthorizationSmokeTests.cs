@@ -46,6 +46,8 @@ public sealed class WorksMtlsAuthorizationSmokeTests
         using RSA rsa = RSA.Create(2048);
         string key = Convert.ToBase64String(rsa.ExportPkcs8PrivateKey());
         string digestKey = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32));
+        if (WorksAppHostSelection.IsPlatform)
+            await isolation.CaptureDevelopmentCatalogProfileAsync(digestKey, ct).ConfigureAwait(true);
         string tenant = "tenant-mtls-" + Guid.NewGuid().ToString("N")[..8];
         string authorizedItem = "work-mtls-" + Guid.NewGuid().ToString("N")[..12];
         await WorksAppHostSmokeHarness.WithAppHostAsync(ct, async (app, client, _, token) =>
@@ -111,6 +113,7 @@ public sealed class WorksMtlsAuthorizationSmokeTests
             deniedBody.ShouldNotContain("mTLS authorization proof");
         }, builder => WorksSdkRecoveryPipelineSmokeTests.Configure(builder, key, digestKey, isolation.ComponentPath,
             isolation.RedisEndpoint, [new ProcessSource(tenant, "work", authorizedItem)]), "WorksSdkReminderActor",
-            schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory).ConfigureAwait(true);
+            schedulerVolumeName: isolation.SchedulerVolumeName, certificateDirectory: isolation.CertificateDirectory,
+            developmentCatalogProfilePath: WorksAppHostSelection.IsPlatform ? isolation.DevelopmentCatalogProfilePath : null).ConfigureAwait(true);
     }
 }

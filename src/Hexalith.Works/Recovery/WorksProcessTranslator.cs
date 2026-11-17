@@ -95,9 +95,9 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
             .Select(fact => fact.Payload).OfType<ChildSpawned>()
             .DistinctBy(child => child.ChildWorkItemId.Value).OrderBy(child => child.ChildWorkItemId.Value, StringComparer.Ordinal)];
         var descendants = new List<CascadeDescendant>();
-        // Independent child histories share the existing SDK admission limit and caller deadline.
+        // Eight independent child histories share the existing SDK sixteen-read admission limit and caller deadline.
         // Only one fixed-size batch is retained, and sorted validation preserves failure precedence.
-        foreach (ChildSpawned[] batch in children.Chunk(4))
+        foreach (ChildSpawned[] batch in children.Chunk(8))
         {
             var contexts = await Task.WhenAll(batch.Select(ReadChildAsync)).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();

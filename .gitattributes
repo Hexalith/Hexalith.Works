@@ -86,3 +86,5 @@ tests/Hexalith.Works.IntegrationTests/SidecarApiTokenHandler.cs whitespace=cr-at
 tests/Hexalith.Works.IntegrationTests/StatusControllerOnly.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksIsolatedFixtureProcess.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksManifestReader.cs whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksAppHostSelectionTests.cs whitespace=cr-at-eol
