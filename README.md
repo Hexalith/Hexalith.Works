@@ -44,15 +44,19 @@ unsupported runners, and the repository's `failSkips` setting keeps those runs f
 
 CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
 
-The blocking `platform-parity` CI job runs Platform's canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. Run the same CI profile locally after initializing the dependencies above:
+Ordinary push/PR CI keeps the blocking compilation, package, consumer and test suites above. The `Qualification` workflow (`qualification.yml`) runs nightly at 02:23 UTC and manually on the selected source. Its `platform-parity` job runs Platform's complete canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. A release requires both a successful push CI run and a successful nightly or manual Qualification run for its exact current `main` SHA. If nightly qualification covered an older SHA, run Qualification manually on current `main` and wait for it to pass before releasing. Qualification from another source is never reused. Run the same complete CI profile locally after initializing the dependencies above:
 
 ```bash
-bash scripts/verify-platform-parity-ci.sh --artifacts-path /tmp/works-platform-proof
+run-with-temp bash -c 'bash scripts/verify-platform-parity-ci.sh --artifacts-path "$TMPDIR/works-platform-proof"'
 ```
 
 For an independently obtained official SDK source export, add `--runtime-sdk-root /absolute/path/to/export`. The bootstrap copies it into the run-owned workspace and records an unknown checkout commit; the canonical verifier still requires its exact runtime/build inputs to match the selected public package producer and official release tag. This option does not select a different package version or qualify a candidate Builds catalog.
 
-Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. Deterministic suites can exclude only the live classes whose required facts run in that same gate. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
+The verifier validates persisted evidence envelopes after every successful producing command, before starting the next command. It permits valid incomplete prefixes and list states; final acceptance still binds every required proof and closes source integrity. Each command's ledger entry records UTC start/end boundaries, monotonic `elapsedSeconds`, output hash, exit status when available, and failures. Save useful evidence outside the private `TMPDIR` before the wrapper exits.
+
+Hosted run [44049423249](https://github.com/Hexalith/Hexalith.Works/actions/runs/44049423249) measured 44m12s for qualification and 8m13s for ordinary compilation/tests. These are the pre-change observations: approximately eight minutes is the selected ordinary feedback target, while new hosted durations remain unmeasured until publication. Recovery budgets and all five recovery topology starts remain unchanged.
+
+Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. The ordinary integration suite leaves only the explicitly listed live facts to complete Qualification; those facts must all pass on the exact release source before publication. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
 
 The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
 
@@ -111,7 +115,7 @@ Release is operator-only through the `Release` workflow. Before an authorized di
   `production` environment. The workflow uses GitHub OIDC through `NuGet/login` to obtain its temporary
   `NUGET_API_KEY`; repository owners do not provision a long-lived API-key secret for this workflow.
 - A repository-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` variable set to the exact string `true`.
-- A successful push `CI` run for the exact current `main` commit.
+- A successful push `CI` run and a successful complete `Qualification` run for the exact current `main` commit. Both proofs run before production environment approval and publication credentials become available.
 
 The workflow rejects a non-`main` or stale dispatch before requesting environment approval, fails before any NuGet write if any one of the five ID/version pairs already exists, and verifies that the release tag resolves to the dispatched commit and all five exact packages become readable afterward. Publication is never triggered by a push.
 

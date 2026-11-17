@@ -232,8 +232,31 @@ class ShellReleaseTests(unittest.TestCase):
         result, calls = self._run_source_verifier()
 
         self.assertEqual(0, result.returncode, result.stderr)
-        self.assertEqual(2, calls)
-        self.assertIn("has a successful push CI run", result.stdout)
+        self.assertEqual(3, calls)
+        self.assertIn("has a successful push CI run and complete qualification", result.stdout)
+
+    def test_source_proof_rejects_absent_stale_failed_incomplete_or_foreign_qualification(self) -> None:
+        for status in ("absent", "stale", "failed", "in_progress", "foreign_branch", "push"):
+            with self.subTest(status=status):
+                result, calls = self._run_source_verifier(qualification_status=status)
+                self.assertNotEqual(0, result.returncode)
+                self.assertEqual(3, calls)
+                self.assertIn("No successful complete qualification run", result.stderr)
+
+    def test_source_proof_accepts_nightly_or_manual_exact_source_qualification(self) -> None:
+        for event in ("schedule", "workflow_dispatch"):
+            with self.subTest(event=event):
+                result, calls = self._run_source_verifier(qualification_event=event)
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertEqual(3, calls)
+
+    def test_source_proof_rejects_stale_failed_or_incomplete_ci(self) -> None:
+        for status in ("stale", "failed", "in_progress"):
+            with self.subTest(status=status):
+                result, calls = self._run_source_verifier(ci_status=status)
+                self.assertNotEqual(0, result.returncode)
+                self.assertEqual(2, calls)
+                self.assertIn("No successful push CI run", result.stderr)
 
     def test_preflight_rejects_stale_dispatch_before_collision_probe(self) -> None:
         result, curl_calls, _ = self._run_preflight(["404"] * 5, main_sha="b" * 40)
@@ -765,6 +788,9 @@ printf '%s' "$status"
         dispatch_ref: str = "refs/heads/main",
         main_sha: str | None = None,
         has_successful_ci: bool = True,
+        ci_status: str = "success",
+        qualification_status: str = "success",
+        qualification_event: str = "schedule",
         repository: str = "Hexalith/Hexalith.Works",
     ) -> tuple[subprocess.CompletedProcess[str], int]:
         temporary = tempfile.TemporaryDirectory()
@@ -776,24 +802,17 @@ printf '%s' "$status"
         resolved_main_sha = sha if main_sha is None else main_sha
         count_file = root / "github-count"
         count_file.write_text("0", encoding="utf-8")
-        workflow_runs = json.dumps(
-            {
-                "workflow_runs": (
-                    [
-                        {
-                            "head_sha": sha,
-                            "head_branch": "main",
-                            "event": "push",
-                            "status": "completed",
-                            "conclusion": "success",
-                        }
-                    ]
-                    if has_successful_ci
-                    else []
-                )
-            },
-            separators=(",", ":"),
-        )
+        def runs(status: str, event: str) -> str:
+            return json.dumps({"workflow_runs": [] if status == "absent" else [{
+                "head_sha": "b" * 40 if status == "stale" else sha,
+                "head_branch": "feature" if status == "foreign_branch" else "main",
+                "event": "push" if status == "push" else event,
+                "status": "in_progress" if status == "in_progress" else "completed",
+                "conclusion": "failure" if status == "failed" else "success",
+            }]}, separators=(",", ":"))
+
+        workflow_runs = runs(ci_status if has_successful_ci else "absent", "push")
+        qualification_runs = runs(qualification_status, qualification_event)
         write_executable(
             bin_directory / "gh",
             f"""#!/usr/bin/env bash
@@ -802,6 +821,8 @@ count="$(cat "$HEXALITH_TEST_GITHUB_COUNT")"
 printf '%s\n' "$((count + 1))" > "$HEXALITH_TEST_GITHUB_COUNT"
 if [[ "$*" == *git/ref/heads/main* ]]; then
   printf '%s\n' '{resolved_main_sha}'
+elif [[ "$*" == *qualification.yml/runs* ]]; then
+  printf '%s\n' '{qualification_runs}'
 else
   printf '%s\n' '{workflow_runs}'
 fi

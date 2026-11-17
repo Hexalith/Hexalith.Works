@@ -30,7 +30,7 @@ jobs:
           persist-credentials: false
           submodules: false
 
-      - name: Require current main with successful exact-source push CI
+      - name: Require current main with exact-source CI and complete qualification
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}

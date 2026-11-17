@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Prove that a manual release targets the exact current main commit with a successful push CI run.
+# Require successful ordinary CI and complete qualification for the exact release source.
 set -euo pipefail
 
 repository="${REPOSITORY:-${GITHUB_REPOSITORY:-}}"
 dispatch_ref="${DISPATCH_REF:-${GITHUB_REF:-}}"
 dispatch_sha="${DISPATCH_SHA:-${GITHUB_SHA:-}}"
 source_ci_workflow="${SOURCE_CI_WORKFLOW:-ci.yml}"
+qualification_workflow="${SOURCE_QUALIFICATION_WORKFLOW:-qualification.yml}"
 github_token="${GH_TOKEN:-${GITHUB_TOKEN:-}}"
 
 fail() {
@@ -18,6 +19,7 @@ fail() {
 [[ "$dispatch_ref" = "refs/heads/main" ]] || fail "Release must be dispatched from refs/heads/main."
 [[ "$dispatch_sha" =~ ^[0-9a-f]{40}$ ]] || fail "The dispatch source must be an exact lowercase commit SHA."
 [[ "$source_ci_workflow" = "ci.yml" ]] || fail "The exact-source proof must use ci.yml."
+[[ "$qualification_workflow" = "qualification.yml" ]] || fail "The complete qualification proof must use qualification.yml."
 [ -n "$github_token" ] || fail "A repository-scoped GitHub token is required for exact-source proof."
 
 export GH_TOKEN="$github_token"
@@ -45,4 +47,22 @@ if ! printf '%s\n' "$ci_runs" | jq -e --arg sha "$dispatch_sha" '
   fail "No successful push CI run exists for the exact current main SHA."
 fi
 
-echo "[release-source] Exact current main ${dispatch_sha} has a successful push CI run."
+qualification_runs="$(gh api --method GET \
+  "repos/${repository}/actions/workflows/${qualification_workflow}/runs" \
+  -f branch=main \
+  -f head_sha="$dispatch_sha" \
+  -f status=success \
+  -f per_page=100)" || fail "Exact-source qualification runs could not be queried."
+if ! printf '%s\n' "$qualification_runs" | jq -e --arg sha "$dispatch_sha" '
+  [.workflow_runs[] | select(
+    .head_sha == $sha and
+    .head_branch == "main" and
+    (.event == "schedule" or .event == "workflow_dispatch") and
+    .status == "completed" and
+    .conclusion == "success"
+  )] | length > 0
+' >/dev/null; then
+  fail "No successful complete qualification run exists for the exact current main SHA; run qualification.yml on this source."
+fi
+
+echo "[release-source] Exact current main ${dispatch_sha} has a successful push CI run and complete qualification."
