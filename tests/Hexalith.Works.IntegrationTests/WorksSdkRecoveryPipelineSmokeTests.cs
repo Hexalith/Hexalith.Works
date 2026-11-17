@@ -729,7 +729,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     /// plus one executor-visible source for delegated queries. SDK validation couples it with the operation timeout,
     /// source quantum and freshness window configured in <see cref="Configure"/>: the quantum must cover
     /// (4 + 5 x 5 effects) x 1.9 s = 55.1 s, and twelve sources x (2 x 56 s + 16 x 1.9 s) plus twelve catalog reads and one
-    /// ten-second pass, 1,741.6 s, must fit within the 30-minute window less one interval.
+    /// twenty-second interval, 1,751.6 s, must fit within the 30-minute window less one interval.
     /// </summary>
     internal const int SupportedCandidates = 12;
 
@@ -963,10 +963,10 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         // state/catalog publication. The SDK retains its continuation if the 30s slice yields.
         target.WithEnvironment("Logging__LogLevel__Hexalith.EventStore.DomainService.ReminderReconciler", "Information")
             .WithEnvironment("Logging__LogLevel__Hexalith.Works.Recovery.WorksProcessTranslator", "Debug")
-            .WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:02")
+            .WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:20")
             .WithEnvironment("EventStore__Reminders__CatalogOperationTimeout", "00:00:03")
             .WithEnvironment("EventStore__Reminders__CatalogServiceBudget", "00:00:30")
-            .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:10")
+            .WithEnvironment("EventStore__Processes__ReconciliationInterval", "00:00:20")
             .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
             .WithEnvironment("EventStore__Processes__RetryLimit", "10")
             .WithEnvironment("EventStore__Processes__SupportedCandidateCount", SupportedCandidates.ToString(System.Globalization.CultureInfo.InvariantCulture))

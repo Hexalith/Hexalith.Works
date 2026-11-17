@@ -30,13 +30,14 @@ public sealed class WorksSdkRecoveryProfileTests
         options.OperationTimeout.ShouldBe(TimeSpan.FromMilliseconds(1900));
         options.SourceServiceQuantum.ShouldBe(TimeSpan.FromSeconds(56));
         options.ReadinessMaxAge.ShouldBe(TimeSpan.FromMinutes(30));
-        options.ReconciliationInterval.ShouldBe(TimeSpan.FromSeconds(10));
+        options.ReconciliationInterval.ShouldBe(TimeSpan.FromSeconds(20));
         options.LeaseDuration.ShouldBe(TimeSpan.FromSeconds(30));
         options.RetryLimit.ShouldBe(10);
         options.Validate().ShouldBeEmpty();
-        settings["EventStore:Reminders:ReconciliationInterval"].ShouldBe("00:00:02");
+        settings["EventStore:Reminders:ReconciliationInterval"].ShouldBe("00:00:20");
         settings["Works:Recovery:ContextReadTimeout"].ShouldBe("00:00:02");
         EventStoreReminderOptions reminders = services.GetRequiredService<IOptions<EventStoreReminderOptions>>().Value;
+        reminders.ReconciliationInterval.ShouldBe(TimeSpan.FromSeconds(20));
         reminders.CatalogOperationTimeout.ShouldBe(TimeSpan.FromSeconds(3));
         reminders.CatalogServiceBudget.ShouldBe(TimeSpan.FromSeconds(30));
         reminders.Validate().ShouldBeEmpty();
@@ -46,10 +47,10 @@ public sealed class WorksSdkRecoveryProfileTests
         reminders.CatalogServiceBudget.ShouldBeGreaterThan(TimeSpan.FromSeconds(options.SupportedCandidateCount * 2));
 
         // The registered five-effect contract needs 29 operation deadlines per envelope (55.1 s).
-        // Whole-cycle work is 12 * (2 * 56 + 17 * 1.9) + 10 = 1741.6 s, below 1790 s.
+        // Whole-cycle work is 12 * (2 * 56 + 17 * 1.9) + 20 = 1751.6 s, below 1780 s.
         options.SourceServiceQuantum.ShouldBeGreaterThan(TimeSpan.FromSeconds(55.1));
         options.ReadinessMaxAge.Subtract(options.ReconciliationInterval)
-            .ShouldBeGreaterThan(TimeSpan.FromSeconds(1741.6));
+            .ShouldBeGreaterThan(TimeSpan.FromSeconds(1751.6));
     }
 
     /// <summary>The superseded profile fits eleven sources but cannot silently admit the executor-visible twelfth.</summary>
