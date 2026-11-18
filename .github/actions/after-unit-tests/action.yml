@@ -1,0 +1,23 @@
+name: Check reviewed source and Release package identities
+description: Verify EventStore and PolymorphicSerializations source/package pairs without restoring or building.
+runs:
+  using: composite
+  steps:
+    - name: Initialize reviewed source identities
+      shell: bash
+      run: >-
+        git --literal-pathspecs -c protocol.file.allow=never -c submodule.recurse=false
+        submodule update --init --checkout --
+        references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
+    - name: Check reviewed source and Release package identities
+      shell: bash
+      run: >-
+        python3 scripts/verify-source-debug.py --check-only
+        --artifacts-path "${{ runner.temp }}/works-source-pairs"
+    - name: Preserve source identity checks
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: works-source-pairs
+        if-no-files-found: error
+        path: ${{ runner.temp }}/works-source-pairs/
