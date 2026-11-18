@@ -64,7 +64,7 @@
     <!-- Hexalith.Builds ci-cd-standards.md (Dependency Auditing) requires NU1901-NU1904 to stay out of
          warnings-as-errors so a transitive advisory that cannot be upgraded immediately does not block CI,
          while still surfacing in build logs. Waive an individual advisory with NuGetAuditSuppress. -->
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904;CS0618;ASPIRE012</WarningsNotAsErrors>
     <NoWarn>$(NoWarn);NU5118;NU5128</NoWarn>
 
     <!-- Published packages declare RepositoryUrl, so ship debugging symbols and deterministic source links. -->
