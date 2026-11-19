@@ -265,7 +265,10 @@ public sealed class BuildConfigurationTests
 
         bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
             project,
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Configuration"] = string.Empty,
+            },
             out MsBuildProjectSnapshot? snapshot,
             out string diagnostic);
 
@@ -355,16 +358,16 @@ public sealed class BuildConfigurationTests
             RedirectStandardError = true,
             RedirectStandardOutput = true,
         };
-        // Shared CI forwards TreatWarningsAsErrors into the test host environment.
-        // This helper asserts MSBuild Warning/Error tasks, not compiler diagnostics.
+        // Shared prepare exports Configuration=Release and warning-as-error
+        // properties into the job environment. Configuration-free evaluation
+        // and HXW0002 must not inherit those.
+        start.Environment.Remove("Configuration");
         start.Environment.Remove("TreatWarningsAsErrors");
         start.Environment.Remove("MSBuildTreatWarningsAsErrors");
         start.ArgumentList.Add("msbuild");
         start.ArgumentList.Add(project);
         start.ArgumentList.Add("-nologo");
         start.ArgumentList.Add("-t:ValidateHexalithDependencyMode");
-        start.ArgumentList.Add("-p:TreatWarningsAsErrors=false");
-        start.ArgumentList.Add("-p:MSBuildTreatWarningsAsErrors=false");
         foreach (string argument in arguments)
         {
             start.ArgumentList.Add(argument);
