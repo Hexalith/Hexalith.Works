@@ -14,10 +14,10 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-Current maintenance pairs EventStore source `3b2350e7c1fff640131f8101596c78a59e31a03f`
-with Release `5.2.0`, and PolymorphicSerializations source
-`2cbec6a66e2174adc7c5d431c1b1f0d28abd5647` with Release `2.0.0`.
-The official package metadata names producers `8b6d5bee5217b3f4bbd8fd689ad887aca863961b`
+Current maintenance pairs EventStore source `05e4f6d40d4731f7acf435f3c678959efc672269`
+with Release `5.3.1`, and PolymorphicSerializations source
+`f1e2b45b161627bc2d204e128ffeda086eb413b8` with Release `2.0.0`.
+The official package metadata names producers `3371f29fd7df1469a2c71f185292b2bd0592ae0e`
 and `52282d023156725c811fa21299f349a6fd62d989`, respectively. These are supported
 source/package pairs, not identical producer revisions or a claim of behavioral equivalence.
 Both complete Debug/source and Release/package solution builds pass on .NET 11
