@@ -24,7 +24,7 @@
   },
   "moduleManifest": null,
   "npmWorkspaces": [],
-  "publishedBuilds": null,
+  "publishedBuilds": "eng/published-builds.json",
   "registry": false,
   "schema": "hexalith.ci.v1",
   "solution": "Hexalith.Works.slnx",
