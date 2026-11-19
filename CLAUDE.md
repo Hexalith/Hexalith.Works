@@ -63,3 +63,44 @@ Before working in a Hexalith repository, locate, read, and follow
   baseline.
 - Keep repository-specific instructions in repository documentation or
   configuration, not in these universal entry points.
+<!-- hexalith-cicd:begin -->
+CI/CD is owned by Hexalith.CiCd.
+
+Hexalith.CiCd owns `.github/workflows/**`, `.github/hexalith-ci.json`,
+`.github/dependabot.yml`, the `references/Hexalith.Builds` gitlink and its
+`.gitmodules` section, the delivered CI/CD instruction blocks in `AGENTS.md`,
+`CLAUDE.md` and `.github/copilot-instructions.md`, and the required
+`permissions.deny` entries in `.claude/settings.json`. Do not edit those owned
+files or portions from a module. Propose policy changes in Hexalith.CiCd.
+Preserve instructions, settings and submodule sections outside those portions.
+
+When CI fails, fix the product code, tests or dependencies. If the pipeline is
+defective, report the failure and run link to Hexalith.CiCd without working
+around it. Before every push, run `python3 references/Hexalith.Builds/check.py`
+from the module root and require success. Do not disable or suppress dependency
+audits, skip or filter out test projects, weaken checks, or add CI skip markers
+(including `[skip ci]` variants) or `skip-checks` commit trailers. Do not write
+tests that assert workflow YAML text.
+
+Keep product gates: compilation, tests, security and dependency scans, commit
+format and package publishing. Module-specific product checks belong in custom
+actions enabled through Hexalith.CiCd. Checks of CI itself, agent tooling, story
+evidence or workflow YAML do not belong in module CI. Releases follow the
+centrally scheduled nightly process.
+
+Start each product branch from current `main`: fetch `origin main` immediately
+before creating the branch from `origin/main`. Do not reuse an older base that
+predates delivered CI/CD changes. Use the restricted module credential. Report
+permission refusals without switching credentials or broadening access.
+GitHub permits PR Update branch with the restricted module credential even
+when it imports changed workflows. Do not use it to import owned CI/CD changes.
+Fetch current `main`, create a new product branch, and reapply only product
+changes instead.
+
+Launch Claude Code from the module root. The project-local `Edit` deny rules
+protect the whole-owned workflow/config files and Builds subtree while keeping
+reads available. File rules cannot target JSON keys or instruction marker
+ranges: these instructions and the shared guard protect the owned portions of
+settings, instruction files and `.gitmodules`. Never install these denies in
+machine-wide settings or work around them through another tool.
+<!-- hexalith-cicd:end -->

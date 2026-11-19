@@ -50,5 +50,13 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "deny": [
+      "Edit(/.github/workflows/**)",
+      "Edit(/.github/hexalith-ci.json)",
+      "Edit(/.github/dependabot.yml)",
+      "Edit(/references/Hexalith.Builds/**)"
+    ]
   }
 }

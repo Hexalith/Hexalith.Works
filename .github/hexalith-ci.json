@@ -1,0 +1,42 @@
+{
+  "additionalSdkVersion": "10.0.404",
+  "browsers": false,
+  "buildProjects": [],
+  "buildsTag": "v6.4.2",
+  "ciTimeoutMinutes": 30,
+  "codeql": [
+    "csharp",
+    "python"
+  ],
+  "dapr": true,
+  "dotnetTools": false,
+  "hooks": [
+    "after-unit-tests"
+  ],
+  "jobs": {
+    "platform-parity": {
+      "runner": "ubuntu-latest",
+      "setup": {
+        "dapr": true
+      },
+      "timeoutMinutes": 180
+    }
+  },
+  "moduleManifest": null,
+  "npmWorkspaces": [],
+  "publishedBuilds": null,
+  "registry": false,
+  "schema": "hexalith.ci.v1",
+  "solution": "Hexalith.Works.slnx",
+  "submodules": [
+    "references/Hexalith.Platform",
+    "references/Hexalith.Parties"
+  ],
+  "tests": {
+    "exclude": {},
+    "failSkips": false,
+    "integration": [],
+    "minimumExpectedTests": {}
+  },
+  "windowsCheckout": null
+}

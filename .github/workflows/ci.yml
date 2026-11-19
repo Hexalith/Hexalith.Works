@@ -1,109 +1,39 @@
 name: CI
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
+  workflow_dispatch:
+permissions: {}
 concurrency:
-  group: ci-${{ github.ref }}
-  # Release gating requires a successful push CI run for the exact main SHA, so a push run must never be
-  # cancelled by a later push. Only pull-request runs are safe to supersede.
+  group: ci-${{ github.event_name }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
-
-permissions:
-  contents: read
-
 jobs:
-  platform-toolchain:
-    name: Platform-owned Works proof toolchain
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      dapr-cli: ${{ steps.pins.outputs.dapr-cli }}
-      dapr-runtime: ${{ steps.pins.outputs.dapr-runtime }}
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: false
-          persist-credentials: false
-      # Platform derives the Works proof toolchain from the root Builds catalog's Dapr pins.
-      - name: Initialize root Platform toolchain owner and Builds version authority
-        run: git submodule update --init -- references/Hexalith.Builds references/Hexalith.Platform
-      - name: Read Platform-owned toolchain
-        id: pins
-        run: python3 references/Hexalith.Platform/eng/works_toolchain.py --github-output "$GITHUB_OUTPUT"
-
   ci:
-    needs: platform-toolchain
-    uses: Hexalith/Hexalith.Builds/.github/workflows/domain-ci.yml@3641d6226b4e6150a4ed43c472c97373378f3679
+    uses: "Hexalith/Hexalith.Builds/.github/workflows/ci.yml@v6.4.2"
+    permissions: {"actions": "write", "contents": "write"}
     with:
-      additional-sdk-version: '10.0.404'
-      solution: Hexalith.Works.slnx
-      test-platform: microsoft-testing-platform
-      dapr-version: ${{ needs.platform-toolchain.outputs.dapr-cli }}
-      dapr-runtime-version: ${{ needs.platform-toolchain.outputs.dapr-runtime }}
-      build-timeout-minutes: 60
-      run-consumer-validation: true
-      package-prepare-script: scripts/prepare-platform-builds.sh
-      unit-test-projects: |
-        tests/Hexalith.Works.UnitTests
-        tests/Hexalith.Works.ArchitectureTests
-        tests/Hexalith.Works.PropertyTests
-      integration-test-projects: |
-        tests/Hexalith.Works.IntegrationTests
-      allowed-not-runnable-tests: |
-        Hexalith.Works.IntegrationTests.WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process
-        Hexalith.Works.IntegrationTests.WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect
-        Hexalith.Works.IntegrationTests.WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart
-        Hexalith.Works.IntegrationTests.WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily
-        Hexalith.Works.IntegrationTests.WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness
-        Hexalith.Works.IntegrationTests.WorksPlatformRollbackBinaryTests.ActualSelectedRuntimeBinariesCaptureWithoutMutation
-        Hexalith.Works.IntegrationTests.WorksPlatformTelemetryAdmissionTests.ActualPreviewComposesExporterKeysAndRefusesForeignFixtureTelemetry
-        Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart
-        Hexalith.Works.IntegrationTests.WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery
-
-  scripts-lint:
-    name: Lint release tooling
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
+      additional-sdk-version: "10.0.404"
+      job-timeout-minutes: 30
+    secrets:
+      registry-pull-username: ${{ secrets.HEXALITH_REGISTRY_PULL_USERNAME }}
+      registry-pull-password: ${{ secrets.HEXALITH_REGISTRY_PULL_PASSWORD }}
+  "custom-platform-parity":
+    needs:
+    - ci
     permissions:
       contents: read
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          submodules: false
-          persist-credentials: false
-      - name: Validate workflow syntax and expressions
-        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml
-      - name: Install ruff
-        run: pipx install ruff==0.13.2
-      - name: Lint release and validation scripts
-        run: bash scripts/lint-scripts.sh
-      - name: Initialize root helpers and reviewed source identities for tooling tests
-        run: >-
-          git submodule update --init -- references/Hexalith.Platform references/Hexalith.Builds
-          references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-        with:
-          global-json-file: global.json
-          dotnet-version: '10.0.404'
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version: '24'
-      - name: Install locked release tooling for hook permission checks
-        run: npm ci --ignore-scripts
-      - name: Check reviewed source and Release package identities
-        run: >-
-          python3 scripts/verify-source-debug.py --check-only
-          --artifacts-path "${{ runner.temp }}/works-source-pairs"
-      - name: Preserve source identity checks
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: works-source-pairs
-          if-no-files-found: error
-          path: ${{ runner.temp }}/works-source-pairs/
-      - name: Run release tooling regression tests
-        run: python3 -m unittest discover -s scripts/tests
+    - uses: Hexalith/Hexalith.Builds/Github/prepare@v6.4.2
+      with:
+        additional-sdk-version: 10.0.404
+        job-name: platform-parity
+    - env:
+        HEXALITH_JOB_NAME: platform-parity
+        HEXALITH_JOB_NEEDS: ${{ toJSON(needs) }}
+        HEXALITH_JOB_PARAMETERS: '{}'
+        HEXALITH_QUALIFICATION_PARAMETERS: '{}'
+      uses: ./.github/actions/platform-parity
+    timeout-minutes: 180
