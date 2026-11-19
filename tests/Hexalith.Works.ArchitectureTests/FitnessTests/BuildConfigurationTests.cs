@@ -355,10 +355,16 @@ public sealed class BuildConfigurationTests
             RedirectStandardError = true,
             RedirectStandardOutput = true,
         };
+        // Shared CI forwards TreatWarningsAsErrors into the test host environment.
+        // This helper asserts MSBuild Warning/Error tasks, not compiler diagnostics.
+        start.Environment.Remove("TreatWarningsAsErrors");
+        start.Environment.Remove("MSBuildTreatWarningsAsErrors");
         start.ArgumentList.Add("msbuild");
         start.ArgumentList.Add(project);
         start.ArgumentList.Add("-nologo");
         start.ArgumentList.Add("-t:ValidateHexalithDependencyMode");
+        start.ArgumentList.Add("-p:TreatWarningsAsErrors=false");
+        start.ArgumentList.Add("-p:MSBuildTreatWarningsAsErrors=false");
         foreach (string argument in arguments)
         {
             start.ArgumentList.Add(argument);
