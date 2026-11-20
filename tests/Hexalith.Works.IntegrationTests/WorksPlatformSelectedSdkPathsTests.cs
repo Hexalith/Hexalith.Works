@@ -5,6 +5,16 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Retained host metadata selects an explicit compatible fleet before Aspire applies immutable defaults.</summary>
 public sealed class WorksPlatformSelectedSdkPathsTests
 {
+    /// <summary>A later Aspire artifacts-path must not hide the serial-prebuilt runtime outputs.</summary>
+    [Fact]
+    public void LaunchArgumentsUseTheQualifiedRuntimeArtifactsPath()
+    {
+        var args = new List<object> { "run", "--project", "app.csproj", "--artifacts-path", "/tmp/host", "--configuration", "Release" };
+        WorksPlatformRuntimeArtifacts.ReplaceArtifactsPath(args, "/tmp/runtime");
+        args.ShouldBe(["run", "--project", "app.csproj", "--configuration", "Release", "--artifacts-path", "/tmp/runtime"]);
+        Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.ReplaceArtifactsPath(args, "runtime"));
+    }
+
     /// <summary>Both supported configurations bind the running fleet and the restored fleet to one inventory.</summary>
     [Theory]
     [InlineData("Debug")]

@@ -512,6 +512,7 @@ internal static class WorksAppHostSmokeHarness
             Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
                 ? WorksPlatformCompositionGuard.Capture(builder) : null;
             configure?.Invoke(builder);
+            WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(builder);
             if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_CATALOG_SOURCE_SENTRY_DIAGNOSTICS") == "1")
                 builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-sentry"))
                     .WithArgs("--log-level=debug").WithEnvironment("FSNOTIFY_DEBUG", "1");

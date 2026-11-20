@@ -1,5 +1,8 @@
 using System.Diagnostics;
 
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>Resolves the exact qualified child deployment without sharing another host's build outputs.</summary>
@@ -19,6 +22,35 @@ internal static class WorksPlatformRuntimeArtifacts
         if (!Path.IsPathFullyQualified(artifacts))
             throw new InvalidOperationException("Qualified runtime artifacts require an absolute owned output path.");
         return Path.Combine(artifacts, "bin", Path.GetFileNameWithoutExtension(project), configuration.ToLowerInvariant());
+    }
+
+    /// <summary>Aspire otherwise rebuilds into the AppHost artifacts directory, missing serial-prebuilt refs.</summary>
+    internal static void ReplaceArtifactsPath(IList<object> args, string artifacts)
+    {
+        ArgumentNullException.ThrowIfNull(args);
+        if (!Path.IsPathFullyQualified(artifacts))
+            throw new InvalidOperationException("Qualified runtime artifacts require an absolute owned output path.");
+        for (int index = args.Count - 2; index >= 0; index--)
+        {
+            if (args[index] is "--artifacts-path")
+            {
+                args.RemoveAt(index + 1);
+                args.RemoveAt(index);
+            }
+        }
+        args.Add("--artifacts-path");
+        args.Add(artifacts);
+    }
+
+    internal static void BindLaunchArtifacts(IDistributedApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        string? artifacts = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        if (string.IsNullOrEmpty(artifacts)) return;
+        if (!Path.IsPathFullyQualified(artifacts) || !Directory.Exists(artifacts))
+            throw new InvalidOperationException("Qualified runtime artifacts require an absolute existing output path.");
+        foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>().ToArray())
+            builder.CreateResourceBuilder(project).WithArgs(context => ReplaceArtifactsPath(context.Args, artifacts));
     }
 
     /// <summary>Uses the selected project's framework, including an explicitly retained historical SDK target.</summary>

@@ -21,14 +21,4 @@
       <SetTargetFramework>TargetFramework=net11.0</SetTargetFramework>
     </ProjectReference>
   </ItemDefinitionGroup>
-  <!-- Aspire rebuilds EventStore into the AppHost artifacts directory while the verifier
-       serial-prebuilt those projects under WORKS_PLATFORM_RUNTIME_ARTIFACTS and then set
-       BuildProjectReferences=false. Stage those outputs before CSC resolves metadata. -->
-  <Target Name="HexalithStageQualifiedRuntimeArtifacts"
-          BeforeTargets="ResolveProjectReferences"
-          Condition="'$(HexalithWorksProofAssembly)' != '' and '$(WORKS_PLATFORM_RUNTIME_ARTIFACTS)' != '' and '$(ArtifactsPath)' != '' and '$(BuildProjectReferences)' == 'false'">
-    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)../../scripts/stage-qualified-runtime-artifacts.sh&quot; &quot;$(WORKS_PLATFORM_RUNTIME_ARTIFACTS)&quot; &quot;$(ArtifactsPath)&quot;"
-          Condition="Exists('$(WORKS_PLATFORM_RUNTIME_ARTIFACTS)/obj')"
-          IgnoreStandardErrorWarningFormat="true" />
-  </Target>
 </Project>
