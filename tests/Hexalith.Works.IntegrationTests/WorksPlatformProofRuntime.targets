@@ -12,6 +12,7 @@
   </ItemGroup>
   <!-- The immutable retained topology reuses independently compiled current net11 reference assemblies. -->
   <ItemGroup Condition="'$(HexalithWorksProofAssembly)' != '' and '$(HexalithWorksRetainedQualification)' == 'true' and '$(MSBuildProjectName)' == 'Hexalith.Works.AppHost'">
+    <PackageVersion Remove="Aspire.Hosting.AppHost" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="$(HexalithAspireAppHostSdkVersion)" />
     <PackageReference Include="Aspire.Hosting.AppHost" />
   </ItemGroup>
