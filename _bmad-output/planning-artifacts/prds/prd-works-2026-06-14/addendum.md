@@ -2,7 +2,7 @@
 title: "Hexalith.Works PRD — Addendum (downstream depth)"
 status: draft
 created: 2026-06-14
-updated: 2026-09-14
+updated: 2026-11-20
 ---
 
 # Addendum — Hexalith.Works PRD
@@ -13,7 +13,7 @@ Technical-how depth that supports the PRD but belongs to the **architecture / so
 
 These bound the v1 requirements; the architecture phase makes them concrete. Source: `Hexalith.Projects/_bmad-output/project-context.md` and the umbrella `CLAUDE.md`.
 
-- **Platform:** .NET 10 (`global.json` pins SDK `10.0.300`, `rollForward: latestPatch`); C# nullable + implicit usings + warnings-as-errors; central NuGet package management via `Directory.Packages.props` (versions there, not inline).
+- **Platform.** Works targets `net11.0`. Use the SDK selected by the root `global.json` and the additional .NET 10 SDK named in the README for compatibility fixtures and Platform checks. The repository enables nullable C#, implicit usings and warnings-as-errors and manages package versions centrally. *(Amended 2026-11-20.)*
 - **Infrastructure abstraction:** Dapr is the *only* permitted infrastructure abstraction in domain services — no direct Redis/PostgreSQL/Cosmos/broker clients in Contracts/Client/domain packages.
 - **EventStore foundation:** canonical identity `{tenant}:{domain}:{aggregateId}` — derive actor IDs, state keys, topics, projection keys, SignalR groups, and log scopes from it. EventStore owns event envelope metadata; Works returns event *payloads* only and must never populate/spoof envelope fields. Event flow is **persist-then-publish**.
 - **Domain purity:** aggregate `Handle(...)` is pure → returns domain results/events; projection/state `Apply(...)` mutates only in-memory state. Domain rejections are events implementing `IRejectionEvent`; infrastructure failures are exceptions/dead-letter paths. A `DomainResult` never mixes success and rejection payloads.
@@ -33,7 +33,7 @@ Illustrative only — the PRD's FRs are the contract; these shapes are a startin
 
 **Burn-Down (FR-3, cost-ready):** a `Meter(Unit, Estimated, Done)` with derived `Remaining`; v1 instantiates one Effort Meter, and Theme 5 adds a parallel Cost Meter reusing the same Roll-Up. The Projection folds each descendant stream to an absolute `effectiveContribution`: 0 for terminal state, 0 plus an unestimated count for active unestimated state, otherwise Remaining. It stores the latest absolute contribution per descendant/stream position and computes `rolledRemaining(item) = effectiveContribution(item) + Σ effectiveContribution(attached descendant)`. Raw event deltas are never persisted as the contribution, and retained Burn-Down Remaining remains separately visible for audit.
 
-**Await-Condition (FR-14):** a discriminated value `{ ChildCompleted(childId) | DateReached(instant) | ExternalSignal(correlationId) }`; a Suspended item may hold a *set* of these and resumes on the first match. Resume is a `ResumeWorkItem(awaitCondition)` command (not a port) raised by the Reactor and its adapters — child-completion from the Reactor, the durable reminder adapter for dates, an external adapter for Theme 3 signals — keeping `Handle` clock-free (FR-15). The implemented lifecycle keeps the *last consumed* condition in state so that a repeat of it is the one `NoOp`; every other non-matching resume is `WorkItemTransitionRejected` (`docs/lifecycle-transition-matrix.md`).
+**Await-Conditions (FR-14/FR-15).** Each member is a `ChildCompleted(childId)`, `DateReached(instant)` or `ExternalSignal(correlationId)` value. New suspension events record one or more conditions in the order submitted, including duplicates. Readers map historical singular events to a one-member collection. The Reactor and its adapters submit `ResumeWorkItem` with one typed condition. Replay restores the last consumed condition so an exact retry while the item is back in `InProgress` is a no-op. *(Amended 2026-11-20.)*
 
 **Work-Tree Registry attachment protocol (FR-13, FR-16 — AD-21, mechanism):** *(added 2026-09-08)*
 
@@ -52,9 +52,9 @@ Illustrative only — the PRD's FRs are the contract; these shapes are a startin
 
 **Reference Value Objects (FR-21):** correlation IDs only — `PartyId` (Parties), `ConversationId` (Conversations), `TenantId` (Tenants), aggregate/ID helpers (Commons). `LinkConversation` records a post-creation reference through `ConversationLinked`; the first link is authoritative, same-ID retries are no-ops, and conflicting relinks are domain-rejected. No denormalized copies.
 
-## Downstream handoff — edits owed after the 2026-09-14 PRD update
+## Historical handoff from the 2026-09-14 PRD update
 
-The PRD update did not touch `architecture.md`, `epics.md`, stories, or repository docs. These are the edits they now owe to stay consistent with the amended PRD; each names its owner.
+The table records what each owner was asked to change on September 14. For subsequent decisions and delivery evidence, consult the [September 15 proposal](../../sprint-change-proposal-2026-09-15.md) and the [November 20 audit](../../sprint-change-proposal-2026-11-20.md).
 
 | # | Artifact | Edit owed | Why | Owner |
 |---|---|---|---|---|

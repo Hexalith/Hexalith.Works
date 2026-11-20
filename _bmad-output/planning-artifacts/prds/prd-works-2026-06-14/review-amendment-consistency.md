@@ -1,50 +1,15 @@
-# Amendment Consistency Review — 2026-09-14
+# Amendment consistency review, 20 November 2026
 
-## Scope
+**Verdict. Pass.** The PRD resolves the September suspension decision and accurately describes shared McpCli enrollment, effort replay, command identity, child-attachment qualification and rollout. All findings from this amendment review are closed.
 
-- **Approved authority:** `../../sprint-change-proposal-2026-09-14.md`
-- **Reviewed artifacts:** `prd.md`, `addendum.md`, and `.memlog.md`
-- **Review boundary:** only the approved re-estimation, progress-authority, delivered-versus-target provenance, FR-2/Story 5.5, and document-history outcomes requested for this amendment
-- **Pass:** final rerun after reconciliation and configured structure/prose polish
-
-## Verdict
-
-**PASS.** All mandated 2026-09-14 outcomes remain present and internally consistent across the polished PRD, addendum, and current memlog. No contradictory current statement was found. FR-6 continues to accept all supplemental acts named at `prd.md:190`, including amendment-critical `ReEstimate` and `CorrectProgress` (`prd.md:193`).
-
-| Severity | Count |
-| --- | ---: |
-| Critical | 0 |
-| High | 0 |
-| Medium | 0 |
-| Low | 0 |
-
-## Mandated-outcome validation
-
-| Outcome | Result | Evidence |
+| Decision | What the review verified | Evidence |
 | --- | --- | --- |
-| Re-estimation never changes cumulative Done | Pass | `prd.md:81`, `prd.md:190`, `prd.md:220`, `prd.md:229`; `.memlog.md:57` |
-| Remaining is `max(Estimated - Done, 0)` | Pass | `prd.md:85`, `prd.md:148`, `prd.md:220`, `prd.md:229`; `.memlog.md:57` |
-| ReEstimate preserves established Unit and Status and never completes or reopens | Pass | `prd.md:147`, `prd.md:190`, `prd.md:220`, `prd.md:229`; `.memlog.md:57` |
-| `Done > Estimated` is a valid visible overrun | Pass | `prd.md:148`, `prd.md:218`, `prd.md:220`, `prd.md:229`; `addendum.md:74`; `.memlog.md:53`, `.memlog.md:57` |
-| Only CorrectProgress directly replaces/corrects cumulative Done; ReportProgress advances it only by an accepted positive delta | Pass | `prd.md:81`, `prd.md:217`–`220`, `prd.md:229`; `.memlog.md:53`, `.memlog.md:57` |
-| Later requirements do not retroactively alter historical Stories 1.1–4.9 acceptance evidence | Pass | `prd.md:29`; `addendum.md:79`; `.memlog.md:58` |
-| FR-2 retains the 4,000-character Obligation limit, targets Story 5.5, and preserves historical replay | Pass | `prd.md:138`–`140`, `prd.md:586`; `addendum.md:79`; `.memlog.md:58`–`59` |
-| Frontmatter, status, amendment history, and memlog agree | Pass | `prd.md:3`–`5` is `final` and updated 2026-09-14; amendment row `prd.md:21`; `.memlog.md:4`, `.memlog.md:57`–`64`; `addendum.md:5`, `addendum.md:70`, `addendum.md:79` |
+| Suspension admission and compatibility | FR-5 and FR-14 require one or more valid typed conditions. Each member is canonicalized independently. Current writers preserve order and duplicates. Readers map a historical single condition to one member. | [September 15 proposal, §4.1](../../sprint-change-proposal-2026-09-15.md), [PRD, FR-14](prd.md#fr-14-suspend-on-an-ordered-collection-of-await-conditions), [addendum](addendum.md) |
+| Concurrent triggers and retries | UJ-3 and FR-15 select the first exact match committed by the Work Item. That command records the consumed condition and clears all active entries. A nonmatch during suspension is rejected without mutation. After resumption, only an exact retry of the consumed condition is a no-op. The audit log records the approval that supersedes the September deferral. | [September 15 proposal, §4.1](../../sprint-change-proposal-2026-09-15.md), [PRD, FR-15](prd.md#fr-15-resume-on-a-matching-trigger), [decision log](.memlog.md) |
+| Shared CLI and MCP | UJ-2 exercises a binding in the harness. The roadmap assigns future exposure to Hexalith.McpCli and requires enrollment and authorization. The shared project's README at commit `6993abfe` lists Works among the unenrolled modules. The September decision is traceable to Works commit `89e973a9`. | [PRD, amendment history](prd.md#amendment-history), [McpCli enrollment status](../../../../references/Hexalith.McpCli/README.md) |
+| Effort replay | The FR-9 example keeps 7 hours Done as the estimate moves from 10 to 4 and back to 10. Remaining moves from 3 to 0 and back to 3 in aggregate and Roll-Up replay. Both re-estimates preserve status and unit. | [November 20 audit, finding 1](../../sprint-change-proposal-2026-11-20.md), [PRD, FR-9](prd.md#fr-9-re-estimate-and-reschedule), [aggregate and Roll-Up replay test](../../../../tests/Hexalith.Works.UnitTests/WorkItemReEstimateTests.cs) |
+| Command identity and attachment | The work domain, canonical tenant, exact item ID and established state must agree before a command can alter work. FR-13 retains the trusted single-writer restriction and specifies a competing-parent and restart test for registry qualification. | [November 20 audit, findings 2 and 4](../../sprint-change-proposal-2026-11-20.md), [command validation](../../../../src/Hexalith.Works/WorkItemEventStoreAggregate.cs), [PRD, FR-13](prd.md#fr-13-guard-the-work-tree-shape) |
 
-The addendum's `status: draft` is not a contradiction: it identifies itself as a non-binding downstream sketch, while `prd.md` is the final system of record. Earlier memlog statements are chronological audit entries; the later override/decision/change entries at `.memlog.md:42`, `.memlog.md:53`, and `.memlog.md:57`–`64` establish the current rules and record the subsequent reconciliation and polish without rewriting history.
+**Resolved finding.** The initial G3 wording covered effort replay but omitted the cutover condition. G3 now requires a joint aggregate and projection rollout, recovery from raw events on a restored copy, and active-generation query checks after catch-up. Traffic can resume once eligible items expose recovered effort and ineligible items stay absent. [PRD, v1 exit gates](prd.md#101-v1-dependency-and-exit-gates), [November 20 rollout requirements](../../sprint-change-proposal-2026-11-20.md#rollout-and-recovery)
 
-## Critical findings
-
-None.
-
-## High findings
-
-None.
-
-## Medium findings
-
-None.
-
-## Low findings
-
-None.
+**Evidence boundary.** FR-24 still requires ordinary integration and hosted Platform parity on the exact release candidate. The November audit records outstanding live recovery and rollback evidence, snapshot inventory, deployed caller compatibility, and representative staging measurements. This document review establishes product intent. Runtime qualification remains with the corresponding gate owners. [November 20 verification record](../../sprint-change-proposal-2026-11-20.md#verification-record)
