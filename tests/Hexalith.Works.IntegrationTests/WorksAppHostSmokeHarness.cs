@@ -565,6 +565,8 @@ internal static class WorksAppHostSmokeHarness
                 // The retained topology needs explicit managed-runtime compatibility. Current Platform
                 // already froze its selected launch environment during SDK owner preparation.
                 ConfigureQualificationProjectLaunches(builder, useRetainedHost);
+                if (!useRetainedHost)
+                    WorksPlatformRuntimeArtifacts.BindPrebuiltLaunch(builder);
             }
             app = await builder.BuildAsync(startupToken).ConfigureAwait(true);
             try

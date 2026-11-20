@@ -1,4 +1,5 @@
 using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 
 using Shouldly;
 
@@ -21,6 +22,32 @@ public sealed class WorksPlatformSelectedSdkPathsTests
             WorksPlatformRuntimeArtifacts.ReadBoundLaunchArtifacts(options).ShouldBe(directory);
             Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", "runtime");
             Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", previous);
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>Current Platform child launches keep the serial-prebuilt outputs closed.</summary>
+    [Fact]
+    public void CurrentPlatformLaunchDisablesRebuildOfQualifiedRuntimeOutputs()
+    {
+        string directory = Directory.CreateTempSubdirectory("works-runtime-prebuilt-").FullName;
+        string? previous = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        try
+        {
+            IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder([]);
+            string project = Path.Combine(directory, "Probe.csproj");
+            File.WriteAllText(project, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+            ProjectResource owned = builder.AddProject("works", project).Resource;
+            int before = owned.Annotations.OfType<CommandLineArgsCallbackAnnotation>().Count();
+            WorksPlatformRuntimeArtifacts.BindPrebuiltLaunch(builder);
+            owned.Annotations.OfType<CommandLineArgsCallbackAnnotation>().Count().ShouldBe(before);
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", directory);
+            WorksPlatformRuntimeArtifacts.BindPrebuiltLaunch(builder);
+            owned.Annotations.OfType<CommandLineArgsCallbackAnnotation>().Count().ShouldBe(before + 1);
         }
         finally
         {
