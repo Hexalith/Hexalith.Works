@@ -8,6 +8,7 @@ import importlib.util
 import io
 import json
 import os
+import re
 import shutil
 import subprocess
 import tarfile
@@ -209,9 +210,26 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
     return command, environment, record, snapshot
 
 
-def toolchain_runtime_sha256(platform):
+def toolchain_runtime_sha256(platform, builds=None):
     """Read the qualified Linux daprd hash from the bootstrapped Platform toolchain owner, not from the ledger."""
-    pins = json.loads((Path(platform) / "config/works-proof-toolchain.json").read_text())
+    config = Path(platform) / "config"
+    path = config / "works-proof-toolchain.json"
+    versioned = config / "works-proof-toolchains"
+    runtime = None
+    if versioned.is_dir():
+        if builds is None:
+            raise ValueError("The selected Builds catalog is required for versioned runtime hashes")
+        props = ET.parse(Path(builds) / "Props/Directory.Packages.props")
+        entries = props.findall(".//HexalithDaprRuntimeVersion")
+        stable = r"(?:0|[1-9][0-9]*)(?:\.(?:0|[1-9][0-9]*)){2}"
+        if len(entries) != 1 or entries[0].attrib or not re.fullmatch(stable, entries[0].text or ""):
+            raise ValueError("The Builds catalog must select one exact stable runtime")
+        runtime = entries[0].text
+        candidate = versioned / (runtime + ".json")
+        path = candidate if candidate.is_file() else path
+    pins = json.loads(path.read_text())
+    if runtime is not None and (not isinstance(pins, dict) or pins.get("qualifiedDaprRuntime") != runtime):
+        raise ValueError("Platform lacks a qualified Linux runtime hash for the selected catalog runtime")
     digest = pins.get("linuxAmd64DaprdSha256") if isinstance(pins, dict) else None
     if (
         not isinstance(digest, str)
@@ -321,7 +339,7 @@ def main():
         print("Bootstrap validated; parity remains incomplete.")
         return
     subprocess.run(command, env=environment, check=True)
-    require_complete_gate(artifacts, toolchain_runtime_sha256(record["platformRoot"]))
+    require_complete_gate(artifacts, toolchain_runtime_sha256(record["platformRoot"], environment.get("HexalithBuildsRoot")))
     if snapshot.origin_files(Path(record["platformOrigin"])) != record["platformSourceFiles"]:
         raise ValueError("Canonical Platform inputs changed after bootstrap")
     require_unchanged_coordinators(record["coordinatorSha256"])

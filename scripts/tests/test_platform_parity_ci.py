@@ -377,6 +377,24 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "qualified Linux runtime hash"):
                 PARITY.toolchain_runtime_sha256(platform)
 
+    def test_runtime_hash_is_bound_to_the_builds_catalog(self):
+        with tempfile.TemporaryDirectory() as temp:
+            platform = Path(temp)
+            records = platform / "config/works-proof-toolchains"
+            records.mkdir(parents=True)
+            pin = {"qualifiedDaprRuntime": "1.19.2", "linuxAmd64DaprdSha256": RUNTIME}
+            (records / "1.19.2.json").write_text(json.dumps(pin))
+            default = records.parent / "works-proof-toolchain.json"
+            default.write_text(json.dumps(dict(pin, qualifiedDaprRuntime="1.19.1", linuxAmd64DaprdSha256="e" * 64)))
+            props = platform / "Props/Directory.Packages.props"
+            props.parent.mkdir()
+            for version, expected in (("1.19.1", "e" * 64), ("1.19.2", RUNTIME)):
+                props.write_text(f"<Project><HexalithDaprRuntimeVersion>{version}</HexalithDaprRuntimeVersion></Project>")
+                self.assertEqual(PARITY.toolchain_runtime_sha256(platform, platform), expected)
+            (records / "1.19.2.json").write_text(default.read_text())
+            with self.assertRaisesRegex(ValueError, "selected catalog runtime"):
+                PARITY.toolchain_runtime_sha256(platform, platform)
+
     def test_accepts_the_complete_canonical_result(self):
         self.assertEqual(self.require(self.ledger), self.ledger)
 
