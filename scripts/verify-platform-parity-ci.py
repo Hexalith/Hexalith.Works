@@ -168,7 +168,12 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
         "rootDependencies": {name: str(path) for name, path in sources.items()},
     }
     (artifacts / "bootstrap.json").write_text(json.dumps(record, indent=2) + "\n")
-    environment = os.environ.copy() | {
+    environment = os.environ.copy()
+    # Shared prepare may export Configuration=Release and a Dapr init receipt into the
+    # job. Schema 2 pin checks and the closed EXT-HOST-1 refusal must not inherit them.
+    environment.pop("Configuration", None)
+    environment.pop("HEXALITH_DAPR_INITIALIZATION_RECEIPT", None)
+    environment.update({
         "HexalithBuildsRoot": str(sources["Hexalith.Builds"]),
         "HexalithEventStoreRoot": str(sdk),
         "HexalithCommonsRoot": str(sources["Hexalith.Commons"]),
@@ -178,10 +183,13 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
         "HexalithTenantsRoot": str(sources["Hexalith.Tenants"]),
         "HexalithPolymorphicSerializationsRoot": str(sources["Hexalith.PolymorphicSerializations"]),
         "DOTNET_USE_POLLING_FILE_WATCHER": "1",
-    }
+    })
+    # Schema 2 recorded_gitlink reads the Platform tree's Builds gitlink. The snapshot
+    # execution root is an ordinary file export without a Git index; this origin clone
+    # is the owning index the bootstrap already prepared for the verifier.
     command = [
         "bash",
-        str(execution_root / "eng/verify-works-host.sh"),
+        str(selected_platform / "eng/verify-works-host.sh"),
         "--profile",
         "ci",
         "--works-root",
