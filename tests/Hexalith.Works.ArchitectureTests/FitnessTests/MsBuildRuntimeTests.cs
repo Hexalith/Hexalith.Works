@@ -94,7 +94,7 @@ public sealed class MsBuildRuntimeTests
                 : File.ReadAllText(Path.Combine(RepositoryRoot.Locate(), "global.json"));
             File.WriteAllText(Path.Combine(repository, "global.json"), policy);
             File.WriteAllText(Path.Combine(repository, "Probe.csproj"), """
-                <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>
+                <Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup></Project>
                 """);
 
             var start = new ProcessStartInfo(host)

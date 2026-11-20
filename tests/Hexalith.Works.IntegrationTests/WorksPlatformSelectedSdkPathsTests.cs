@@ -78,12 +78,11 @@ public sealed class WorksPlatformSelectedSdkPathsTests
             WorksPlatformRuntimeArtifacts.RequireMatchingConfigurations(consumer, host, retainedHost));
 
 
-    /// <summary>Current and frozen project targets select their own output folders through actual MSBuild evaluation.</summary>
-    [Theory]
-    [InlineData("net10.0")]
-    [InlineData("net11.0")]
-    public void SelectedProjectFrameworkDeterminesItsRuntimeOutput(string framework)
+    /// <summary>The .NET 11 project target selects its output folder through MSBuild evaluation.</summary>
+    [Fact]
+    public void SelectedProjectFrameworkDeterminesItsRuntimeOutput()
     {
+        const string framework = "net11.0";
         string directory = Directory.CreateTempSubdirectory("works-selected-framework-").FullName;
         try
         {

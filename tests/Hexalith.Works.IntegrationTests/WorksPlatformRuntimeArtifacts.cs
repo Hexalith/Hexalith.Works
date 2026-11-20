@@ -106,7 +106,7 @@ internal static class WorksPlatformRuntimeArtifacts
         }
         string framework = output.GetAwaiter().GetResult().Trim();
         string errors = diagnostic.GetAwaiter().GetResult();
-        if (process.ExitCode != 0 || framework is not ("net10.0" or "net11.0"))
+        if (process.ExitCode != 0 || framework != "net11.0")
             throw new InvalidOperationException($"Cannot establish the selected runtime project's supported framework: {framework} {errors}");
         return framework;
     }

@@ -45,7 +45,6 @@
     <UseNuGetDeps Condition="'$(UseNuGetDeps)' == ''">true</UseNuGetDeps>
     <HexalithEventStoreFromSource Condition="'$(HexalithEventStoreFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithEventStoreFromSource>
     <HexalithPolymorphicSerializationsFromSource Condition="'$(HexalithPolymorphicSerializationsFromSource)' == ''">$(UseHexalithProjectReferences)</HexalithPolymorphicSerializationsFromSource>
-    <HexalithEventStoreVersion Condition="'$(HexalithEventStoreVersion)' == ''">5.4.0</HexalithEventStoreVersion>
     <WorksSdkCandidateFeed Condition="'$(WorksSdkCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-15/feed</WorksSdkCandidateFeed>
     <WorksPlatformCandidateFeed Condition="'$(WorksPlatformCandidateFeed)' == ''">$(MSBuildThisFileDirectory).artifacts/story-4-14/feed</WorksPlatformCandidateFeed>
     <!-- Candidate archives are admitted only by an explicit verification invocation. Merely leaving a
@@ -122,8 +121,8 @@
       Text="WorksAllowLocalEventStoreCandidate must be exactly true or false when supplied." />
     <!-- Read the literal committed pin so ambient environment variables and command-line overrides
          cannot silently change Release producer identity. Explicit candidate verification opts in. -->
-    <XmlPeek XmlInputPath="$(MSBuildThisFileDirectory)Directory.Packages.props"
-             Query="/Project/PropertyGroup/HexalithEventStoreVersion/text()"
+    <XmlPeek XmlInputPath="$(HexalithBuildsRoot)/Props/Directory.Packages.props"
+             Query="(/Project/PropertyGroup/HexalithEventStoreVersion)[last()]/text()"
              Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true'">
       <Output TaskParameter="Result" PropertyName="_WorksDeclaredEventStoreVersion" />
     </XmlPeek>
