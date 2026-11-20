@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   ci:
-    uses: "Hexalith/Hexalith.Builds/.github/workflows/ci.yml@v6.4.2"
+    uses: "Hexalith/Hexalith.Builds/.github/workflows/ci.yml@v6.4.4"
     permissions: {"actions": "write", "contents": "write"}
     with:
       additional-sdk-version: "10.0.404"
@@ -33,7 +33,7 @@ jobs:
     - name: Bind verified published Builds tooling
       run: "set -euo pipefail\ngit --literal-pathspecs -c protocol.file.allow=never -c submodule.recurse=false submodule update --init --checkout -- references/Hexalith.Builds\npython3 -I - <<'PY'\nfrom pathlib import Path\nfrom types import SimpleNamespace\nimport os\nimport sys\nroot = Path(os.environ[\"GITHUB_WORKSPACE\"])\ntemporary = Path(os.environ[\"RUNNER_TEMP\"])\nchannel = Path(os.environ[\"GITHUB_ENV\"])\nif not root.is_dir() or not temporary.is_dir():\n    raise SystemExit(\"published Builds bind requires GITHUB_WORKSPACE and RUNNER_TEMP\")\nsys.path.insert(0, str(root / \"references/Hexalith.Builds/Github/lib\"))\nfrom ci_config import _read_json\nimport published_builds\ndocument = _read_json(root / \".github/hexalith-ci.json\")\nif not document.get(\"publishedBuilds\"):\n    raise SystemExit(\"published Builds bind requires a committed tuple\")\nworkspace = temporary / \"hexalith-published-builds\"\nif workspace.exists():\n    raise SystemExit(\"published Builds workspace already exists\")\nvalues = published_builds.prepare(SimpleNamespace(root=root, document=document), workspace)\ntool_root = values[\"HexalithBuildsPublishedToolRoot\"]\nif not (Path(tool_root) / \"Hexalith.Builds.Tooling.dll\").is_file():\n    raise SystemExit(\"published Builds tooling assembly is missing\")\nif any(ord(character) < 32 for character in tool_root):\n    raise SystemExit(\"invalid published Builds environment value\")\n# Tagged restore_and_build already supplies Release. Only the published\n# tooling root is required for Platform's foreign-reference guard.\nwith channel.open(\"a\", encoding=\"utf-8\", newline=\"\\n\") as stream:\n    stream.write(\"HexalithBuildsPublishedToolRoot=\" + tool_root + \"\\n\")\nprint(tool_root)\nPY\n"
       shell: bash
-    - uses: Hexalith/Hexalith.Builds/Github/prepare@v6.4.2
+    - uses: Hexalith/Hexalith.Builds/Github/prepare@v6.4.4
       with:
         additional-sdk-version: 10.0.404
         job-name: platform-parity
