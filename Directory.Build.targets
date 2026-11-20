@@ -12,6 +12,16 @@
       <AdditionalProperties Condition="'%(ProjectReference.Filename)' != 'Hexalith.Works' and !$([System.String]::Copy('%(ProjectReference.Filename)').StartsWith('Hexalith.Works.'))">%(ProjectReference.AdditionalProperties);HexalithEventStoreVersion=$(HexalithEventStoreVersion);Configuration=$(Configuration);ShouldUnsetParentConfigurationAndPlatform=false;$(_WorksUnmappedSourceForwardProperties)</AdditionalProperties>
     </ProjectReference>
   </ItemGroup>
+  <!-- Shared CI initializes only Platform and Parties. Debug-lane architecture
+       evaluation still needs the reviewed EventStore/PolymorphicSerializations
+       sources (and Commons/McpCli for unmapped Debug). The script is idempotent
+       and serialized so parallel restore cannot race git's config lock. -->
+  <Target Name="InitializeReviewedSourceGitlinks" BeforeTargets="CollectPackageReferences;Restore">
+    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/initialize-reviewed-source-gitlinks.sh&quot;"
+          WorkingDirectory="$(MSBuildThisFileDirectory)"
+          IgnoreStandardErrorWarningFormat="true"
+          StandardOutputImportance="High" />
+  </Target>
   <!-- The SDK adds transitive project references during target execution, after the evaluation-time
        update above. Give those edges the same source build identity before configuration assignment. -->
   <Target Name="ForwardWorksTransitiveProjectReferenceProperties" AfterTargets="IncludeTransitiveProjectReferences" Condition="'$(HexalithSourceMappingMode)' != 'source' and '$(HEXALITH_SOURCE_MAPPING_HASH)' == '' and '$(HexalithSourceMappingHash)' == ''">

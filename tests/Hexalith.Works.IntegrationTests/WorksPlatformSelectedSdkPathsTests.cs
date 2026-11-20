@@ -1,3 +1,6 @@
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
+
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -5,6 +8,54 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Retained host metadata selects an explicit compatible fleet before Aspire applies immutable defaults.</summary>
 public sealed class WorksPlatformSelectedSdkPathsTests
 {
+    /// <summary>Current Platform launch uses the serial-prebuilt runtime outputs, not a second artifacts-path.</summary>
+    [Fact]
+    public void CurrentPlatformLaunchBindsTheQualifiedRuntimeArtifactsPath()
+    {
+        string directory = Directory.CreateTempSubdirectory("works-runtime-artifacts-").FullName;
+        string? previous = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        try
+        {
+            var options = new DistributedApplicationOptions();
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", directory);
+            WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options);
+            WorksPlatformRuntimeArtifacts.ReadBoundLaunchArtifacts(options).ShouldBe(directory);
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", "runtime");
+            Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", previous);
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    /// <summary>Current Platform child launches keep the serial-prebuilt outputs closed.</summary>
+    [Fact]
+    public void CurrentPlatformLaunchDisablesRebuildOfQualifiedRuntimeOutputs()
+    {
+        string directory = Directory.CreateTempSubdirectory("works-runtime-prebuilt-").FullName;
+        string? previous = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        try
+        {
+            IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder([]);
+            string project = Path.Combine(directory, "Probe.csproj");
+            File.WriteAllText(project, "<Project Sdk=\"Microsoft.NET.Sdk\" />");
+            ProjectResource owned = builder.AddProject("works", project).Resource;
+            int before = owned.Annotations.OfType<CommandLineArgsCallbackAnnotation>().Count();
+            WorksPlatformRuntimeArtifacts.BindPrebuiltLaunch(builder);
+            owned.Annotations.OfType<CommandLineArgsCallbackAnnotation>().Count().ShouldBe(before);
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", directory);
+            WorksPlatformRuntimeArtifacts.BindPrebuiltLaunch(builder);
+            owned.Annotations.OfType<CommandLineArgsCallbackAnnotation>().Count().ShouldBe(before + 1);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", previous);
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
     /// <summary>Both supported configurations bind the running fleet and the restored fleet to one inventory.</summary>
     [Theory]
     [InlineData("Debug")]

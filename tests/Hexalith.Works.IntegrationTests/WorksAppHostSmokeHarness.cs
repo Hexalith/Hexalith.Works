@@ -24,6 +24,7 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -478,6 +479,11 @@ internal static class WorksAppHostSmokeHarness
                     // randomization so daprd reaches the AppHost-owned placement and scheduler proxies.
                     "--DcpPublisher:RandomizePorts=false",
                 ],
+                (options, _) =>
+                {
+                    if (!useRetainedHost)
+                        WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options);
+                },
                 startupCts.Token)
             .ConfigureAwait(true);
 
@@ -559,6 +565,8 @@ internal static class WorksAppHostSmokeHarness
                 // The retained topology needs explicit managed-runtime compatibility. Current Platform
                 // already froze its selected launch environment during SDK owner preparation.
                 ConfigureQualificationProjectLaunches(builder, useRetainedHost);
+                if (!useRetainedHost)
+                    WorksPlatformRuntimeArtifacts.BindPrebuiltLaunch(builder);
             }
             app = await builder.BuildAsync(startupToken).ConfigureAwait(true);
             try

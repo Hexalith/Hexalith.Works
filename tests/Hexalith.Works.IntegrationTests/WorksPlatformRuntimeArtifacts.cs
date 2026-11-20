@@ -1,4 +1,8 @@
 using System.Diagnostics;
+using System.Reflection;
+
+using Aspire.Hosting;
+using Aspire.Hosting.ApplicationModel;
 
 namespace Hexalith.Works.IntegrationTests;
 
@@ -19,6 +23,47 @@ internal static class WorksPlatformRuntimeArtifacts
         if (!Path.IsPathFullyQualified(artifacts))
             throw new InvalidOperationException("Qualified runtime artifacts require an absolute owned output path.");
         return Path.Combine(artifacts, "bin", Path.GetFileNameWithoutExtension(project), configuration.ToLowerInvariant());
+    }
+
+    /// <summary>
+    /// Aspire appends the AppHost's baked GlobalArtifactsPath after resource WithArgs.
+    /// Bind that path to the serial-prebuilt runtime outputs so child <c>dotnet run</c>
+    /// receives a single --artifacts-path.
+    /// </summary>
+    internal static void BindLaunchArtifacts(DistributedApplicationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        string? artifacts = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        if (string.IsNullOrEmpty(artifacts)) return;
+        if (!Path.IsPathFullyQualified(artifacts) || !Directory.Exists(artifacts))
+            throw new InvalidOperationException("Qualified runtime artifacts require an absolute existing output path.");
+        PropertyInfo property = typeof(DistributedApplicationOptions).GetProperty("GlobalArtifactsPath",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("Aspire did not expose GlobalArtifactsPath for the qualified runtime outputs.");
+        property.SetValue(options, artifacts);
+    }
+
+    internal static string? ReadBoundLaunchArtifacts(DistributedApplicationOptions options)
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        return typeof(DistributedApplicationOptions).GetProperty("GlobalArtifactsPath",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            ?.GetValue(options) as string;
+    }
+
+    /// <summary>
+    /// Serial prebuild already wrote the runtime outputs. <c>dotnet run</c> must not rebuild them
+    /// under BuildProjectReferences=false.
+    /// </summary>
+    internal static void BindPrebuiltLaunch(IDistributedApplicationBuilder builder)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        string? artifacts = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        if (string.IsNullOrEmpty(artifacts)) return;
+        if (!Path.IsPathFullyQualified(artifacts) || !Directory.Exists(artifacts))
+            throw new InvalidOperationException("Qualified runtime artifacts require an absolute existing output path.");
+        foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>().ToArray())
+            builder.CreateResourceBuilder(project).WithArgs("--no-build", "--no-restore");
     }
 
     /// <summary>Uses the selected project's framework, including an explicitly retained historical SDK target.</summary>

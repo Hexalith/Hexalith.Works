@@ -1,13 +1,13 @@
 # EventStore API Surface Constraints
 
-<!-- EventStore-current-source: 05e4f6d40d4731f7acf435f3c678959efc672269 -->
+<!-- EventStore-current-source: 8bfc4ca132e2eb4b0a5f207908f10ea870e8aa99 -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
 
-Current Release selects EventStore `5.2.0`; its official NuGet metadata names
-producer `8b6d5bee5217b3f4bbd8fd689ad887aca863961b`. The reviewed Debug source
-is the later checkout in the marker above. Both current Debug/source and
+Current Release selects EventStore `5.3.1`; its official NuGet metadata names
+producer `3371f29fd7df1469a2c71f185292b2bd0592ae0e`. The reviewed Debug source
+is the committed checkout in the marker above. Both current Debug/source and
 Release/package solution builds pass with zero warnings or errors on .NET 11.
 This source/package pairing records supported build inputs and does not claim
 producer equivalence or extend historical archive/signature verification.

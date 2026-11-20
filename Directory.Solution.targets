@@ -1,0 +1,10 @@
+<Project>
+  <!-- Solution restore does not import Directory.Build.targets. Keep the same
+       gitlink initialization so Debug-lane architecture evaluation sees source. -->
+  <Target Name="InitializeReviewedSourceGitlinks" BeforeTargets="Restore">
+    <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/initialize-reviewed-source-gitlinks.sh&quot;"
+          WorkingDirectory="$(MSBuildThisFileDirectory)"
+          IgnoreStandardErrorWarningFormat="true"
+          StandardOutputImportance="High" />
+  </Target>
+</Project>

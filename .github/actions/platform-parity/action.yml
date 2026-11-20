@@ -3,6 +3,13 @@ description: Run the complete canonical Platform Works proof using extra root gi
 runs:
   using: composite
   steps:
+    - name: Fetch complete Works history for retained host sources
+      shell: bash
+      run: |
+        set -euo pipefail
+        if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+          git fetch --unshallow --no-recurse-submodules
+        fi
     - name: Initialize required root dependencies
       shell: bash
       run: >-

@@ -265,7 +265,10 @@ public sealed class BuildConfigurationTests
 
         bool evaluated = MsBuildProjectEvaluation.TryEvaluate(
             project,
-            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
+            new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["Configuration"] = string.Empty,
+            },
             out MsBuildProjectSnapshot? snapshot,
             out string diagnostic);
 
@@ -355,6 +358,12 @@ public sealed class BuildConfigurationTests
             RedirectStandardError = true,
             RedirectStandardOutput = true,
         };
+        // Shared prepare exports Configuration=Release and warning-as-error
+        // properties into the job environment. Configuration-free evaluation
+        // and HXW0002 must not inherit those.
+        start.Environment.Remove("Configuration");
+        start.Environment.Remove("TreatWarningsAsErrors");
+        start.Environment.Remove("MSBuildTreatWarningsAsErrors");
         start.ArgumentList.Add("msbuild");
         start.ArgumentList.Add(project);
         start.ArgumentList.Add("-nologo");

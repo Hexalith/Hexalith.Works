@@ -151,6 +151,14 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
     execution_root = workspace / "platform"
     binding = artifacts / "platform-source-binding.json"
     snapshot.create(selected_platform, execution_root, binding, upstream_origin=platform)
+    # Schema 2 recorded_gitlink reads 160000 gitlinks from the Platform tree. The snapshot
+    # export has no Git index; attach the origin clone's owning index without changing
+    # snapshot bytes or dependency symlinks. The verifier still runs from this root so
+    # platform-source-binding.verify sees the recorded execution path.
+    git_dir = selected_platform / ".git"
+    if not git_dir.is_dir():
+        raise ValueError("Platform origin clone must own its Git directory")
+    shutil.copytree(git_dir, execution_root / ".git", symlinks=True)
     record = {
         "status": "bootstrap-validated; parity-incomplete",
         "coordinatorRoot": str(Path(__file__).resolve().parent),
@@ -168,7 +176,12 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
         "rootDependencies": {name: str(path) for name, path in sources.items()},
     }
     (artifacts / "bootstrap.json").write_text(json.dumps(record, indent=2) + "\n")
-    environment = os.environ.copy() | {
+    environment = os.environ.copy()
+    # Shared prepare may export Configuration=Release and a Dapr init receipt into the
+    # job. Schema 2 pin checks and the closed EXT-HOST-1 refusal must not inherit them.
+    environment.pop("Configuration", None)
+    environment.pop("HEXALITH_DAPR_INITIALIZATION_RECEIPT", None)
+    environment.update({
         "HexalithBuildsRoot": str(sources["Hexalith.Builds"]),
         "HexalithEventStoreRoot": str(sdk),
         "HexalithCommonsRoot": str(sources["Hexalith.Commons"]),
@@ -178,7 +191,7 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
         "HexalithTenantsRoot": str(sources["Hexalith.Tenants"]),
         "HexalithPolymorphicSerializationsRoot": str(sources["Hexalith.PolymorphicSerializations"]),
         "DOTNET_USE_POLLING_FILE_WATCHER": "1",
-    }
+    })
     command = [
         "bash",
         str(execution_root / "eng/verify-works-host.sh"),

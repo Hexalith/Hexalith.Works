@@ -2,7 +2,7 @@
   <ItemGroup Condition="'$(HexalithWorksProofAssembly)' != '' and ('$(MSBuildProjectName)' == 'Hexalith.Works' or '$(MSBuildProjectName)' == 'Hexalith.EventStore' or '$(MSBuildProjectName)' == 'Hexalith.EventStore.Admin.Server.Host')">
     <!-- Align this explicit synthetic binary closure with its qualified consumer; CPM overrides remain disabled. -->
     <PackageVersion Include="Google.Protobuf" Version="3.36.1" AssemblyVersion="3.36.1.0" />
-    <PackageVersion Include="System.IO.Hashing" Version="10.0.14" AssemblyVersion="10.0.0.14" />
+    <PackageVersion Include="System.IO.Hashing" Version="11.0.0" AssemblyVersion="11.0.0.0" />
     <PackageReference Include="Google.Protobuf" />
     <PackageReference Include="System.IO.Hashing" />
     <Reference Include="Hexalith.Works.IntegrationTests">
@@ -12,6 +12,7 @@
   </ItemGroup>
   <!-- The immutable retained topology reuses independently compiled current net11 reference assemblies. -->
   <ItemGroup Condition="'$(HexalithWorksProofAssembly)' != '' and '$(HexalithWorksRetainedQualification)' == 'true' and '$(MSBuildProjectName)' == 'Hexalith.Works.AppHost'">
+    <PackageVersion Remove="Aspire.Hosting.AppHost" />
     <PackageVersion Include="Aspire.Hosting.AppHost" Version="$(HexalithAspireAppHostSdkVersion)" />
     <PackageReference Include="Aspire.Hosting.AppHost" />
   </ItemGroup>
