@@ -151,6 +151,14 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
     execution_root = workspace / "platform"
     binding = artifacts / "platform-source-binding.json"
     snapshot.create(selected_platform, execution_root, binding, upstream_origin=platform)
+    # Schema 2 recorded_gitlink reads 160000 gitlinks from the Platform tree. The snapshot
+    # export has no Git index; attach the origin clone's owning index without changing
+    # snapshot bytes or dependency symlinks. The verifier still runs from this root so
+    # platform-source-binding.verify sees the recorded execution path.
+    git_dir = selected_platform / ".git"
+    if not git_dir.is_dir():
+        raise ValueError("Platform origin clone must own its Git directory")
+    shutil.copytree(git_dir, execution_root / ".git", symlinks=True)
     record = {
         "status": "bootstrap-validated; parity-incomplete",
         "coordinatorRoot": str(Path(__file__).resolve().parent),
@@ -184,12 +192,9 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
         "HexalithPolymorphicSerializationsRoot": str(sources["Hexalith.PolymorphicSerializations"]),
         "DOTNET_USE_POLLING_FILE_WATCHER": "1",
     })
-    # Schema 2 recorded_gitlink reads the Platform tree's Builds gitlink. The snapshot
-    # execution root is an ordinary file export without a Git index; this origin clone
-    # is the owning index the bootstrap already prepared for the verifier.
     command = [
         "bash",
-        str(selected_platform / "eng/verify-works-host.sh"),
+        str(execution_root / "eng/verify-works-host.sh"),
         "--profile",
         "ci",
         "--works-root",

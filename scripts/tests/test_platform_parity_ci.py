@@ -94,9 +94,8 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                 command, environment, record, snapshot = PARITY.bootstrap(works, artifacts)
             self.assertEqual(record["coordinatorSha256"], PARITY.coordinator_hashes())
             selected = Path(record["platformRoot"])
-            origin_clone = artifacts / "workspace" / "platform-origin"
-            self.assertEqual(Path(command[1]).resolve(), (origin_clone / "eng/verify-works-host.sh").resolve())
-            self.assertNotEqual(Path(command[1]).resolve(), (selected / "eng/verify-works-host.sh").resolve())
+            self.assertEqual(Path(command[1]).resolve(), (selected / "eng/verify-works-host.sh").resolve())
+            self.assertTrue((selected / ".git").is_dir())
             self.assertNotIn("Configuration", environment)
             self.assertNotIn("HEXALITH_DAPR_INITIALIZATION_RECEIPT", environment)
             self.assertEqual((selected / "apphost.cs").read_text(), "// synthetic source overlay\n")
