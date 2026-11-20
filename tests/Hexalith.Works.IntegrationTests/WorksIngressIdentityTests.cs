@@ -94,7 +94,7 @@ public sealed class WorksIngressIdentityTests
             new WorkItemEventStoreAggregate().ProcessAsync(envelope, state, TestContext.Current.CancellationToken));
 
         error.InnerException.ShouldBeOfType<InvalidOperationException>()
-            .Message.ShouldContain("addressed stream");
+            .Message.ShouldContain("does not match its command envelope");
     }
 
     private static (Polymorphic Command, WorkItemState? State) Command(bool reschedule)

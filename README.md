@@ -1,13 +1,13 @@
 # Hexalith.Works
 
-Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform. Current Works packages require .NET 11 or later; build them with the SDK selected in `global.json`.
+Hexalith.Works is the Hexalith work-item domain module. The repository is an umbrella workspace with root-declared Hexalith submodules and a canonical EventStore domain-service executable. Aspire hosting and Dapr topology belong to Hexalith.Platform. Current Works packages require .NET 11 or later; build them with the SDK selected in `global.json`. Install .NET SDK 10.0.404 alongside it to run the compatibility fixtures and Platform integration checks. Verify both SDKs with `dotnet --list-sdks`.
 
 ## Local Debug development
 
 Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), McpCli (contract declarations), Memories (Platform preparation contracts), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
 
 ```bash
-git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+git -c submodule.recurse=false submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
 export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx -p:Configuration=Debug
 dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
@@ -42,43 +42,27 @@ unsupported runners, and the repository's `failSkips` setting keeps those runs f
 
 ## CI Release validation
 
-CI restores and builds Release assets with centrally pinned NuGet references for published external Hexalith libraries. It then packs and validates the Works inventory, builds and executes isolated package-only consumers (including reflected `AssemblyInformationalVersion` checks), executes the release-tooling regression suite, and runs each blocking Microsoft.Testing.Platform project separately. The repository-root `xunit.runner.json` is copied beside every test assembly and sets `failSkips: true`, so a skipped fact fails the same gate as a failed fact.
-
-Ordinary push/PR CI keeps the blocking compilation, package, consumer and test suites above. The `Qualification` workflow (`qualification.yml`) runs nightly at 02:23 UTC and manually on the selected source. Its `platform-parity` job runs Platform's complete canonical R1–R11 verifier with its `ci` profile: Release/public-package consumer checks and Release Agents probes, every explicit live fact, public producer qualification and complete-fleet rollback. Its bootstrap uses an isolated Platform checkout, an exact public SDK source export, and links to the initialized root dependencies. Missing, skipped, unexecuted or failed required lanes fail the job. The ordinary integration run alone does not qualify parity. A release requires both a successful push CI run and a successful nightly or manual Qualification run for its exact current `main` SHA. If nightly qualification covered an older SHA, run Qualification manually on current `main` and wait for it to pass before releasing. Qualification from another source is never reused. Run the same complete CI profile locally after initializing the dependencies above:
+Pushes and pull requests to `main` run the shared Builds CI workflow. The `after-unit-tests` hook checks the reviewed Debug source identities. After shared CI succeeds, `custom-platform-parity` runs the canonical Platform R1–R11 verifier with the `ci` profile. That job selects the published SDK, exercises the live facts and checks fleet rollback. Inspect both jobs on the commit being qualified. The local equivalent of the parity job is:
 
 ```bash
-run-with-temp bash -c '
-  proof="$TMPDIR/works-platform-proof"
-  mkdir -p artifacts
-  saved="$(mktemp -d "$PWD/artifacts/works-platform-proof.XXXXXX")"
-  status=0
-  bash scripts/verify-platform-parity-ci.sh --artifacts-path "$proof" > "$saved/run.log" 2>&1 || status=$?
-  for directory in . gate; do
-    [ -d "$proof/$directory" ] || continue
-    mkdir -p "$saved/$directory"
-    find "$proof/$directory" -maxdepth 1 -type f \
-      \( -name "*.json" -o -name "*.jsonl" -o -name "*.xml" -o -name "*.log" \) \
-      -exec cp {} "$saved/$directory/" \;
-  done
-  printf "Evidence: %s\n" "$saved"
-  exit "$status"
-'
+proof_parent="$(mktemp -d)"
+bash scripts/verify-platform-parity-ci.sh --artifacts-path "$proof_parent/works-platform-proof"
 ```
 
 For an independently obtained official SDK source export, add `--runtime-sdk-root /absolute/path/to/export`. The bootstrap copies it into the run-owned workspace and records an unknown checkout commit; the canonical verifier still requires its exact runtime/build inputs to match the selected public package producer and official release tag. This option does not select a different package version or qualify a candidate Builds catalog.
 
-The verifier validates persisted evidence envelopes after every successful producing command, before starting the next command. It permits valid incomplete prefixes and list states; final acceptance still binds every required proof and closes source integrity. Each command's ledger entry records UTC start/end boundaries, monotonic `elapsedSeconds`, output hash, exit status when available, and failures. Save useful evidence outside the private `TMPDIR` before the wrapper exits.
+The verifier validates persisted evidence envelopes after every successful producing command, before starting the next command. It permits valid incomplete prefixes and list states; final acceptance still binds every required proof and closes source integrity. Each command's ledger entry records UTC start/end boundaries, monotonic `elapsedSeconds`, output hash, exit status when available, and failures. The ledger and per-command logs are under `$proof_parent/works-platform-proof/gate`.
 
 Hosted run [44049423249](https://github.com/Hexalith/Hexalith.Works/actions/runs/44049423249) measured 44m12s for qualification and 8m13s for ordinary compilation/tests. These are the pre-change observations: approximately eight minutes is the selected ordinary feedback target, while new hosted durations remain unmeasured until publication. Recovery budgets and all five recovery topology starts remain unchanged.
 
-Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. The ordinary integration suite leaves only the explicitly listed live facts to complete Qualification; those facts must all pass on the exact release source before publication. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
+Required live classes run in that verifier with an explicitly selected, hashed Platform host; an unselected live launch refuses rather than starting a Works-owned topology. The ordinary integration suite leaves only the explicitly listed live facts to the Platform parity job; those facts must all pass on the exact release source before publication. See `docs/platform-hosting-cutover.md` for producer bindings and the historical rollback source archive.
 
 The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
 
 ```bash
-git submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+git -c submodule.recurse=false submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
 export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
-dotnet restore Hexalith.Works.slnx
+dotnet restore Hexalith.Works.slnx -p:Configuration=Release
 dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1
 python3 scripts/pack-release-packages.py ./nupkgs 0.0.0-ci-test
 python3 scripts/validate-nuget-packages.py ./nupkgs
@@ -90,7 +74,7 @@ for project in \
   tests/Hexalith.Works.ArchitectureTests \
   tests/Hexalith.Works.PropertyTests \
   tests/Hexalith.Works.IntegrationTests; do
-  dotnet test "$project" --configuration Release --no-build
+  dotnet test --project "$project" --configuration Release --no-build
 done
 ```
 
@@ -98,7 +82,7 @@ NuGet audit is enabled in all restore modes with `NuGetAuditMode=all`, so adviso
 
 Release restore and compilation require the committed `HexalithEventStoreVersion` in `Directory.Packages.props`. An ambient environment variable or command-line override selecting a different SDK fails with `HXW0003`. Builds without restore also check resolved SDK versions and reject assets still using the default candidate cache. For isolated candidate verification, pass `-p:WorksAllowLocalEventStoreCandidate=true` explicitly with the intended version and feed configuration. The existing integration contract requires a `-story415.` candidate version; build admission alone does not qualify a producer. The opt-in admits the historical `.artifacts/story-4-14/feed` and `.artifacts/story-4-15/feed` directories when present and defaults to the separate `.artifacts/sdk-candidate-packages` cache. Ordinary restores ignore those feeds and that cache. Explicitly supplied NuGet sources and `RestorePackagesPath` overrides remain the caller's isolation responsibility; admission does not authenticate arbitrary pre-existing global-cache contents. Source Debug builds retain their existing version behavior.
 
-The release-tooling tests execute package-free `Build,Pack` solution targets and fresh-cache restore controls. They also compare the effective initialization, SDK selection and restore/build steps from the exact Builds commits selected by CI and release preparation. Initialize the root Builds submodule with its Git history before running `python3 -m unittest discover -s scripts/tests`; missing producer objects fail the compatibility check. With the Node.js version required by `package.json`, run `npm ci --ignore-scripts` first: the release-permission regression executes the locked GitHub plugin's success/failure hooks against an offline client that refuses issue and pull-request operations. The tooling CI job installs those same locked dependencies before running the suite.
+The local Python tooling tests exercise package inventory, restore guards, fixture builds and verifier behavior. Run `python3 -m unittest discover -s scripts/tests` from the repository root with the required .NET SDKs on PATH. For parity, initialize the listed direct dependencies with their Git history so the bootstrap can select the exact SDK release tag.
 
 ## Release packages
 
@@ -114,37 +98,10 @@ The release-tooling tests execute package-free `Build,Pack` solution targets and
 
 Hosts, AppHost resources, samples, service defaults, and test runners are never published.
 
-As checked against the NuGet.org flat-container indexes on 2026-09-20, all five package IDs are currently unpublished: `Hexalith.Works.Contracts` (HTTP 404), `Hexalith.Works.Server` (HTTP 404), `Hexalith.Works.Projections` (HTTP 404), `Hexalith.Works.Reactor` (HTTP 404), and `Hexalith.Works.Testing` (HTTP 404). Registry absence is status only; it is not publication authority.
+## Release operations
 
-## Manual release prerequisites
+Hexalith.CiCd schedules releases centrally. The module's `.github/workflows/release.yml` accepts a delivered-state SHA and calls the pinned Hexalith.Builds release workflow. When that workflow authorizes publication, it passes the version, SHA, draft ID and artifact ID, digest and run to the module's `publish` job.
 
-Release is operator-only through the `Release` workflow. Before an authorized dispatch, repository owners must configure all of the following:
+Configure the protected `hexalith-release` environment and the `HEXALITH_NUGET_USER` variable for the matching NuGet trusted-publisher identity. The publishing job requires GitHub OIDC. Before approval, compare the candidate SHA and exact CI/parity results with the shared workflow's prepared draft and artifact. The five-package inventory and the local pack/consumer commands above provide a publication-free rehearsal.
 
-- A protected `production` environment with required reviewers and a `main`-only deployment policy. Both the
-  publishing job and the post-publication verification job reference this environment. Verification always runs
-  after the release job starts and does not re-read the mutable publication-freeze variable, so a later variable
-  edit cannot suppress checks for an already-started publication. With required reviewers configured, expect
-  **two** approval prompts in one release run: one before publication and one before verification.
-- A repository-scoped `NUGET_USER` variable naming the NuGet.org publishing account, with a NuGet
-  trusted-publisher policy matching this GitHub repository, the `release.yml` workflow, and the
-  `production` environment. The workflow uses GitHub OIDC through `NuGet/login` to obtain its temporary
-  `NUGET_API_KEY`; repository owners do not provision a long-lived API-key secret for this workflow.
-- A repository-scoped `HEXALITH_RELEASE_PUBLISH_ENABLED` variable set to the exact string `true`.
-- A successful push `CI` run and a successful complete `Qualification` run for the exact current `main` commit. Both proofs run before production environment approval and publication credentials become available.
-
-The workflow rejects a non-`main` or stale dispatch before requesting environment approval, fails before any NuGet write if any one of the five ID/version pairs already exists, and verifies that the release tag resolves to the dispatched commit and all five exact packages become readable afterward. Publication is never triggered by a push.
-
-Publication pushes exactly the manifest packages and their `.snupkg` symbol packages through
-`scripts/push-release-packages.sh`, never a `*.nupkg` glob, so an unvalidated archive left in the output directory
-can never be published. Packing first freezes the SHA-256 of all ten candidate archives in
-`nupkgs/release-artifacts.sha256`; publication refuses any changed or extra candidate. `--skip-duplicate` is
-deliberately absent: an ordinary version collision must fail loudly.
-
-**Partial-publication recovery.** NuGet has no transaction, so a failure part-way can leave some packages live and
-immutable. The publisher retries an unchanged ledger-verified artifact up to three times in the same invocation
-only after a fail-closed classifier recognizes a bounded transport failure, HTTP 408/429, or HTTP 5xx response.
-Every 409 Conflict is a collision and fails, including one after an ambiguous attempt: local runner history cannot
-authenticate the bytes stored remotely. The hosted runner and its candidate ledger are ephemeral, so retry
-exhaustion or any 409 is not recoverable by rerunning the workflow or by reusing a local ledger. Do not delete
-published packages or push different content at the incomplete version. Publish a new patch version that contains
-all five packages, and leave the incomplete version unlisted so consumers never resolve it.
+If publication fails after any packages appear, retain the Actions run, draft and artifact identity. Reconcile the published IDs, versions and bytes with the prepared inventory using the shared release owner's recovery process before another attempt. Published NuGet versions are immutable.

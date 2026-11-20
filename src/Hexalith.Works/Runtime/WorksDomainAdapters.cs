@@ -13,6 +13,8 @@ using Hexalith.Works.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 
+using OpenTelemetry.Metrics;
+
 namespace Hexalith.Works.Runtime;
 
 /// <summary>Declares Works contracts, folds, query authority, reminder intents and process translations.</summary>
@@ -22,6 +24,7 @@ internal static class WorksDomainAdapters
     internal static IServiceCollection AddWorksDomainAdapters(this IServiceCollection services, IConfiguration configuration)
     {
         HexalithWorksContractsSerialization.RegisterPolymorphicMappers();
+        _ = services.AddOpenTelemetry().WithMetrics(metrics => metrics.AddMeter(WorkItemSharedProjectionRebuildHandler.MeterName));
         _ = services.AddHexalithWorksContractsPolymorphicMappers();
         _ = services.AddEventStoreReadModelStore(static options =>
         {

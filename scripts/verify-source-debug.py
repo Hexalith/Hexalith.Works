@@ -61,9 +61,11 @@ def execute(command, root, environment, artifacts, records, timeout):
     record = {"command": command, "timeoutSeconds": timeout, "log": log.name}
     records.append(record)
     try:
-        with log.open("wb") as output:
+        stderr_log = log.with_suffix(".stderr.log")
+        record["stderrLog"] = stderr_log.name
+        with log.open("wb") as output, stderr_log.open("wb") as diagnostics:
             process = subprocess.Popen(command, cwd=root, env=environment, stdout=output,
-                                       stderr=subprocess.STDOUT, start_new_session=os.name == "posix")
+                                       stderr=diagnostics, start_new_session=os.name == "posix")
             try:
                 record["exitCode"] = process.wait(timeout=timeout)
             except subprocess.TimeoutExpired:
@@ -87,7 +89,7 @@ def execute(command, root, environment, artifacts, records, timeout):
         record["exitCode"] = 124 if isinstance(error, subprocess.TimeoutExpired) else 127
         log.write_text(str(error), encoding="utf-8")
     if record["exitCode"]:
-        raise RuntimeError(f"Command failed ({record['exitCode']}): {command!r}; see {log}")
+        raise RuntimeError(f"Command failed ({record['exitCode']}): {command!r}; see {log} and {stderr_log}")
     return log.read_text(encoding="utf-8", errors="replace")
 
 
@@ -113,7 +115,7 @@ def source_snapshot(checkout, run, artifacts=None):
         candidate = (checkout / path).resolve()
         return candidate.parent == artifacts.resolve() and (candidate.name == "result.json"
             or candidate.name.startswith("command-") and candidate.name.endswith(".log")
-            and candidate.name[8:-4].isdigit())
+            and candidate.name[8:-4].removesuffix(".stderr").isdigit())
     return {
         "revision": run([*prefix, "rev-parse", "HEAD"]).strip(),
         "trackedDiffSha256": hashlib.sha256(patch.encode()).hexdigest(),

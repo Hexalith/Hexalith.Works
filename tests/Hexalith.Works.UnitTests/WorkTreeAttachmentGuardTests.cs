@@ -138,6 +138,23 @@ public sealed class WorkTreeAttachmentGuardTests
     }
 
     [Fact]
+    public void Validate_refuses_child_beyond_largest_representable_depth()
+    {
+        WorkTreeAttachmentValidationResult result = Validate(proposedParentDepth: int.MaxValue, maxDepth: int.MaxValue);
+        result.Rejection.ShouldBeOfType<WorkItemTreeDepthExceeded>();
+        result.ResultingDepth.ShouldBe(int.MaxValue);
+    }
+
+    [Fact]
+    public void Validate_counts_known_ancestors_when_reported_depth_is_too_small()
+    {
+        WorkTreeAttachmentValidationResult result = Validate(proposedParentDepth: -1, maxDepth: 2,
+            ancestorChain: [Parent("tenant-alpha", "grandparent")]);
+        result.Rejection.ShouldBeOfType<WorkItemTreeDepthExceeded>();
+        result.ResultingDepth.ShouldBe(3);
+    }
+
+    [Fact]
     public void Validate_accepts_resulting_depth_at_default_limit()
     {
         WorkTreeAttachmentValidationResult result = Validate(proposedParentDepth: WorkTreeDepthPolicy.DefaultMaxDepth - 1);

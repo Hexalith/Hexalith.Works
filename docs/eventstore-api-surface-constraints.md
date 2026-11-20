@@ -5,10 +5,9 @@
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
 
-Current Release selects EventStore `5.3.1`; its official NuGet metadata names
-producer `3371f29fd7df1469a2c71f185292b2bd0592ae0e`. The reviewed Debug source
-is the committed checkout in the marker above. Both current Debug/source and
-Release/package solution builds pass with zero warnings or errors on .NET 11.
+Current Release selects EventStore `5.4.0`; its official NuGet metadata names
+producer `2ec21f631a2e292fba8c5537fe665ab275ed1081`. The reviewed Debug source
+is the committed checkout in the marker above. The source verifier and the Release build exercise these inputs separately.
 This source/package pairing records supported build inputs and does not claim
 producer equivalence or extend historical archive/signature verification.
 Current runtime/parity acceptance requires the separate full CI gate.

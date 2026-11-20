@@ -1,7 +1,8 @@
 <Project>
-  <!-- Solution restore does not import Directory.Build.targets. Keep the same
-       gitlink initialization so Debug-lane architecture evaluation sees source. -->
-  <Target Name="InitializeReviewedSourceGitlinks" BeforeTargets="Restore">
+  <!-- Shared CI needs reviewed sources before its architecture suite. Local developers
+       initialize the direct gitlinks explicitly using the README instructions. -->
+  <Target Name="InitializeReviewedSourceGitlinks" BeforeTargets="Restore"
+          Condition="'$(GITHUB_ACTIONS)' == 'true' and '$(SolutionFileName)' == 'Hexalith.Works.slnx' and Exists('$(MSBuildThisFileDirectory).git')">
     <Exec Command="bash &quot;$(MSBuildThisFileDirectory)scripts/initialize-reviewed-source-gitlinks.sh&quot;"
           WorkingDirectory="$(MSBuildThisFileDirectory)"
           IgnoreStandardErrorWarningFormat="true"

@@ -308,6 +308,7 @@ class SourceDebugVerificationTests(unittest.TestCase):
             before = MODULE.source_snapshot(checkout, run, artifacts)
             (artifacts / "result.json").write_text("owned-result")
             (artifacts / "command-01.log").write_text("owned-log")
+            (artifacts / "command-01.stderr.log").write_text("owned-diagnostics")
             self.assertEqual(before, MODULE.source_snapshot(checkout, run, artifacts))
             source = artifacts / "ActualOwner.cs"
             source.write_text("class First {}")

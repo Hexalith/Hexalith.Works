@@ -56,8 +56,7 @@ public sealed class LinkConversationRuntimeAdapterTests
     }
 
     /// <summary>
-    /// The fourteen ordinary adapters paired with malformed envelope fields that only
-    /// <see cref="LinkConversation"/> is responsible for validating.
+    /// The fourteen ordinary adapters paired with malformed envelope fields for address validation.
     /// </summary>
     public static TheoryData<string, Polymorphic, string, string> OrdinaryMalformedEnvelopeFixtures
     {
@@ -71,8 +70,8 @@ public sealed class LinkConversationRuntimeAdapterTests
             commands.Length.ShouldBe(14);
             foreach (Polymorphic command in commands)
             {
-                data.Add($"{command.GetType().Name}-domain", command, "not valid!", Item.Value);
-                data.Add($"{command.GetType().Name}-aggregate", command, Domain, "not valid!");
+                data.Add($"{command.GetType().Name}-domain", command, "party", Item.Value);
+                data.Add($"{command.GetType().Name}-aggregate", command, Domain, "work-002");
             }
 
             return data;
@@ -97,6 +96,7 @@ public sealed class LinkConversationRuntimeAdapterTests
             [
                 ("null", null),
                 ("empty", string.Empty),
+                ("foreign", "tenant-beta"),
                 ("over-length", new string('a', 65)),
                 ("non-ascii", "ténant"),
                 ("invalid-shape", "not valid!"),
@@ -418,6 +418,23 @@ public sealed class LinkConversationRuntimeAdapterTests
         }
     }
 
+    /// <summary>Every command refuses a foreign established state before producing any events.</summary>
+    [Theory]
+    [MemberData(nameof(CommandFixtures))]
+    public async Task ProcessAsyncRefusesForeignEstablishedState(string commandName, Polymorphic command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        commandName.ShouldBe(command.GetType().Name);
+        var foreign = new WorkItemState();
+        var other = new WorkItemId("work-002");
+        foreign.Apply(new WorkItemCreated(other.Value, 1, Tenant, other, new Obligation("Other work")));
+        var aggregate = new WorkItemEventStoreAggregate();
+        TargetInvocationException error = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(CommandFor(command, Tenant.Value), foreign, TestContext.Current.CancellationToken));
+        error.InnerException.ShouldBeOfType<InvalidOperationException>().Message.ShouldContain("established work-item state");
+        foreign.Sequence.ShouldBe(1);
+    }
+
     /// <summary>Envelope-aware reflection dispatch preserves each pure-kernel result for an ordinary tenant.</summary>
     [Theory]
     [MemberData(nameof(CommandFixtures))]
@@ -440,13 +457,10 @@ public sealed class LinkConversationRuntimeAdapterTests
         actual.Events.ShouldBe(expected.Events);
     }
 
-    /// <summary>
-    /// The reserved-tenant guard reads only the envelope tenant; malformed unrelated identity fields remain the
-    /// responsibility of the one adapter that explicitly requires full identity equality.
-    /// </summary>
+    /// <summary>Reflection dispatch rejects a mismatched stream address before kernel handling.</summary>
     [Theory]
     [MemberData(nameof(OrdinaryMalformedEnvelopeFixtures))]
-    public async Task ProcessAsync_preserves_ordinary_kernel_results_with_malformed_unrelated_envelope_fields(
+    public async Task ProcessAsync_refuses_malformed_unrelated_envelope_fields(
         string caseName,
         Polymorphic command,
         string envelopeDomain,
@@ -455,29 +469,22 @@ public sealed class LinkConversationRuntimeAdapterTests
         ArgumentNullException.ThrowIfNull(command);
         caseName.ShouldNotBeNullOrWhiteSpace();
         var aggregate = new WorkItemEventStoreAggregate();
-        DomainResult expected = InvokeKernel(command);
         CommandEnvelope malformed = CommandFor(command, Tenant.Value) with
         {
             Domain = envelopeDomain,
             AggregateId = envelopeAggregateId,
         };
 
-        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null, TestContext.Current.CancellationToken);
-
-        actual.IsSuccess.ShouldBe(expected.IsSuccess);
-        actual.IsRejection.ShouldBe(expected.IsRejection);
-        actual.IsNoOp.ShouldBe(expected.IsNoOp);
-        actual.Events.ShouldBe(expected.Events);
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(malformed, currentState: null, TestContext.Current.CancellationToken));
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain("does not match its command envelope", Case.Sensitive);
     }
 
-    /// <summary>
-    /// Data-contract deserialization can bypass envelope identity validation; ordinary adapters deliberately
-    /// preserve kernel results for those malformed tenant values while <see cref="LinkConversation"/> remains
-    /// the sole full-identity adapter.
-    /// </summary>
+    /// <summary>Reflection dispatch rejects a mismatched stream address before kernel handling.</summary>
     [Theory]
     [MemberData(nameof(OrdinaryMalformedEnvelopeTenantFixtures))]
-    public async Task ProcessAsync_preserves_ordinary_kernel_results_with_data_contract_malformed_envelope_tenants(
+    public async Task ProcessAsync_refuses_data_contract_malformed_envelope_tenants(
         string caseName,
         Polymorphic command,
         string? envelopeTenantId)
@@ -485,18 +492,15 @@ public sealed class LinkConversationRuntimeAdapterTests
         ArgumentNullException.ThrowIfNull(command);
         caseName.ShouldNotBeNullOrWhiteSpace();
         var aggregate = new WorkItemEventStoreAggregate();
-        DomainResult expected = InvokeKernel(command);
         CommandEnvelope malformed = DataContractRoundTripWithTenant(
             CommandFor(command, Tenant.Value),
             envelopeTenantId);
         malformed.TenantId.ShouldBe(envelopeTenantId);
 
-        DomainResult actual = await aggregate.ProcessAsync(malformed, currentState: null, TestContext.Current.CancellationToken);
-
-        actual.IsSuccess.ShouldBe(expected.IsSuccess);
-        actual.IsRejection.ShouldBe(expected.IsRejection);
-        actual.IsNoOp.ShouldBe(expected.IsNoOp);
-        actual.Events.ShouldBe(expected.Events);
+        TargetInvocationException exception = await Should.ThrowAsync<TargetInvocationException>(
+            () => aggregate.ProcessAsync(malformed, currentState: null, TestContext.Current.CancellationToken));
+        exception.InnerException.ShouldBeOfType<InvalidOperationException>()
+            .Message.ShouldContain("does not match its command envelope", Case.Sensitive);
     }
 
     private static CommandEnvelope CommandForCreate(CreateWorkItem command)

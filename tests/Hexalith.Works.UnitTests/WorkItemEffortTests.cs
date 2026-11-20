@@ -25,6 +25,7 @@ public sealed class WorkItemEffortTests
     [InlineData(8, 0, 8)]
     [InlineData(8, 3, 5)]
     [InlineData(8, 8, 0)]
+    [InlineData(4, 7, 0)]
     public void WorkItemEffort_remaining_is_estimated_minus_done(int estimated, int done, int expectedRemaining)
     {
         var effort = new WorkItemEffort(estimated, new Unit("hour"), done);
@@ -41,8 +42,13 @@ public sealed class WorkItemEffortTests
         => Should.Throw<ArgumentOutOfRangeException>(() => new WorkItemEffort(8m, new Unit("hour"), -1m));
 
     [Fact]
-    public void WorkItemEffort_rejects_done_greater_than_estimated()
-        => Should.Throw<ArgumentOutOfRangeException>(() => new WorkItemEffort(8m, new Unit("hour"), 9m));
+    public void Report_accepts_maximum_delta_with_existing_progress()
+    {
+        var effort = new WorkItemEffort(10m, new Unit("hour"), 7m);
+        effort.Report(decimal.MaxValue).Done.ShouldBe(10m);
+        effort.ReEstimate(4m).Report(decimal.MaxValue).Done.ShouldBe(7m);
+        effort.ReEstimate(4m).ReEstimate(10m).Remaining.ShouldBe(3m);
+    }
 
     [Fact]
     public void WorkItemEffort_rejects_null_unit()
@@ -69,7 +75,7 @@ public sealed class WorkItemEffortTests
         => Should.Throw<ArgumentOutOfRangeException>(() => new WorkItemEffort(8m, new Unit("hour")).Report(delta));
 
     [Fact]
-    public void WorkItemEffort_re_estimate_preserves_unit_and_clamps_done_to_new_estimated()
+    public void WorkItemEffort_re_estimate_preserves_unit_and_done()
     {
         var effort = new WorkItemEffort(8m, new Unit("hour"), 6m);
 
@@ -77,7 +83,7 @@ public sealed class WorkItemEffortTests
 
         reEstimated.Estimated.ShouldBe(4m);
         reEstimated.Unit.ShouldBe(effort.Unit);
-        reEstimated.Done.ShouldBe(4m);
+        reEstimated.Done.ShouldBe(6m);
         reEstimated.Remaining.ShouldBe(0m);
     }
 

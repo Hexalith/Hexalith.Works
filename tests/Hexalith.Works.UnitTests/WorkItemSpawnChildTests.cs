@@ -21,6 +21,20 @@ public sealed class WorkItemSpawnChildTests
         new(new PartyId("party-123"), Channel.Mcp, AuthorityLevel.Coordinate);
 
     [Fact]
+    public void SpawnChild_refuses_to_spawn_its_recorded_parent_when_the_caller_omits_ancestry()
+    {
+        var state = new WorkItemState();
+        state.Apply(new WorkItemCreated(Parent.Value, 1, Tenant, Parent, new Obligation("Parent"),
+            Parent: new ParentWorkItemReference(Tenant, Child)));
+
+        DomainResult result = WorkItemAggregate.Handle(new SpawnChild(Tenant, Parent, Child, "Child"), state);
+
+        result.IsRejection.ShouldBeTrue();
+        result.Events.ShouldHaveSingleItem().ShouldBeOfType<WorkItemTreeCycleRejected>().CycleWorkItemId.ShouldBe(Child);
+        state.Sequence.ShouldBe(1);
+    }
+
+    [Fact]
     public void SpawnChild_from_existing_parent_emits_child_spawned_and_replays_reference_only_child()
     {
         WorkItemState state = WorkItemStateBuilder.InStatus(WorkItemStatus.Created, Tenant, Parent);

@@ -104,6 +104,10 @@ non-terminal status (`Created`, `Assigned`, `Queued`, `InProgress`, `Suspended`)
 `Status`, and it never emits `WorkItemCompleted` even when replay clamps Remaining to zero. Completion
 remains owned by `ReportProgress` and explicit `CompleteWorkItem`.
 
+Re-estimating preserves cumulative Done. When Done exceeds the replacement estimate, Remaining is zero.
+A later increase uses all previously recorded progress. A positive report saturates at the estimate
+when work remains and preserves existing Done when the item is already over estimate.
+
 The first accepted `ReEstimate` on an unestimated item establishes the first estimate and its Unit.
 After that, the established Unit is immutable: a re-estimate in a different Unit is rejected and the
 existing Unit/Estimated values remain unchanged.

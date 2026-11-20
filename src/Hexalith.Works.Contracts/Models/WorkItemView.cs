@@ -15,7 +15,7 @@ namespace Hexalith.Works.Contracts.Models;
 /// <param name="Status">The current lifecycle status, or <see cref="WorkItemStatus.Unknown"/> when not found.</param>
 /// <param name="Estimated">The planned effort, or <see langword="null"/> when no estimate has been established.</param>
 /// <param name="Done">The reported done effort, or <see langword="null"/> when no estimate has been established.</param>
-/// <param name="Remaining">The derived remaining effort (<c>Estimated - Done</c>), or <see langword="null"/> when unestimated.</param>
+/// <param name="Remaining">The derived remaining effort (<c>max(Estimated - Done, 0)</c>), or <see langword="null"/> when unestimated.</param>
 /// <param name="Unit">The effort unit, or <see langword="null"/> when unestimated.</param>
 /// <param name="Parent">The parent work item reference, when this item is a child.</param>
 /// <param name="LatestAcceptedSourceSequence">

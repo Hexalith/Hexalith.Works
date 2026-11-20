@@ -36,7 +36,7 @@ FR7: Every accepted state change and progress fact is an append-only, past-tense
 
 FR8: The bound Executor can report a strictly positive progress delta in the established Unit while `InProgress`; reaching zero emits `ProgressReported` followed by `WorkItemCompleted`. Explicit Complete may finish `InProgress` or `Suspended` work at any Remaining without changing Estimated or Done. `CorrectProgress` appends an absolute cumulative Done value at or above zero, permits visible overrun, and may reopen only a progress-completed item when positive Remaining is restored; explicit completion remains terminal.
 
-FR9: An authenticated tenant member can re-estimate or reschedule any non-terminal Work Item. `ReEstimate` replaces Estimated, preserves cumulative Done, Unit, Status, and history, derives non-negative Remaining, permits `Done > Estimated` as visible overrun, and never completes or reopens the item; only `CorrectProgress` changes Done. Reschedule records Priority/Due Date changes and updates query ordering.
+FR9: An authenticated tenant member can re-estimate or reschedule any non-terminal Work Item. `ReEstimate` replaces Estimated, preserves cumulative Done, Unit, Status, and history, derives non-negative Remaining, permits `Done > Estimated` as visible overrun, and never completes or reopens the item; only `CorrectProgress` replaces cumulative Done. Reschedule records Priority/Due Date changes and updates query ordering.
 
 FR10: Cancel and Expire terminate any non-terminal Work Item, while the bound Executor may Reject an `Assigned` item with requeue or terminal semantics. Expiry accepts only the currently effective Due Date/TTL schedule witness and treats stale callbacks as audited no-ops. Cancel/Expire eventually cascade through all reachable active `Attached` descendants, include concurrent pre-boundary attachments, preserve already-terminal descendants, and remain durably discoverable until quiescent.
 
@@ -132,7 +132,7 @@ NFR18: The eight PRD exit gates remain blocking dependencies: transport idempote
 - Standardize UTC `DateTimeOffset` at edges, canonical encoded IDs in keys, options-free PascalCase concrete writers with tolerant readers, RFC 9457 edge errors, source-generated structured logging, typed options at hosts, and xUnit v3/Shouldly/NSubstitute tests including convergence properties and persisted end-state assertions.
 - Use the architecture's observed version authorities and compatibility process for SDK/runtime/package changes; any update requires restore, Release build, focused integration, and Platform parity evidence. No dependency update is implied by this planning workflow.
 - Add a tracked CI step that executes the built Release architecture-test assembly; compilation alone is not architecture-fitness evidence.
-- Resolve the approved source conflict in favor of PRD FR8/FR9 and the 2026-09-14 proposal: `ReEstimate` preserves cumulative Done, clamps only Remaining, allows visible `Done > Estimated`, never completes/reopens/changes Status, and only `CorrectProgress` changes Done. Architecture AD-17 and any candidate story text must be amended before implementation.
+- Resolve the approved source conflict in favor of PRD FR8/FR9 and the 2026-09-14 proposal: `ReEstimate` preserves cumulative Done, clamps only Remaining, allows visible `Done > Estimated`, never completes/reopens/changes Status, and only `CorrectProgress` replaces cumulative Done. See the [November audit and change proposal](sprint-change-proposal-2026-11-20.md) for the aligned AD-17 wording and rollout checks.
 - Treat the change from clamp-Done replay to preserve-Done replay as a semantic migration: replay representative legacy streams through aggregate and projection folds, compare live/rebuilt state, rebuild disposable projections, document snapshot/cache invalidation, and change write-side/read-side interpretations atomically.
 - Preserve exact historical story identities and delivered evidence for Epics 1-4: Stories 1.1-1.5, 2.1-2.5, 3.1-3.6, and 4.1-4.9 retain their approved titles and artifacts; later target acceptance criteria must not be retroactively applied to them. The human-approved 2026-09-23 split resets unfinished Story 4.9 to backlog while its prerequisites are drafted.
 - Quarantine the existing rewritten target bodies under non-executable provisional labels `F1-A`-`F1-D`, `F2-A`-`F2-H`, `F3-A`-`F3-J`, and `F4-A`-`F4-J`. An `F*` label cannot enter sprint status or inherit historical delivery status and requires a unique final ID, dependency review, validated artifact, and aligned traceability before promotion.
@@ -1074,9 +1074,9 @@ So that audited mistakes can be repaired and only progress-completed work reopen
 **Acceptance Criteria:**
 
 **Given** an estimated `InProgress` Work Item and its authenticated bound Executor
-**When** `CorrectProgress` supplies an absolute cumulative Done value from zero through Estimated in the established Unit
+**When** `CorrectProgress` supplies an absolute cumulative Done value of zero or more in the established Unit
 **Then** one `ProgressCorrected` event records the new cumulative value and bounded optional note
-**And** the original progress events remain unchanged in history while Status stays `InProgress`.
+**And** prior progress events remain in history. Positive corrected Remaining preserves `InProgress`. Zero corrected Remaining emits `WorkItemCompleted` and rests at `Completed`.
 
 **Given** a Work Item completed through `CompletionKind=Progress`
 **When** an authorized correction reduces cumulative Done below Estimated
@@ -1084,7 +1084,7 @@ So that audited mistakes can be repaired and only progress-completed work reopen
 **And** applying both events restores positive Remaining and rests the item at `InProgress` without erasing its prior completion evidence.
 
 **Given** a Work Item completed through progress
-**When** an authorized correction leaves cumulative Done equal to Estimated
+**When** an authorized correction leaves cumulative Done at or above Estimated
 **Then** the correction evidence is recorded without `WorkItemReopened`
 **And** Status remains `Completed` because Remaining is still zero.
 
@@ -1093,7 +1093,7 @@ So that audited mistakes can be repaired and only progress-completed work reopen
 **Then** the command is rejected with no correction or reopen event
 **And** explicit completion remains terminal even if historical effort shows residual Remaining.
 
-**Given** an unestimated item, a negative absolute Done value, a Done value above Estimated, a different Unit, or an optional note longer than 1,000 characters
+**Given** an unestimated item, a negative absolute Done value, a different Unit, or an optional note longer than 1,000 characters
 **When** CorrectProgress is handled
 **Then** the defined domain rejection is returned without mutation
 **And** the invalid submitted value remains available to headless or future client recovery without entering logs or durable state.
@@ -1130,7 +1130,7 @@ So that plans can respond to new information while their history remains explici
 
 **Given** a replacement estimate below the current cumulative Done
 **When** ReEstimate is accepted under the architecture's authoritative numeric rule
-**Then** applied Done is clamped consistently to the accepted Estimated bound and Remaining is zero
+**Then** applied Done retains the entire cumulative value, overrun remains visible, and Remaining is zero
 **And** the event, aggregate, projection folds, lifecycle matrix, validator, and golden corpus encode the same rule without an implicit completion.
 
 **Given** an unestimated non-terminal Work Item

@@ -339,7 +339,8 @@ def main():
         print("Bootstrap validated; parity remains incomplete.")
         return
     subprocess.run(command, env=environment, check=True)
-    require_complete_gate(artifacts, toolchain_runtime_sha256(record["platformRoot"], environment.get("HexalithBuildsRoot")))
+    runtime_digest = toolchain_runtime_sha256(record["platformRoot"], environment.get("HexalithBuildsRoot"))
+    require_complete_gate(artifacts, runtime_digest)
     if snapshot.origin_files(Path(record["platformOrigin"])) != record["platformSourceFiles"]:
         raise ValueError("Canonical Platform inputs changed after bootstrap")
     require_unchanged_coordinators(record["coordinatorSha256"])

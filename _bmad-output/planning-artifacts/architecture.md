@@ -266,9 +266,10 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 - **Binds:** FR-6 through FR-10 validation and transition outcomes.
 - **Prevents:** per-handler transition tables and projections inventing state.
 - **Rule:** docs/lifecycle-transition-matrix.md is authoritative and must change atomically with
-  lifecycle code/tests. Progress delta is positive; CorrectProgress absolute Done is within
-  0..Estimated; Estimated is nonnegative; Unit follows AD-04; ReEstimate clamps Done and never
-  completes. Terminal own contribution is zero; an unestimated item contributes zero plus count.
+  lifecycle code and tests. Reports carry a positive delta. CorrectProgress replaces cumulative Done
+  with a nonnegative value in the established Unit. ReEstimate replaces only the nonnegative estimate.
+  Both folds derive Remaining as max(Estimated − Done, 0) and preserve visible overrun.
+  ReEstimate never completes or reopens the item. Unit follows AD-04. Terminal own contribution is zero; an unestimated item contributes zero plus count.
   Due/TTL policy is edge configuration, never kernel configuration. Handoff, correction, reopen,
   completion-kind, and Unit-inheritance changes ship atomically with this matrix, the durable catalog
   and validators, aggregate behavior, projection folds, golden corpus, and conflicting fitness, unit,

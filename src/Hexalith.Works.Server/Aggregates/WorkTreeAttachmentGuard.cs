@@ -18,7 +18,10 @@ public static class WorkTreeAttachmentGuard
         }
 
         ParentWorkItemReference proposedParent = facts.ProposedParent;
-        int resultingDepth = facts.ProposedParentDepth + 1;
+        // The ancestor list establishes a lower bound even if the supplied depth understates it.
+        long parentDepth = Math.Max((long)facts.ProposedParentDepth, 1L + facts.ProposedParentAncestors.Count);
+        long childDepth = parentDepth + 1;
+        int resultingDepth = (int)Math.Min(childDepth, int.MaxValue);
 
         if (proposedParent.TenantId != facts.TenantId)
         {
@@ -59,7 +62,7 @@ public static class WorkTreeAttachmentGuard
                 resultingDepth);
         }
 
-        if (resultingDepth > facts.MaxDepth)
+        if (childDepth > facts.MaxDepth)
         {
             return WorkTreeAttachmentValidationResult.Rejected(
                 new WorkItemTreeDepthExceeded(facts.TenantId, facts.WorkItemId, proposedParent, facts.MaxDepth, resultingDepth),

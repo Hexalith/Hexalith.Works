@@ -79,7 +79,12 @@ internal static class WorksManagedRuntimeEvidence
             try
             {
                 string[] mappings = File.ReadAllLines($"/proc/{pid.ToString(CultureInfo.InvariantCulture)}/maps");
-                if (MappedPaths(mappings).Contains(entry, StringComparer.Ordinal)) matching.Add(pid);
+                if (MappedPaths(mappings).Contains(entry, StringComparer.Ordinal))
+                {
+                    if (pid == Environment.ProcessId)
+                        throw new InvalidOperationException("The qualification host cannot be attributed to a service.");
+                    matching.Add(pid);
+                }
                 string children = File.ReadAllText($"/proc/{pid.ToString(CultureInfo.InvariantCulture)}/task/{pid.ToString(CultureInfo.InvariantCulture)}/children");
                 foreach (string child in children.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
                     pending.Enqueue(int.Parse(child, CultureInfo.InvariantCulture));
@@ -89,7 +94,7 @@ internal static class WorksManagedRuntimeEvidence
                 // A child that exited during this read cannot supply a live service observation.
             }
         }
-        if (matching.Count != 1 || matching[0] == Environment.ProcessId)
+        if (matching.Count != 1)
             throw new InvalidOperationException("Exactly one owned service process must map the selected entry assembly.");
         return matching[0];
     }

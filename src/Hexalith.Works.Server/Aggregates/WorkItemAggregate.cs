@@ -106,6 +106,12 @@ public static class WorkItemAggregate
             return RejectInitialEffort(command.TenantId, command.ChildWorkItemId, command.InitialEffort.Done);
         }
 
+        IReadOnlyList<ParentWorkItemReference> ancestors = command.ProposedParentAncestors ?? [];
+        if (state?.Parent is { } recordedParent && !ancestors.Contains(recordedParent))
+        {
+            ancestors = [recordedParent, .. ancestors];
+        }
+
         ParentWorkItemReference proposedParent = new(command.TenantId, command.WorkItemId);
         WorkTreeAttachmentValidationResult treeValidation = WorkTreeAttachmentGuard.Validate(
             new WorkTreeAttachmentFacts(
@@ -113,7 +119,7 @@ public static class WorkItemAggregate
                 command.ChildWorkItemId,
                 proposedParent,
                 command.ExistingChildParent,
-                command.ProposedParentAncestors ?? [],
+                ancestors,
                 command.ProposedParentDepth,
                 command.MaxDepth));
         if (!treeValidation.IsAccepted)

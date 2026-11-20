@@ -45,20 +45,22 @@ def fixture(root):
     (owner / "references/Hexalith.Builds").mkdir(parents=True)
     git(owner, "init", "--quiet")
     (owner / "eng/binding.json").write_text(json.dumps(binding))
-    (owner / "eng/builds-tuple.json").write_text(json.dumps(binding))
+    (owner / "eng/builds-tuple.json").write_text(json.dumps(
+        {"schemaVersion": 2, "version": "6.4.4", "releaseTag": "v6.4.4"}))
     shutil.copyfile(ROOT / "references/Hexalith.Platform/eng/bound_builds.py", owner / "eng/bound_builds.py")
     shutil.copyfile(ROOT / "references/Hexalith.Platform/eng/builds_tuple.py", owner / "eng/builds_tuple.py")
     (owner / "eng/prepare_builds_artifacts.py").write_text(
         "import json, os, pathlib, subprocess, sys\n"
-        "from builds_tuple import resolve_builds_root, validate_recorded_source, verify_catalog\n"
+        "from builds_tuple import resolve_builds_root, verify_catalog\n"
         "assert '--require-recorded' in sys.argv\n"
         "owner = pathlib.Path(__file__).resolve().parents[1]\n"
         "binding = json.loads((owner / 'eng/binding.json').read_text())\n"
         "pin = subprocess.check_output(['git', 'rev-parse', 'HEAD:references/Hexalith.Builds'],\n"
         "                              cwd=owner, text=True).strip()\n"
-        "validate_recorded_source(binding, pin, False)\n"
+        "assert binding['producer']['sourceRevision'] == pin\n"
         "selected = resolve_builds_root(owner)\n"
-        "verify_catalog(binding, selected)\n"
+        "_, _, identity = verify_catalog(pin, selected)\n"
+        "assert identity['sha256'] == binding['producer']['catalog']['sha256']\n"
         "assert not (owner / 'references/Hexalith.Builds/.git').exists()\n"
         "if os.environ.get('FIXTURE_REFUSE') == 'true': raise SystemExit(23)\n"
         "tool = pathlib.Path(sys.argv[sys.argv.index('--output') + 1])\n"

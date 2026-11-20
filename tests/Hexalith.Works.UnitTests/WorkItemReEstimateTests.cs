@@ -77,7 +77,7 @@ public sealed class WorkItemReEstimateTests
     }
 
     [Fact]
-    public void ReEstimate_below_current_done_clamps_done_to_estimated_without_completing()
+    public void ReEstimate_below_current_done_preserves_progress_without_completing()
     {
         WorkItemState state = EstimatedInProgress(estimated: 8m, done: 6m);
         long sequenceBefore = state.Sequence;
@@ -90,7 +90,7 @@ public sealed class WorkItemReEstimateTests
 
         state.Apply(reEstimated);
         state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(4m);
-        state.InitialEffort.ShouldNotBeNull().Done.ShouldBe(4m);
+        state.InitialEffort.ShouldNotBeNull().Done.ShouldBe(6m);
         state.Remaining.ShouldBe(0m);
         state.Status.ShouldBe(WorkItemStatus.InProgress);
         state.Sequence.ShouldBe(sequenceBefore + 1);
@@ -135,6 +135,39 @@ public sealed class WorkItemReEstimateTests
         state.InitialEffort.ShouldNotBeNull().Unit.ShouldBe(Hour);
         state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(5m);
         state.Sequence.ShouldBe(sequenceAfterEstablish);
+    }
+
+    [Fact]
+    public void Replay_after_lowering_and_raising_the_estimate_preserves_aggregate_and_rollup_effort()
+    {
+        var state = new WorkItemState();
+        var projection = new WorkItemRollUpProjection();
+        var created = new WorkItemCreated(Item.Value, 1, Tenant, Item, new Obligation("Replay"), new WorkItemEffort(10m, Hour));
+        ExecutorBinding binding = WorkItemStateBuilder.DefaultBinding();
+        var assigned = new WorkItemAssigned(Item.Value, 2, Tenant, Item, binding);
+        var claimed = new WorkItemClaimed(Item.Value, 3, Tenant, Item, binding);
+        var progress = new ProgressReported(Item.Value, 4, Tenant, Item, 7m, Hour);
+        state.Apply(created);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, created.Sequence, created));
+        state.Apply(assigned);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, assigned.Sequence, assigned));
+        state.Apply(claimed);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, claimed.Sequence, claimed));
+        state.Apply(progress);
+        projection.Project(new WorkItemRollUpEvent(Tenant, Item, progress.Sequence, progress));
+
+        foreach (decimal estimate in new[] { 4m, 10m })
+        {
+            var changed = new ReEstimated(Item.Value, state.Sequence + 1, Tenant, Item, estimate, Hour);
+            state.Apply(changed);
+            projection.Project(new WorkItemRollUpEvent(Tenant, Item, changed.Sequence, changed));
+            WorkItemEffort expected = new(estimate, Hour, 7m);
+            state.InitialEffort.ShouldBe(expected);
+            state.Status.ShouldBe(WorkItemStatus.InProgress);
+            WorkItemRollUp rollUp = projection.Get(Tenant, Item).ShouldNotBeNull();
+            rollUp.OwnEffort.ShouldBe(expected);
+            rollUp.OwnRemaining.ShouldBe(new OwnRemaining(expected.Remaining, Hour));
+        }
     }
 
     [Fact]
@@ -221,9 +254,9 @@ public sealed class WorkItemReEstimateTests
     }
 
     [Fact]
-    public void ReEstimate_to_zero_clamps_done_and_remaining_without_completing()
+    public void ReEstimate_to_zero_preserves_done_and_zeroes_remaining_without_completing()
     {
-        // Zero is the lower boundary of the AC #1 "non-negative value": accepted, Done clamps to 0, and
+        // Zero is the lower boundary of the AC #1 "non-negative value": accepted, Done is preserved, and
         // even though Remaining lands on 0 the act emits ONLY ReEstimated — never WorkItemCompleted (D5).
         WorkItemState state = EstimatedInProgress(estimated: 8m, done: 6m);
         long sequenceBefore = state.Sequence;
@@ -237,7 +270,7 @@ public sealed class WorkItemReEstimateTests
 
         state.Apply(reEstimated);
         state.InitialEffort.ShouldNotBeNull().Estimated.ShouldBe(0m);
-        state.InitialEffort.ShouldNotBeNull().Done.ShouldBe(0m);
+        state.InitialEffort.ShouldNotBeNull().Done.ShouldBe(6m);
         state.Remaining.ShouldBe(0m);
         state.Status.ShouldBe(WorkItemStatus.InProgress);
         state.Sequence.ShouldBe(sequenceBefore + 1);

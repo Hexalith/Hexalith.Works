@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Diagnostics.Metrics;
 using System.Text.Json;
 
 using Hexalith.EventStore.Client.Projections;
@@ -17,6 +19,12 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
     /// <see cref="WorksReadModelKeys.RuntimeFamily"/>, and rebuild identities naming this type are refused.
     /// </summary>
     public const string ProjectionTypeName = "works-shared-rollup";
+
+    internal const string MeterName = "Hexalith.Works.Projections";
+    private static readonly Meter s_meter = new(MeterName);
+    private static readonly Histogram<long> s_historyBytes = s_meter.CreateHistogram<long>("works.catchup.history.size", "By");
+    private static readonly Histogram<int> s_changedDocuments = s_meter.CreateHistogram<int>("works.catchup.changed_documents");
+    private static readonly Histogram<double> s_duration = s_meter.CreateHistogram<double>("works.catchup.success.duration", "s");
 
     private static readonly JsonSerializerOptions s_json = new(JsonSerializerDefaults.Web);
     private readonly IOptions<WorksProjectionOptions>? _options;
@@ -126,6 +134,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
     {
         ArgumentNullException.ThrowIfNull(delivery);
         ArgumentNullException.ThrowIfNull(coordinator);
+        long started = Stopwatch.GetTimestamp();
         ProjectionRequest? request;
         try
         {
@@ -205,8 +214,12 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
             histories[existingIndex] = nextHistory;
         }
 
-        if (histories.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount
-            || histories.Sum(history => (long)WorkItemRuntimeHistoryStore.Serialize(history).Length) > WorkItemRuntimeHistoryStore.MaxTenantBytes)
+        if (histories.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount)
+            throw new SharedProjectionCapacityExceededException();
+
+        long historyBytes = histories.Sum(history => (long)WorkItemRuntimeHistoryStore.Serialize(history).Length);
+        s_historyBytes.Record(historyBytes);
+        if (historyBytes > WorkItemRuntimeHistoryStore.MaxTenantBytes)
         {
             throw new SharedProjectionCapacityExceededException();
         }
@@ -222,7 +235,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
 
             // A complete authoritative rebuild may clear parking. Ordinary delivery only has one
             // envelope, so refolding the family must retain every aggregate's durable recovery disposition.
-            var retainedParking = new Dictionary<string, WorksRuntimeDocument>(StringComparer.Ordinal);
+            var retainedParking = new HashSet<string>(StringComparer.Ordinal);
             foreach (WorkItemSharedRebuildAggregateHistory history in histories)
             {
                 string key = WorksReadModelKeys.RuntimeParkingKey(history.AggregateId);
@@ -232,7 +245,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
                 if (parking.Value is not null)
                 {
                     _ = parking.Value.As<WorkItemProjectionParking>();
-                    retainedParking.Add(key, parking.Value);
+                    retainedParking.Add(key);
                 }
                 else if (index?.MemberWorkItemIds.Contains(history.AggregateId, StringComparer.Ordinal) == true)
                 {
@@ -241,19 +254,22 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
             }
 
             var changed = new List<ReadModelBatchOperation>();
-            foreach (ReadModelBatchOperation proposed in operations)
+            foreach (ReadModelBatchOperation operation in operations)
             {
-                ReadModelBatchOperation operation = retainedParking.TryGetValue(proposed.Key, out WorksRuntimeDocument? parking)
-                    ? ReadModelBatchOperation.Write(proposed.Key, parking, ReadModelBatchConcurrency.LastWrite) : proposed;
+                // The selected generation already contains the validated parking disposition.
+                if (retainedParking.Contains(operation.Key))
+                    continue;
                 WorksRuntimeDocument? previous = (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope,
                     generation, operation.Key, cancellationToken).ConfigureAwait(false)).Value;
                 if (previous is null || !ReadModelBatchOperation.Write(operation.Key, previous,
                     ReadModelBatchConcurrency.LastWrite).CanonicalValue.Span.SequenceEqual(operation.CanonicalValue.Span))
                     changed.Add(operation);
             }
+            s_changedDocuments.Record(changed.Count);
             if (changed.Count > 128 || changed.Any(operation => operation.CanonicalValue.Length
                 + System.Text.Encoding.UTF8.GetByteCount(operation.Key) + 2048 > 256 * 1024))
                 throw new SharedProjectionCapacityExceededException();
+            s_duration.Record(Stopwatch.GetElapsedTime(started).TotalSeconds);
             return changed;
         }
         catch (SharedProjectionCapacityExceededException)
