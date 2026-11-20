@@ -1,55 +1,47 @@
 # PRD quality review — Hexalith.Works
 
-Reviewed 20 November 2026. Scope includes the complete working-tree PRD and addendum, the decision log, the original brief, and the cited architecture and acceptance criteria.
+Reviewed the November 20 working-copy PRD and addendum against the BMad quality rubric. The review revisited the six high, five medium and two low findings from the standalone validation and checked the affected architecture decisions and forward acceptance criteria.
 
 ## Overall verdict
 
-The PRD gives builders a testable contract for effort replay, lifecycle transitions and most tenant-scoped operations. Two gaps affect correctness across aggregates. A matching key can point to different submitted work, and a child can finish before its parent has recorded the wait. Both need observable acceptance outcomes before teams qualify distributed retries and recovery.
+**Excellent.** All 13 prior findings have a consistent product outcome in the revised planning documents. An engineer can now tell which retries may replay a receipt, how a parent catches up after an early child completion and who can read active work after a handoff. Product approved both the reopened-descendant cascade and the wider detail entitlement. Exact-candidate integration, active-detail implementation, hosted parity and recovery qualification still require engineering evidence.
 
-## Decision-readiness — adequate
+## Decision-readiness — strong
 
-The split between kernel acceptance, distributed integration and production admission gives Product and Platform useful decision points. FR-24 names the exact release candidate, G3 names the recovery rehearsal, and G8 assigns performance and recovery budgets to owners. One shipped read surface lacks a product decision that an implementer can extract from §9.
+FR-10 settles M1. If a correction reopens an attached descendant that a Cancel or Expire cascade previously skipped, the correction and reopening stay in its history. The reopened child contributes its own active Remaining until the Reactor applies the matching termination. Restart must recover the outstanding work, and retries can produce at most one effective termination for that reopening. The 20 November Product decision replaces the provisional assumption. [PRD, FR-10](prd.md#fr-10-cancel-reject-expire) · [Architecture, AD-10](../../architecture.md)
 
-### Findings
-
-- **[medium] Single-item read entitlement is unspecified** (FR-11 and §9, `prd.md` lines 255–265 and 490–505). FR-11 exposes own and rolled effort for “each Work Item.” The authorization matrix specifies the shared queue, executor list and coordinator view. It gives no rule for an executor looking up their own item immediately after claiming it. The current detail handler lets an ordinary delegated reader see a queued item or their own assigned item and returns a not-found result for an in-progress item. *Fix:* Product and Security should specify the permitted principals and results for own active, shared queued, unrelated same-tenant and coordinator single-item reads. Cover the post-Claim lookup and any roll-up values it returns. [Current detail filter, lines 145–156](../../../../src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs)
+Section 9 settles M5 separately for list and detail callers. After Claim, the current executor can still read the individual item and its Roll-Up in InProgress and Suspended. An active handoff transfers that entitlement. A reader must withhold the item when current binding cannot be established, even if a stale projection still names the previous executor. The current SDK’s narrower filter is an explicit implementation gap. [PRD, authorization matrix and single-item acceptance](prd.md#9-cross-cutting-nfrs) · [Current SDK detail filter](../../../../src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs)
 
 ## Substance over theater — strong
 
-FR-8 distinguishes the recorded progress delta from its capped effect on effort. FR-9’s 10-hour estimate, 7 hours Done and successive estimates of 4 and 10 expose a specific replay defect. FR-20 gives a deterministic queue order, including absent values. G8 reserves binding performance thresholds for a defined environment and workload.
+FR-8, FR-9 and Story 5.1 distinguish the submitted positive delta, the amount applied and the retained effort after an overrun. With 7 hours Done and a revised estimate of 4, a new report of 1 records that delta, preserves 7 Done and 0 Remaining, and precedes the completion event. Restart restores the recorded inputs and Status, including an active zero-Remaining or unestimated item. These examples resolve H4 and L1. [PRD, FR-8](prd.md#fr-8-report-progress-and-complete) · [Story 5.1](../../epics.md#story-51-make-progress-and-event-ordinals-overflow-safe)
 
 ## Strategic coherence — strong
 
-Uniform executor binding and an event-sourced work kernel support the two bets in §1 and the original brief. SM-3 measures channel independence. SM-C1 and SM-C2 constrain additions to the kernel. The McpCli roadmap identifies who owns a future command surface and what enrollment requires. [Original brief, success criteria and scope](../../briefs/brief-works-2026-06-14/brief.md)
+The thin-kernel scope and shared executor model remain consistent with the original brief. SM-3 now compares event types, order, normalized domain payloads and status outcomes across executor kinds. The test separately checks the authenticated actor in each envelope, preserving the audit distinction raised in M2. SM-C1 and SM-C2 limit speculative expansion. [Success metrics](prd.md#11-success-metrics-build-signal-acceptance) · [Original brief](../../briefs/brief-works-2026-06-14/brief.md)
 
-## Done-ness clarity — thin
+## Done-ness clarity — strong
 
-The local lifecycle matrix and FR-14/FR-15 distinguish admission, matching, duplicate retries and terminal rejection. Across aggregate boundaries, two implementations can follow the printed acceptance criteria yet produce different results for the same sequence.
+G1 and AD-26 resolve H1 with two distinct receipt outcomes. An exact scoped key, tuple and digest replays the stored disposition. A changed tuple or digest under that key produces a quarantined conflict, preserves the receipt and emits no target event. FR-6 and FR-16 resolve H2 by specifying the effect of the reserved suspend flag on an in-progress, suspended or terminal parent and defining bookkeeping redelivery. [PRD, exit gates](prd.md#101-v1-dependency-and-exit-gates) · [PRD, FR-16](prd.md#fr-16-spawn-child-work) · [Architecture, AD-21 and AD-26](../../architecture.md)
 
-### Findings
-
-- **[high] Key reuse can replay a result for different work** (§10 and G1, `prd.md` lines 519 and 527, also FR-26 line 345). The stated rule is “reusing the same message/idempotency key returns the original success, no-op, or rejection.” For an internal effect, a second submission with the same key and a changed semantic payload could receive the earlier success under that wording. AD-26 and the forward acceptance criteria require a conflict and quarantine when the tuple or semantic digest differs. *Fix:* Limit original-outcome replay to the same scoped logical effect and semantic content. Add a G1 case for a changed payload under the same key that produces a conflict, preserves the receipt and appends no domain event. [Architecture AD-26, lines 490–496](../../architecture.md) · [Epics, lines 1564–1572](../../epics.md)
-- **[high] Child completion can precede the parent’s wait** (UJ-3, FR-15, FR-16 and FR-26, `prd.md` lines 73, 322–326, 329–335 and 345–347). An attached child can complete before delayed parent bookkeeping records the requested suspension. At completion time a parent still in progress has no matching condition. When the wait is recorded later, no second child completion is required. Replaying a recorded rejection under the same key also cannot supply a successful Resume. AD-21 orders attachment before parent bookkeeping, and the forward story retries missing attachment. Neither defines the result of this already-attached interleaving. *Fix:* Require an already-completed child to satisfy a subsequently recorded wait from the same spawn, unless another eligible trigger already won or the parent became terminal. Exercise this ordering across restart and require one effective Resume. [Architecture AD-21, lines 359–373](../../architecture.md) · [Epics, lines 1844–1856](../../epics.md)
+FR-15 resolves H6 even when a child completes before its parent records the requested wait. The Reactor reconciles durable completion with that specific wait after restart. A prior rejection keeps its original disposition, another winning trigger remains effective, and a delayed retry cannot wake a later suspension. FR-24 and SM-1 also resolve L2 by creating an estimated item, assigning or queueing it, claiming it and reporting partial progress before spawning the child. [PRD, FR-15](prd.md#fr-15-resume-on-a-matching-trigger) · [PRD, FR-24](prd.md#fr-24-run-the-kernel-through-the-platform-hosted-domain-service-topology) · [PRD addendum](addendum.md)
 
 ## Scope honesty — strong
 
-Sections 2, 5 and 12 separate channel bindings exercised in the harness from production MCP, CLI and email experiences. FR-13 gives an interim single-writer restriction and a race test for competing writers. FR-24 and G3 identify release evidence that this document review cannot supply.
+G8 and the forward performance criteria resolve M3. Convergence is checked at acknowledged quiescence. Five seconds and 200 ms are recorded as benchmark measurements pending an approved workload, environment, percentile, window and failure policy. FR-13 and FR-24 separately identify the evidence that qualifies competing writers and the exact release candidate. [PRD, cross-cutting requirements](prd.md#9-cross-cutting-nfrs) · [Architecture, AD-22](../../architecture.md) · [Forward acceptance criteria](../../epics.md)
 
-## Downstream usability — adequate
+## Downstream usability — strong
 
-Reviewers can trace the 26 stable FRs, four journeys, six success metrics, two counter-metrics and eight gates. The addendum labels its September handoff as historical. Teams preparing ingress and parity fixtures have two narrower interpretation issues to resolve.
+FR-20, §9, AD-03 and candidate F2-H resolve H3. An ordinary delegated caller needs their own verified PartyId and sees their assigned work plus the tenant queue. Missing or mismatched identity is forbidden. The approved coordinator workload can list all assigned and queued items in its authorized tenant. InProgress and Suspended work remain outside both next-work lists. [PRD, FR-20](prd.md#fr-20-resolve-a-whats-next-ordering) · [F2-H](../../epics.md#forward-candidate-f2-h-discover-the-next-work-deterministically)
 
-### Findings
-
-- **[medium] Tenant casing needs a boundary-specific acceptance rule** (§9, `prd.md` lines 490–492). The Works adapter deliberately compares the command tenant and envelope tenant without regard to case. AD-15 requires canonical lowercase ASCII tenant slugs at trust boundaries and rejection of other spellings. A tester submitting an uppercase tenant envelope to the production boundary cannot infer the expected result from the command-to-stream paragraph alone. *Fix:* Identify the existing adapter compatibility rule and the target production ingress rule separately, and give one ordinary mixed-case tenant example at each boundary. Confirm which boundary has authority to validate before key construction. [Works adapter, lines 163–171](../../../../src/Hexalith.Works/WorkItemEventStoreAggregate.cs) · [Architecture AD-15, lines 233–242](../../architecture.md)
-- **[low] The hosted lifecycle example omits Claim** (FR-24 and SM-1, `prd.md` lines 430 and 543). “Create → progress” is shorthand. FR-1 leaves even a bound new item in Created, FR-6 requires Claim to enter InProgress, and FR-8 accepts a report only for estimated work. Used literally as a smoke-test script, the first progress report is rejected. *Fix:* Show an estimated create, assignment or queueing, claim and a partial progress report before the spawn, then identify where the parent records its wait. [PRD, FR-1](prd.md#fr-1-create-a-work-item)
+FR-14, AD-13 and F3-F resolve H5 using a three-entry example with a duplicate. Recording and replay preserve all three entries in order. The first matching Resume committed on the item clears the collection. Section 9 and AD-15 resolve M4 with a boundary-specific example. A lowercase tenant and uppercase envelope can compare equal in the isolated Works adapter, while production ingress rejects the noncanonical envelope before lookup. [PRD, FR-14](prd.md#fr-14-suspend-on-an-ordered-collection-of-await-conditions) · [PRD, tenant identity](prd.md#9-cross-cutting-nfrs) · [Architecture, AD-13 and AD-15](../../architecture.md)
 
 ## Shape fit — strong
 
-A capability-led PRD fits this headless product. UJ-1 and UJ-2 identify the builder and service-party scenarios. Ada’s UJ-3 supplies a reason for the competing-trigger rule, and Mary’s UJ-4 makes the future email and identity decisions concrete. The detailed protocol sketches and historical handoffs belong in the addendum.
+The capability scenarios show what builders and executors can do with the headless kernel. Ada’s sign-off example illustrates why a completion observed before a parent waits still matters. The deferred email journey has a separate roadmap home, and the addendum carries protocol details that engineers need to implement the behavioral contract.
 
 ## Mechanical notes
 
-- The 26 FR headings are unique. FR-26 is grouped with the saga and appears in the feature inventory. Journey, metric and gate IDs are also continuous within their respective schemes.
-- Section 14 includes the suspension, roll-up, cap, authorization and transport assumptions used by the reviewed cases. The September 15 decision supersedes the earlier deferred suspension decision in the log.
-- This review concerns specification quality. Exact-candidate integration and hosted Platform parity, affected-snapshot recovery and multiwriter qualification require their own evidence.
+- The PRD retains 26 distinct FR headings, four journey IDs, six success metrics, two counter-metrics and eight exit gates.
+- The source links checked in the PRD and addendum resolve. The assumptions index records the 20 November cascade decision.
+- Open specification findings from this rubric pass: 0 critical, 0 high, 0 medium and 0 low. All 13 findings from the prior standalone validation were checked.

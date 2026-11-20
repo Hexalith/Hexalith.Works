@@ -28,7 +28,7 @@ FR3: A Work Item carries one Effort Burn-Down containing Unit-tagged Estimated, 
 
 FR4: A Work Item carries an optional Schedule of Priority and Due Date. Priority uses the additive-tolerant ordered values `Critical`, `High`, `Normal`, and `Low`; either field can be supplied at creation and changed later through an event-recorded act; missing values are valid and sort last.
 
-FR5: A Work Item records at most one parent reference, zero or more child references, and one or more Await-Conditions while Suspended. The Work-Tree Registry owns authoritative parent-child edges; only `Attached` edges participate in tree behavior, while Work Item references are a convenience mirror and the whole Await-Condition set is cleared on the first accepted resume.
+FR5: A Work Item records at most one parent reference, zero or more child references, and one or more Await-Conditions while Suspended. The Work-Tree Registry owns authoritative parent-child edges; only `Attached` edges participate in tree behavior, while Work Item references are a convenience mirror and the first matching Resume committed on the item clears the entire ordered collection.
 
 FR6: The aggregate enforces the normative lifecycle across `Created`, `Assigned`, `Queued`, `InProgress`, `Suspended`, `Completed`, `Cancelled`, `Rejected`, and `Expired`. Claim is the only entry to `InProgress`; Reject is legal only from `Assigned` and defaults to requeue; Handoff preserves active Status; invalid acts produce stable domain rejections; and only explicitly defined terminal, consumed-resume, and attachment duplicates are semantic no-ops.
 
@@ -46,9 +46,9 @@ FR12: Roll-Up never silently combines incompatible Units. A child without an exp
 
 FR13: The tenant-scoped, event-sourced Work-Tree Registry is the sole authority for a single-parent, acyclic, single-tenant tree. It serializes reservations against current Registry state, deterministically rejects cycles, second parents, cross-tenant edges, exhausted operational quota, or excessive depth, uses a configurable per-tenant depth limit of 32 by default, and imposes no domain breadth cap beneath the Platform quota.
 
-FR14: An `InProgress` Work Item can suspend on one or more typed Await-Conditions, recording each condition kind and correlation key. A Suspended item accepts no progress, retains all active conditions until the first accepted match, and continues contributing its current effective Remaining to Roll-Up.
+FR14: An `InProgress` Work Item can suspend on a nonempty ordered collection of valid, non-null typed Await-Conditions. The event records every canonical member in submitted order, including exact duplicates. A Suspended item accepts no progress, retains all active conditions until the first accepted match, and continues contributing its current effective Remaining to Roll-Up.
 
-FR15: The Reactor resumes a Suspended Work Item only when a command exactly matches an active Await-Condition by kind and key. The accepted resume records the consumed condition, clears the full set, and returns to `InProgress`; replay of that consumed condition is the sole resume no-op, while every other non-match or post-resume condition is a domain rejection.
+FR15: The Reactor resumes a Suspended Work Item only when a command exactly matches an active Await-Condition by kind and key. The first matching Resume committed on the item records the consumed condition, clears the whole collection and returns the item to `InProgress`. An exact retry of the consumed condition in that state is a no-op. A different later trigger or a Resume against a terminal item is rejected.
 
 FR16: Child creation begins with the Registry's public reserve act carrying the complete child payload. The durable lifecycle is `Reserved -> Creating -> Attached` or `Reserved -> Released`; only `Reserved` may release. Reactor-authorized child creation and matching durable `WorkItemCreated` evidence precede attachment, which then drives idempotent parent bookkeeping. Late released/superseded legs reject stably, `Creating` remains recoverable/quarantinable, and terminal-parent attachment schedules cascade catch-up.
 
@@ -960,7 +960,7 @@ So that system, internal, and external doers can start work without executor-spe
 
 **Given** bindings for a system Party, internal Party, and external Party
 **When** the same assign-to-claim sequence is executed for each
-**Then** the event streams differ only in `PartyId`, `Channel`, and `AuthorityLevel` field values
+**Then** event types, order, lifecycle outcomes and domain payloads agree after normalizing the binding fields, and each envelope records the authenticated actor for that act
 **And** architecture fitness tests fail if Server or Projections branch on executor kind or require a new event type for an additive Channel/AuthorityLevel value.
 
 **Given** any defined AuthorityLevel value
@@ -1185,7 +1185,7 @@ So that responsibility can change without cancelling progress or losing suspende
 
 **Given** a `Suspended` Work Item with one or more Await-Conditions and its authenticated bound Executor
 **When** HandoffWorkItem is accepted
-**Then** Status remains `Suspended` and the entire Await-Condition set is preserved byte-for-byte
+**Then** Status remains `Suspended` and the ordered Await-Condition collection, including every duplicate, is preserved byte-for-byte
 **And** only the Executor Binding and additive Raw-Act history change.
 
 **Given** a Created, Assigned, Queued, Completed, Cancelled, Rejected, or Expired Work Item
@@ -1205,7 +1205,7 @@ So that responsibility can change without cancelling progress or losing suspende
 
 **Given** system, internal, and external Party bindings
 **When** identical active-handoff scenarios are executed
-**Then** resulting event streams differ only in binding field values
+**Then** the same events occur in order with the same lifecycle outcomes and domain payloads after binding-field normalization. Each handoff envelope identifies its authenticated outgoing Executor
 **And** an architecture fitness test fails if a new doer kind requires Server or Projection changes or a new event type.
 
 **Given** authorized history after a confirmed handoff
@@ -1228,15 +1228,19 @@ So that I can choose what to do next without hidden routing policy or replay-dep
 
 **Acceptance Criteria:**
 
-**Given** an authenticated tenant member requests the coordinator view without an Executor PartyId
+**Given** a tenant-authorized, allow-listed internal coordinator workload invokes the SDK without delegation and requests the coordinator view
 **When** the what's-next query executes
 **Then** it returns exactly the target tenant's Work Items whose Status is `Assigned` or `Queued`
 **And** query authorization and result filtering prevent items from any other tenant or unauthorized scope from appearing.
 
-**Given** an authenticated tenant member requests an Executor view with a PartyId
+**Given** a delegated caller omits PartyId or supplies another member's PartyId for the target tenant
+**When** the service checks the view entitlement
+**Then** it forbids the query before returning any items, including when both members belong to the same tenant.
+
+**Given** an authenticated tenant member requests the Executor view with their own PartyId
 **When** the query executes
 **Then** it returns that Party's `Assigned` Work Items plus every `Queued` Work Item in the same tenant
-**And** Assigned items bound to other Parties and all items in other Statuses are excluded.
+**And** Assigned items bound to other Parties and all items in other Statuses are excluded. A caller-supplied all-work flag cannot widen this delegated view.
 
 **Given** result items with present or absent Schedule fields
 **When** they are ordered
@@ -1739,7 +1743,7 @@ So that only durable fenced evidence can extend the authoritative tree (FR5, FR1
 **Given** the parent is non-terminal when attached bookkeeping arrives
 **When** its origin-restricted SpawnChild act is handled
 **Then** it idempotently emits `ChildSpawned` and records the child reference in every permitted parent Status
-**And** a requested suspend adds `ChildCompleted(child)` while moving `InProgress` to `Suspended` or unioning the condition into an already Suspended set.
+**And** when suspension was requested, an `InProgress` parent suspends on `ChildCompleted(child)`. An already `Suspended` parent appends the condition only if absent and retains the full prior collection. With the flag cleared, status and waits stay unchanged. Redelivery of the same bookkeeping leaves the recorded outcome intact.
 
 **Given** the parent became Completed, Cancelled, Rejected, or Expired after admission
 **When** Attached bookkeeping arrives
@@ -1762,9 +1766,13 @@ So that durable coordination can wait without polling, blocking a process, or lo
 **Acceptance Criteria:**
 
 **Given** an `InProgress` Work Item and its authenticated bound Executor
-**When** Suspend supplies a non-empty set of valid typed Await-Conditions
-**Then** `WorkItemSuspended` records the complete set and the item rests at `Suspended`
-**And** duplicate identical conditions are normalized according to the durable set contract without losing distinct conditions.
+**When** Suspend submits valid typed conditions in the order [child, date, child]
+**Then** `WorkItemSuspended` records all three canonical members in that order and replay restores all three
+**And** an exact duplicate has the same matching effect as one entry. Readers interpret a legacy singular condition as a one-member collection.
+
+**Given** an empty collection, a null member or a malformed typed condition
+**When** suspension is requested
+**Then** the item remains `InProgress` and no suspension event is emitted.
 
 **Given** ChildCompleted, DateReached, and ExternalSignal Await-Conditions
 **When** their values are validated and serialized
@@ -1784,7 +1792,7 @@ So that durable coordination can wait without polling, blocking a process, or lo
 **Given** a Work Item in any Status other than `InProgress`
 **When** an ordinary Suspend command is submitted
 **Then** it is rejected without adding or replacing Await-Conditions
-**And** the internal fenced attachment path may union a reserved ChildCompleted condition only through its separately authorized bookkeeping contract.
+**And** only the authorized fenced attachment may add a missing reserved ChildCompleted condition to an already suspended item's collection.
 
 **Given** a tenant member who is not the bound Executor
 **When** Suspend is submitted
@@ -1812,29 +1820,28 @@ So that duplicate, unrelated, or ambiguous signals cannot advance durable work (
 **Acceptance Criteria:**
 
 **Given** a Suspended Work Item with multiple active Await-Conditions
-**When** an authorized Resume command carries a condition whose kind and key exactly match one member
-**Then** `WorkItemResumed` records the consumed condition, clears the entire active set, and returns the item to `InProgress`
-**And** no second condition can win after that accepted transition.
+**When** two authorized Resume commands match different members by kind and canonical key
+**Then** the first matching Resume committed in the Work Item's serialized turn records its consumed condition in `WorkItemResumed`, clears the entire collection and returns the item to `InProgress`
+**And** the other trigger rejects even if it appeared earlier in the collection or carried an earlier timestamp.
 
 **Given** a Suspended Work Item
 **When** Resume carries a correlation key whose text matches but whose condition kind differs
-**Then** the command produces the defined domain rejection and the complete active set remains intact
+**Then** the command produces the defined domain rejection and the complete ordered collection remains intact
 **And** ExternalSignal, ChildCompleted, and DateReached never satisfy one another implicitly.
 
-**Given** a Suspended Work Item and a condition that matches none of its active set
+**Given** a Suspended Work Item and a condition that matches none of its active members
 **When** Resume is handled
 **Then** it produces the defined domain rejection with no success event or mutation
 **And** the delivery is not acknowledged as an idempotent success merely because it may be retried.
 
-**Given** a successful resume has recorded its last consumed condition
-**When** that exact condition is delivered again
-**Then** the command returns the sole resume-specific idempotent no-op without a second event
-**And** the aggregate retains only the bounded last-consumed value rather than an unbounded trigger history.
+**Given** the item is back in `InProgress` after a successful Resume and retains its last consumed condition
+**When** a fresh command identity reaches the domain carrying that same consumed condition
+**Then** the domain returns a no-op and emits no second event.
+**And** transport redelivery with the original key, effect tuple and digest instead returns the previously recorded disposition without dispatch or another event (AD-26). Only the last consumed condition is needed for the domain check.
 
-**Given** a Work Item is not Suspended after a successful resume or terminal transition
-**When** any condition other than the exact last consumed one is submitted
-**Then** Resume is domain-rejected without changing Status or history
-**And** adapters all observe the same disposition from the aggregate rather than defining local duplicate rules.
+**Given** a Work Item is terminal
+**When** a fresh Resume is submitted for any condition, including a previously consumed match
+**Then** the command is domain-rejected without changing Status, consistent with FR-6.
 
 **Given** a child-completion, date, or external-signal Resume
 **When** it reaches the gateway
@@ -1846,14 +1853,19 @@ So that duplicate, unrelated, or ambiguous signals cannot advance durable work (
 **Then** it submits a deterministic Resume carrying `ChildCompleted(childId)` to that parent through the durable process runner
 **And** missing or merely Reserved topology is retryable and remains unacknowledged rather than being treated as no parent.
 
-**Given** a child has completed or a date trigger has fired but the Resume effect has not committed
+**Given** a reserved child completes before parent bookkeeping installs its requested wait, and the process restarts between those events
+**When** the Reactor reconciles child-completion evidence with the wait for that attachment
+**Then** the parent commits one effective Resume if the wait is still active, including when an earlier Resume received a nonmatch rejection before installation
+**And** retries of that reconciliation cannot wake a subsequent suspension. If another trigger already won or the parent became terminal, recovery settles this wait without a second transition.
+
+**Given** the parent is suspended on an installed wait and the matching child or date trigger has fired, but its Resume has not committed
 **When** parent state is read
 **Then** the parent remains authoritatively `Suspended` until `WorkItemResumed` lands
 **And** headless or future presentation may show “trigger received; resume pending” only when durable coordination evidence supports it.
 
 **Given** duplicate and reordered trigger deliveries plus aggregate replay
 **When** focused tests reconstruct state and re-run each condition
-**Then** exactly one matching trigger produces `WorkItemResumed`, its duplicate no-ops, and every nonmatch rejects
+**Then** exactly one matching trigger produces `WorkItemResumed`. Exact transport redelivery returns that receipt. While the item remains `InProgress`, a fresh command for the consumed condition yields a domain no-op and a fresh nonmatch is rejected.
 **And** the results are identical across child, date, and external condition kinds without requiring a production external adapter in the delivered version.
 
 ### Forward Candidate F3-H: Resume or Expire from Durable Schedule Witnesses
@@ -1955,6 +1967,13 @@ So that abnormal termination is auditable and open descendant work eventually re
 **When** the same descendant effect is processed again
 **Then** the stored disposition or exact duplicate terminal no-op is returned without another termination event
 **And** the process checkpoint converges only after every required descendant disposition is durable.
+
+**Approved FR-10 reopening rule (20 November 2026).**
+
+**Given** a Cancel or Expire cascade skipped an attached progress-completed descendant
+**When** a correction reopens that item after the cascade and recovery includes a restart
+**Then** the correction and reopening remain in its history and the Reactor eventually applies the ancestor's matching termination to the newly active item
+**And** retries produce one effective termination for this reopening. The item contributes its active Remaining before termination and zero after convergence.
 
 **Given** a terminal parent receives a late Attached edge
 **When** attachment processing completes
@@ -2546,7 +2565,7 @@ So that I can understand the whole Work Tree without mistaking stale, unavailabl
 
 **Given** the provisional delivered-version fixture with depth 32 and top-level fan-out 50, approximately 1,600 items
 **When** every published tree event has been acknowledged by the projection
-**Then** Roll-Up converges within the configured five-second bound and an authorized read answers in under 200 ms from the read model
+**Then** the Roll-Up equals the expected total and the authorized read returns the converged value. Record convergence time and read latency on the fixture as benchmarks until G8 approves binding budgets
 **And** tests await durable acknowledgements rather than sleeping for an assumed delay.
 
 **Given** headless evidence or a future `roll-up-summary` or `work-tree` presentation consumes the read model
@@ -2713,6 +2732,16 @@ So that payload assertions, stale reads, or broad service privileges cannot muta
 **When** authorization succeeds at tenant scope
 **Then** result filtering independently removes unauthorized data before serialization
 **And** possession of a key, PartyId, correlation ID, or delegated workload identity cannot expand the caller's readable scope.
+
+**Given** an authenticated tenant member reads a single Work Item and its Roll-Up by ID
+**When** the item is `Queued`, or it is `Assigned`, `InProgress` or `Suspended` and the member is its current Executor
+**Then** the member can read that item's detail and Roll-Up. All other ordinary-member lookups have the same result as an absent item.
+**And** a trusted tenant-scoped coordinator retains all-work access. The “what's next” list stays restricted to eligible `Assigned` and `Queued` items.
+
+**Given** the current SDK only returns ordinary-member detail for queued and own assigned items
+**When** implementing the approved active-detail extension, test the item across Claim, Suspend and Handoff
+**Then** Claim removes it from the list while preserving the bound Executor's detail access. Suspend preserves that access. Once the item changes hands, the outgoing Executor loses access and the incoming Executor can read the active detail.
+**And** verify this entitlement for the item and its Roll-Up before returning either. A stale projection or caller-supplied all-work flag cannot preserve the outgoing Executor's access.
 
 **Given** positive and negative authorization tests
 **When** missing identity, wrong tenant, actor mismatch, stale binding, caller-supplied actor, wrong workload, wrong purpose, target mismatch, expired token, and valid cases execute
@@ -2885,7 +2914,7 @@ So that lifecycle, coordination, projections, security, recovery, and architectu
 **Acceptance Criteria:**
 
 **Given** the platform-owned Aspire topology and an authenticated synthetic tenant
-**When** the canonical delivered-version journey creates, assigns or queues, claims, progresses, reserves and attaches a child, suspends, completes the child, resumes the parent, and completes the parent
+**When** the journey creates an estimated item, assigns or queues it, claims it, reports partial progress, reserves and attaches a child with a requested wait, completes the child, resumes the parent and completes it
 **Then** every expected persisted Work Item and Registry event, target receipt, Reactor checkpoint, reminder disposition, query row, and Roll-Up value is observed in causal order at quiescence
 **And** the Works repository uses no production channel adapter or duplicated platform runtime to drive the journey.
 
@@ -2901,8 +2930,8 @@ So that lifecycle, coordination, projections, security, recovery, and architectu
 
 **Given** system, internal, and external Executor Bindings
 **When** the identical assign-to-claim-to-progress-to-complete journey runs for each
-**Then** golden event streams differ only in binding field values and adding an allowed Channel or AuthorityLevel requires no Server or Projection branch or new event type
-**And** the architecture fitness lane fails on any executor-kind specialization.
+**Then** each fixture yields the same event types, order, lifecycle outcomes and domain payloads after normalizing binding fields. Verify each event's authenticated actor independently in its envelope
+**And** adding an allowed Channel or AuthorityLevel requires no Server or Projection branch or new event type.
 
 **Given** fresh empty Roll-Up and what's-next generations
 **When** all authorized tenant streams are replayed and every event is acknowledged
@@ -2911,8 +2940,8 @@ So that lifecycle, coordination, projections, security, recovery, and architectu
 
 **Given** the provisional depth-32 and fan-out-50 performance fixture
 **When** final events are published under the platform lane
-**Then** Roll-Up convergence is acknowledgement-driven within five seconds and authorized read-model access completes in under 200 ms
-**And** failure reports separate the numeric budget from environmental or broad-gate blockers without weakening the requirement.
+**Then** the lane checks Roll-Up correctness at acknowledged convergence and reports elapsed convergence time and authorized read latency
+**And** five seconds and 200 ms are comparison points. Timing becomes a pass condition only under the environment, dataset, percentile, window and failure policy approved at G8.
 
 **Given** pure Tier-1 tests and integration boundaries
 **When** validation runs
@@ -2946,10 +2975,19 @@ So that valid work never wraps, partially succeeds, or corrupts durable replay.
 
 **Acceptance Criteria:**
 
-**Given** an estimated Work Item with a valid positive progress delta equal to or greater than Remaining
-**When** progress is handled
-**Then** Done saturates to Estimated without evaluating an overflowing decimal addition
-**And** the accepted result follows the existing progress-plus-completion event order.
+**Given** an estimated `InProgress` Work Item with positive Remaining
+**When** a valid progress delta equals or exceeds Remaining
+**Then** Done reaches Estimated without an overflowing addition
+**And** `ProgressReported` records the entire submitted delta before `WorkItemCompleted`.
+
+**Given** an `InProgress` item with 7 hours Done whose estimate has been lowered to 4 hours
+**When** the executor reports 1 more hour
+**Then** the recorded delta is 1, Done stays at 7 and Remaining stays at zero
+**And** replay of `ProgressReported` followed by `WorkItemCompleted` reproduces those values and the completed status.
+
+**Given** the process restarts after a lower estimate left a Work Item `InProgress` with zero Remaining
+**When** the aggregate recovers
+**Then** the recorded Status, Unit, Estimated and Done are restored. Remaining is zero.
 
 **Given** a valid positive progress delta below Remaining
 **When** progress is handled
@@ -3003,6 +3041,10 @@ So that handlers, documentation, tests, and durable rejection evidence cannot dr
 **When** matrix coverage runs
 **Then** all five non-terminal statuses and every terminal or `Unknown` status have an explicit tested outcome
 **And** no status falls through to an implicit handler default.
+
+**Given** ordered suspension evidence with duplicate members and two eligible Resume triggers
+**When** the lifecycle policy is extracted
+**Then** admission still requires a nonempty collection of valid non-null conditions, replay preserves every member in order, and the first matching Resume committed on the Work Item clears the collection.
 
 **Given** existing durable diagnostic act-name values
 **When** the singular policy is introduced

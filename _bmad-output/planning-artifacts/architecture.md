@@ -8,7 +8,7 @@ scope: Works domain module, EventStore SDK seams, and Hexalith.Platform host bou
 status: final
 readiness: conditional
 created: 2026-06-14
-updated: 2026-09-12
+updated: 2026-11-20
 binds:
   - FR-1..FR-26
   - Works security, recovery, data-integrity, and platform-migration NFRs
@@ -105,10 +105,19 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 - **Binds:** FR-4 and FR-20 query filtering and ordering.
 - **Prevents:** incompatible queue views and replay-dependent ties.
 - **Rule:** Priority orders Critical > High > Normal > Low, absent last. The current tenant-scoped
-  query returns all Assigned and Queued items. The adopted target optionally accepts an Executor
-  PartyId and then returns that Party's Assigned items plus the tenant Queued pool. Both order by
+  query returns Assigned and Queued items. The SDK grants all-work scope only to an allow-listed
+  non-delegated coordinator workload authorized for the tenant. A delegated caller must supply their
+  own verified PartyId and receives their Assigned items plus the tenant Queued pool. A missing or
+  mismatched PartyId is forbidden. A caller-supplied all-work flag cannot expand scope. Both views order by
   Priority, earliest Due Date (absent last), then ordinal WorkItemId. No routing score or creation
   coordinate participates.
+
+  **Single-item detail and Roll-Up (approved target, 20 November 2026).** The current SDK permits
+  ordinary-member reads for Queued items and the member's own Assigned items. Extend individual
+  lookup to that member's own InProgress and Suspended items. A handoff transfers this access to
+  the incoming Executor. Other ordinary-member lookups return the same result as an absent item.
+  The coordinator's tenant-scoped all-work entitlement still applies. The list filters above are
+  unchanged. Implementation and conformance tests must cover Claim, suspension and active handoff.
 
 ### AD-04 [ADOPTED] [TARGET] — Effort Unit is immutable and inherited only at first estimate
 
@@ -184,6 +193,13 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   re-issued with AD-26 identities after crashes. Domain aggregates remain available while effects
   converge unless an explicit fence or repair state says otherwise.
 
+  **Approved FR-10 reopening rule (20 November 2026).**
+  If a progress correction reopens
+  an attached descendant after a Cancel or Expire cascade skipped it while terminal, keep the correction
+  and reopen events. The Reactor rediscovers the terminal ancestor, durably schedules the matching
+  termination for this reopening and retries it after restart. The active contribution is visible
+  until termination commits, then the item contributes zero at quiescence.
+
 ### AD-11 [TARGET] [ASSUMPTION] — Time enters through durable typed reminder intents
 
 - **Binds:** DateReached resume and expiry scheduling across Works, EventStore, and Platform.
@@ -209,9 +225,13 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 
 - **Binds:** FR-14 and FR-15 across domain, reminder, child-completion, and external-signal paths.
 - **Prevents:** different adapters acknowledging the same nonmatching trigger differently.
-- **Rule:** while Suspended, only an exact member of the current AwaitCondition set resumes and clears
-  the set; a nonmatch is a rejection without mutation. Only replay of the exact condition consumed by
-  the successful resume is a no-op. Every other post-resume or terminal condition rejects.
+- **Rule:** an InProgress item may suspend on a nonempty ordered collection of valid, non-null
+  conditions. Canonicalize each kind and key and record every member in submitted order, including
+  duplicates. Read legacy singular evidence as one member. While Suspended, the first exact kind/key
+  match committed in the Work Item turn records the consumed condition and clears the collection.
+  A nonmatch leaves the conditions intact. Upon return to InProgress, a fresh command for the last
+  consumed condition is a domain no-op. Exact transport redelivery replays the original disposition
+  under AD-26. Other fresh triggers and all fresh Resume commands on terminal items reject.
 
 ### AD-14 [ADOPTED] [TARGET] — One Executor Binding; AuthorityLevel remains carried
 
@@ -239,7 +259,10 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   paths must migrate before their consumers switch. Canonical means the input is already a 1..64
   character lowercase ASCII slug matching ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$; trust boundaries reject
   rather than transform other input. Claims, envelopes, references, keys, hashes, and equality reuse
-  those exact UTF-8 bytes.
+  those exact UTF-8 bytes. The current isolated Works dispatcher compares the command tenant to
+  the envelope tenant case-insensitively. For a payload tenant `tenant-a` and envelope tenant
+  `TENANT-A`, that comparison succeeds at the adapter. Target production ingress rejects the
+  noncanonical envelope before dispatch. Reserved tenant IDs are refused in either case.
 
 ### AD-16 [TARGET] [ASSUMPTION] — Shared rebuild uses one tenant/family epoch
 
@@ -367,7 +390,9 @@ consumer story, and proof command before the row can turn green.
   AD-26 codec; it is the sole attachment evidence. EdgeAttached then drives the parent's token-bearing
   SpawnChild bookkeeping act, which idempotently emits ChildSpawned in every parent status. When the
   reserved suspend flag is true, it also suspends an InProgress parent on ChildCompleted(child), or
-  unions that condition into an already Suspended parent's current AwaitConditions. Terminal parents
+  appends the child condition to an already Suspended parent's ordered collection if absent, preserving
+  its prior members and their order. A cleared suspend flag preserves status and conditions.
+  Redelivery of the same attachment cannot install a second wait. Terminal parents
   remain terminal; for Cancelled or Expired parents, attachment processing durably schedules matching
   child-cascade catch-up before acknowledgement. The Attached edge remains authoritative even if that
   parent act arrives after the terminal transition. Released tokens are terminal. Creating never releases:
@@ -380,7 +405,14 @@ validates it immediately before registry dispatch. It binds tenant, parent, chil
 digest, suspend flag, and parent envelope sequence. suspend=false requires a nonterminal parent;
 suspend=true requires InProgress or Suspended, so Created, Assigned, and Queued reject before reserve.
 If the parent changes after admission, the attachment rules above cover the reachable
-InProgress/Suspended/terminal states; retry of the identical witness is idempotent.
+InProgress/Suspended/terminal states. Retrying the identical witness is idempotent.
+
+Reconcile the matching child's durable completion with installation of the wait for that attachment
+in either delivery order. If the child completes first, retain the evidence across restarts. Once the
+parent records this wait, submit exactly one effective Resume while it still applies. An earlier
+nonmatching Resume and its rejection receipt cannot fulfill the later wait. Use the newly established
+wait as a distinct causal occurrence under AD-26. If another trigger won or the parent is terminal,
+close the pending work for this wait without changing the parent or a subsequent suspension.
 
 All fan-out, cascade, child-completion recovery, rebuild, and repair code uses one Works-owned
 IWorkTreeTopologyReader over the registry read model. It exposes exact-token
@@ -413,7 +445,9 @@ tenant before admission. The v1 MaxDepth default is 32 and breadth is uncapped. 
   Registry streams and never advances payload Sequence. Works.Projections owns the fold and snapshot,
   EventStore owns the generic merge/relationship SPI without referencing Works, and only the Works
   executable composes their adapter. At quiescence, after all tree events are acknowledged, the
-  Platform lane proves convergence within the PRD's provisional five-second bound.
+  Platform lane verifies totals and records convergence time and authorized read latency. The
+  indicative fixture uses five seconds and 200 ms as benchmarks. G8 binds performance acceptance
+  to an approved dataset, environment, percentile, measurement window and failure policy.
 
 ### AD-23 [TARGET] [ASSUMPTION] — Identity and tenant delegation are end-to-end authority
 
@@ -490,10 +524,11 @@ disclosure.
   EventStore exclusively owns a private target-scoped effect inbox in the target actor partition.
   Receipt lookup and a receipt containing EffectId, full tuple, semantic command digest, success,
   rejection, or no-op disposition, workload, delegation purpose, and causation commit atomically with
-  target events and metadata; Works domain streams contain no receipt event. The same key and digest
-  returns its recorded disposition without redispatch; the same key with different tuple or semantics
-  is conflict plus quarantine. Receipts are not
-  Work Item lifecycle-pruned and share the tenant's legal-hold/offboarding retention class; receipt and
+  target events and metadata. Works domain streams contain no receipt event. A retry with the same key,
+  full tuple and semantic command digest returns its recorded disposition without redispatch. Reusing
+  the key with a different tuple or digest creates an identity conflict and quarantine entry and leaves
+  the receipt and target unchanged. Receipts survive the Work Item lifecycle and share the tenant's
+  legal-hold/offboarding retention class. Receipt and
   corresponding source/target evidence erase only as one authorized tenant operation. Replays older
   than the retained source floor reject or quarantine rather than execute. Gateway terminal records use
   EventStore Commit retention and are an optimization, not the correctness boundary. Golden vectors
