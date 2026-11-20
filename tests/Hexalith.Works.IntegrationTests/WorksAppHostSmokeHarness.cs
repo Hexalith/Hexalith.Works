@@ -24,6 +24,7 @@ using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Reminders;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -478,6 +479,11 @@ internal static class WorksAppHostSmokeHarness
                     // randomization so daprd reaches the AppHost-owned placement and scheduler proxies.
                     "--DcpPublisher:RandomizePorts=false",
                 ],
+                (options, _) =>
+                {
+                    if (!useRetainedHost)
+                        WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options);
+                },
                 startupCts.Token)
             .ConfigureAwait(true);
 
@@ -512,7 +518,6 @@ internal static class WorksAppHostSmokeHarness
             Dictionary<ProjectResource, EnvironmentCallbackAnnotation[]>? platformComposition = WorksAppHostSelection.IsPlatform && !useRetainedHost
                 ? WorksPlatformCompositionGuard.Capture(builder) : null;
             configure?.Invoke(builder);
-            WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(builder);
             if (WorksAppHostSelection.IsPlatform && Environment.GetEnvironmentVariable("WORKS_CATALOG_SOURCE_SENTRY_DIAGNOSTICS") == "1")
                 builder.CreateResourceBuilder(builder.Resources.OfType<ContainerResource>().Single(resource => resource.Name == "dapr-sentry"))
                     .WithArgs("--log-level=debug").WithEnvironment("FSNOTIFY_DEBUG", "1");

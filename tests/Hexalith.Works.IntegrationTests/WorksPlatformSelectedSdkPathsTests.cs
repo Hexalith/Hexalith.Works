@@ -1,3 +1,5 @@
+using Aspire.Hosting;
+
 using Shouldly;
 
 namespace Hexalith.Works.IntegrationTests;
@@ -5,14 +7,26 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Retained host metadata selects an explicit compatible fleet before Aspire applies immutable defaults.</summary>
 public sealed class WorksPlatformSelectedSdkPathsTests
 {
-    /// <summary>A later Aspire artifacts-path must not hide the serial-prebuilt runtime outputs.</summary>
+    /// <summary>Current Platform launch uses the serial-prebuilt runtime outputs, not a second artifacts-path.</summary>
     [Fact]
-    public void LaunchArgumentsUseTheQualifiedRuntimeArtifactsPath()
+    public void CurrentPlatformLaunchBindsTheQualifiedRuntimeArtifactsPath()
     {
-        var args = new List<object> { "run", "--project", "app.csproj", "--artifacts-path", "/tmp/host", "--configuration", "Release" };
-        WorksPlatformRuntimeArtifacts.ReplaceArtifactsPath(args, "/tmp/runtime");
-        args.ShouldBe(["run", "--project", "app.csproj", "--configuration", "Release", "--artifacts-path", "/tmp/runtime"]);
-        Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.ReplaceArtifactsPath(args, "runtime"));
+        string directory = Directory.CreateTempSubdirectory("works-runtime-artifacts-").FullName;
+        string? previous = Environment.GetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS");
+        try
+        {
+            var options = new DistributedApplicationOptions();
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", directory);
+            WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options);
+            WorksPlatformRuntimeArtifacts.ReadBoundLaunchArtifacts(options).ShouldBe(directory);
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", "runtime");
+            Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.BindLaunchArtifacts(options));
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable("WORKS_PLATFORM_RUNTIME_ARTIFACTS", previous);
+            Directory.Delete(directory, recursive: true);
+        }
     }
 
     /// <summary>Both supported configurations bind the running fleet and the restored fleet to one inventory.</summary>
