@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Works architecture validation · 21 November 2026</title>
+<style>
+:root{color-scheme:light;--ink:#18272c;--teal:#165967;--muted:#435a61;--edge:#d2dcd9;--page:#f3f6f3}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font:16px/1.58 system-ui,sans-serif;color:var(--ink);background:var(--page)}main{max-width:66rem;margin:1.5rem auto 4rem;padding:clamp(1.15rem,5vw,4.25rem);background:white;border-top:5px solid var(--teal);box-shadow:0 3px 20px #253c3610}
+nav{display:flex;align-items:center;gap:.8rem 1.25rem;flex-wrap:wrap;padding:.35rem 0 1.1rem;border-bottom:1px solid var(--edge);font-size:.9rem}
+nav a:last-child{margin-left:auto}a{color:var(--teal);text-underline-offset:.17em;text-decoration-thickness:1px}a:hover{color:#703f24}a:focus-visible{outline:2px solid #884f18;outline-offset:3px}
+h1,h2,h3{line-height:1.19;color:#172e34}h1{font:normal clamp(2.35rem,6.3vw,4.15rem)/1.08 Georgia,serif;letter-spacing:-.035em;margin:2.1rem 0 .45rem}h2{margin:2.6rem 0 1rem;font-size:1.65rem;font-weight:660;letter-spacing:-.025em;border-top:1px solid var(--edge);padding-top:1.35rem}h3{font-size:1.15rem;margin:1.9rem 0 .4rem;font-weight:660}p{margin:.55rem 0 .8rem}
+h1+p{color:var(--muted);font-size:.92rem;margin:.5rem 0 1.3rem}h1+p+p{background:#f6f0e8;border-left:4px solid #975b31;padding:1rem 1.25rem;margin-bottom:2rem}
+code{background:#edf1ef;border-radius:.15rem;padding:.05em .24em;font:.9em/1.25 ui-monospace,monospace;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;margin:1rem 0 1.6rem;font-size:.94rem}th,td{border-bottom:1px solid var(--edge);padding:.72rem .6rem;vertical-align:top;text-align:left}th{background:#edf3f1;font-weight:640}td:first-child{min-width:5rem}th:first-child,td:first-child{padding-left:.65rem}p a{white-space:normal}tr{break-inside:avoid}
+@media(max-width:640px){body{background:white;font-size:15px}main{margin:0;box-shadow:none}nav{font-size:.8rem;gap:.5rem .8rem}nav a:last-child{margin-left:0}th,td{padding:.5rem .35rem}td:first-child{min-width:0}h2{font-size:1.4rem}}
+@media print{body,main{background:white;box-shadow:none}main{max-width:none;margin:0;padding:0;border:0}nav{display:none}a{color:inherit}h2,h3{break-after:avoid}body{font-size:10pt}code{background:none}}
+</style></head>
+<body><main>
+<nav aria-label="Report navigation"><a href="#high-priority-findings">High-priority findings</a><a href="#other-findings">Other findings</a><a href="#release-evidence">Release evidence</a><a href="ARCHITECTURE-VALIDATION.md" download>Download Markdown</a></nav>
+<h1 id="works-architecture-validation">Works architecture
+validation</h1>
+<p>21 November 2026 · Hexalith.Works <code>07020c84</code> · Standalone
+BMad review</p>
+<p><strong>Verdict: changes required.</strong> All 29 decision IDs are
+stable, all 26 functional requirements appear in the capability map, and
+mechanical lint returned zero findings. The three independent reviews
+produced nine distinct findings: five high, three medium and one low.
+The high findings affect replay, cross-aggregate ordering, projection
+reads and which runtime a parity result would qualify. <a
+href="../architecture.md">Reviewed spine</a> · <a
+href="lint-spine.json">Lint result</a></p>
+<h2 id="high-priority-findings">High-priority findings</h2>
+<h3
+id="h1--recognize-historical-progress-completion-on-an-existing-overrun">H1
+· Recognize historical progress completion on an existing overrun</h3>
+<p><strong>AD-05 and AD-07.</strong> An item with estimate 4 and Done 7
+already has zero Remaining. An accepted positive report preserves Done 7
+and emits <code>ProgressReported</code> followed by
+<code>WorkItemCompleted</code> in the same act. A reader looking for a
+transition <em>from positive Remaining to zero</em> can misclassify that
+completion as explicit. The classification determines whether a later
+correction may reopen the item.</p>
+<p><strong>Resolution.</strong> Specify historical inference using the
+accepted report and completion event pair that leaves Remaining zero.
+Exercise that overrun history alongside an explicit completion at zero.
+After correcting Done below the estimate, only the progress-completed
+item should reopen. <a href="../architecture.md#L177">AD-07, lines
+177–187</a> · <a
+href="../prds/prd-works-2026-06-14/prd.md#L218">FR-8</a> · <a
+href="../../../src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs#L321">Aggregate,
+line 321</a></p>
+<h3
+id="h2--decide-when-the-registry-accepts-a-reservation-relative-to-parent-termination">H2
+· Decide when the registry accepts a reservation relative to parent
+termination</h3>
+<p><strong>AD-21, target design.</strong> The parent can supply a valid
+admission witness, then terminate before the registry commits
+<code>EdgeReserved</code>. The PRD requires refusal for reservations
+accepted after termination and cascade coverage for those accepted
+before it. Checking the witness immediately before dispatch leaves the
+ordering of the two durable acts unresolved.</p>
+<p><strong>Decision needed from Works and EventStore.</strong> Name the
+durable event that constitutes acceptance and define how both owners
+enforce that order across retries and restarts. In a conformance case,
+pause a reservation after witness validation, terminate the parent, then
+resume delivery. Both owners must reach the same decision and agree on
+any cascade obligation. <a href="../architecture.md#L440">AD-21, lines
+440–448</a> · <a href="../prds/prd-works-2026-06-14/prd.md#L248">FR-10,
+concurrent attachment</a></p>
+<h3
+id="h3--bind-delayed-child-resume-to-one-occurrence-of-the-parents-wait">H3
+· Bind delayed child Resume to one occurrence of the parent’s wait</h3>
+<p><strong>AD-13, AD-21 and AD-26, target integration.</strong> Suppose
+a date trigger resolves a suspension while a child Resume is in flight.
+The parent later suspends again on the same child. A unique transport
+receipt distinguishes duplicate submissions, but a first delivery from
+the earlier wait can still match the later wait’s condition. The current
+command carries tenant, item and condition. Acknowledging the correct
+wait requires knowing which suspension installed it.</p>
+<p><strong>Decision needed from Works and EventStore.</strong> Define
+where the internal effect carries the intended wait occurrence and how
+the parent compares it with current state inside its serialized turn.
+Deliver the old effect for the first time after resuspension, then
+replay it after restart. The second wait must stay intact. <a
+href="../architecture.md#L450">AD-21, lines 450–455</a> · <a
+href="../../../src/Hexalith.Works.Contracts/Commands/ResumeWorkItem.cs#L11">Resume
+contract</a> · <a
+href="../../../src/Hexalith.Works.Server/Aggregates/WorkItemAggregate.cs#L235">Target
+handler</a></p>
+<h3
+id="h4--identify-the-catalog-that-the-works-parity-run-actually-consumes">H4
+· Identify the catalog that the Works parity run actually consumes</h3>
+<p><strong>AD-19 and Stack.</strong> The Works bootstrap links its root
+Builds checkout into the Platform snapshot and exports it as
+<code>HexalithBuildsRoot</code>. The Platform verifier reads the Works
+catalog there. It separately materializes a published Builds tuple for
+its Agents check. The distinction matters on this checkout: the
+refreshed Works Builds catalog selects Dapr runtime
+<strong>1.19.2</strong>, while recorded Builds 6.4.4 selects
+<strong>1.19.1</strong>. Both catalogs select EventStore 5.4.0.</p>
+<p><strong>Resolution.</strong> Name each catalog consumer in AD-19 and
+record each selected revision or digest in its proof. Check them
+independently with a deliberately different pair of catalog versions.
+The bootstrap refusal below prevented a runtime launch in this
+validation. <a href="../architecture.md#L677">Stack, line 677</a> · <a
+href="../../../scripts/verify-platform-parity-ci.py#L148">Works
+bootstrap</a> · <a
+href="../../../references/Hexalith.Platform/eng/verify_works_host.py#L1338">Works
+SDK selection</a> · <a
+href="../../../references/Hexalith.Platform/eng/verify_works_host.py#L1413">Agents
+catalog selection</a></p>
+<h3
+id="h5--label-the-proposed-projection-keys-and-document-the-current-lookup">H5
+· Label the proposed projection keys and document the current
+lookup</h3>
+<p><strong>AD-06, AD-15 and AD-16.</strong> AD-06 labels the encoded
+tenant prefix as a registry migration target. AD-15 presents it inside a
+decision marked both current and target. Today the query uses a
+tenant-scoped SDK generation and the logical key
+<code>works-runtime-v3:rollup:&lt;item&gt;</code>. The SDK derives the
+physical key. A new reader following the literal proposed prefix can
+miss a roll-up that the current writer has persisted.</p>
+<p><strong>Resolution.</strong> Specify the current lookup through
+<code>WorksReadModelKeys</code> and the SDK coordinator. Label the
+proposed format as a migration target. Verify that a newly deployed
+reader opens an existing writer’s selected generation before changing
+the format. <a href="../architecture.md#L279">AD-15, lines 279–291</a> ·
+<a
+href="../../../src/Hexalith.Works/Projections/WorksReadModelKeys.cs#L16">Works
+key definitions</a> · <a
+href="../../../src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs#L105">Current
+query</a> · <a
+href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Client/Projections/SharedProjectionScope.cs#L31">SDK
+scope</a></p>
+<h2 id="other-findings">Other findings</h2>
+<table>
+<thead>
+<tr class="header">
+<th>Severity</th>
+<th>Decision</th>
+<th>Evidence and proposed disposition</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Medium</td>
+<td>AD-04 · Child Unit</td>
+<td>FR-12 binds the explicit or inherited Unit <strong>at
+spawn</strong>, even if the child has no estimate. Capture that Unit in
+the spawn record. If neither parent nor child has a Unit then, let the
+first estimate supply it. A parent acquiring a Unit later must have no
+effect on the child’s earlier spawn. <a
+href="../prds/prd-works-2026-06-14/prd.md#L279">FR-12 truth
+table</a></td>
+</tr>
+<tr class="even">
+<td>Medium</td>
+<td>AD-14 · Executor cardinality</td>
+<td>“An item has one ExecutorBinding” would exclude valid unbound
+creation. State “at most one” and specify which lifecycle states require
+the binding. Include replay of <code>WorkItemCreated</code> with the
+optional binding absent. <a
+href="../../../src/Hexalith.Works.Contracts/Commands/CreateWorkItem.cs#L26">Create
+contract</a> · <a
+href="../prds/prd-works-2026-06-14/prd.md#L130">FR-1</a></td>
+</tr>
+<tr class="odd">
+<td>Medium</td>
+<td>AD-03 · Undated items</td>
+<td>A compiled probe of the repository comparator sorted equal-priority
+<code>a</code> (undated) before <code>b</code> (due 9999-12-31). Null
+and the latest valid date share a sort key. FR-20 requires every present
+date to precede an absent one. Label the implementation gap, compare
+date presence explicitly and check both ID orders. <a
+href="../../../src/Hexalith.Works.Projections/Strategies/WhatsNextOrdering.cs#L42">Comparator</a>
+· <a href="../prds/prd-works-2026-06-14/prd.md#L397">FR-20</a></td>
+</tr>
+<tr class="even">
+<td>Low</td>
+<td>AD-02 · Existing IDs</td>
+<td>The conventions table promises readability for any existing
+non-whitespace ID. The SDK also limits the length to 256 and restricts
+the character set. Use AD-02’s <code>AggregateIdentity</code> qualifier
+in the table. <a href="../architecture.md#L650">Conventions</a> · <a
+href="../../../references/Hexalith.EventStore/src/Hexalith.EventStore.Contracts/Identity/AggregateIdentity.cs#L121">SDK
+validator</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="release-evidence">Release evidence</h2>
+<p>Two independent checks stopped before qualification. The
+source-identity mismatch was already recorded in the spine. Resolving it
+alone would leave the catalog-reading failure in the parity
+bootstrap.</p>
+<table>
+<thead>
+<tr class="header">
+<th>Check</th>
+<th>Result on the reviewed workspace</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Debug source identity</td>
+<td><code>python3 scripts/verify-source-debug.py --check-only</code>
+exited 1 on EventStore source revision drift. Works records
+<code>8bfc4ca13</code>, the reviewed manifest names
+<code>607072c68</code>, and the checkout is <code>7435254cc</code>.
+PolymorphicSerializations also differs between the Works gitlink and
+manifest. <a
+href="../../../tools/source-debug-dependencies.json">Manifest</a></td>
+</tr>
+<tr class="even">
+<td>Platform parity entry point</td>
+<td><code>bash scripts/verify-platform-parity-ci.sh --artifacts-path &lt;fresh-directory&gt;</code>
+exited 1 with
+<code>Parity requires a stable public EventStore version</code>. The
+bootstrap searches the literal Works package wrapper. MSBuild imports
+the property from the Builds catalog. Align the bootstrap and downstream
+literal-pin checks with the evaluated catalog and retain producer
+verification. <a
+href="../../../scripts/verify-platform-parity-ci.py#L103">Bootstrap
+check</a> · <a href="../../../Directory.Packages.props">Package
+wrapper</a> · <a
+href="../../../references/Hexalith.Platform/eng/verify_works_host.py#L190">Downstream
+pin check</a></td>
+</tr>
+<tr class="odd">
+<td>Historical qualification</td>
+<td>The October cutover packet binds all 11 rows, 44 proof kinds and
+fleet restore to its recorded EventStore 3.126.0 inputs. For Works
+<code>07020c84</code>, the previously recorded CI result shows failure
+at Stage 3 unit tests and a skipped parity job. Full application suites
+and live fleet qualification were outside this document review. <a
+href="../../../docs/platform-hosting-cutover.md">Cutover record</a> · <a
+href="https://github.com/Hexalith/Hexalith.Works/actions/runs/44874235428">Recorded
+CI run</a></td>
+</tr>
+</tbody>
+</table>
+<h2 id="review-record">Review record</h2>
+<p>The reviewed input was the working-tree spine with SHA-256
+<code>e53447b83e031c5ef39e9f1e443cdf311a7db164d31f43a36bb0b3693a7609ab</code>.
+Platform ownership of hosting, SDK ownership of generation selection,
+and the distinction between implemented queue access and target
+active-item detail were supported by the inspected sources. Two lenses
+independently identified the projection-key issue, and the report counts
+it once. The recommended next architecture update is to settle H2 and H3
+with the two owners, then reconcile the other decisions against the
+cited evidence.</p>
+<p><a href="reviews/review-rubric.md">Rubric review</a> · <a
+href="reviews/review-technology-reality.md">Technology and
+implementation review</a> · <a
+href="reviews/review-adversarial.md">Adversarial review</a></p>
+</main></body></html>

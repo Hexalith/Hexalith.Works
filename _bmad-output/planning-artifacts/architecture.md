@@ -8,7 +8,7 @@ scope: Works domain module, EventStore SDK seams, and Hexalith.Platform host bou
 status: final
 readiness: conditional
 created: 2026-06-14
-updated: 2026-11-20
+updated: 2026-11-21
 binds:
   - FR-1..FR-26
   - Works security, recovery, data-integrity, and platform-migration NFRs
@@ -17,6 +17,11 @@ sources:
   - _bmad-output/planning-artifacts/prds/prd-works-2026-06-14/.memlog.md
   - _bmad-output/planning-artifacts/prds/prd-works-2026-06-14/addendum.md
   - _bmad-output/planning-artifacts/architecture-validation-2026-09-12/ARCHITECTURE-VALIDATION.md
+  - docs/platform-hosting-cutover.md
+  - docs/sdk-projection-query-adoption.md
+  - docs/sdk-reminder-process-adoption.md
+  - docs/lifecycle-transition-matrix.md
+  - tools/source-debug-dependencies.json
   - docs/eventstore-api-surface-constraints.md
   - references/Hexalith.AI.Tools/hexalith-llm-instructions.md
 companions:
@@ -25,11 +30,10 @@ companions:
 
 # Architecture Spine — Hexalith.Works
 
-This spine is the binding consistency contract. The code owns implemented structure; the PRD owns
-product behavior. Until the rendered PRD and addendum receive their pending refresh, the final four
-override entries in the PRD memlog win over their contradictory prose. Historical architecture prose
-was removed during the 2026-09-12 update because it mixed rationale, stale seed, and binding rules.
-Decision rationale remains in the architecture memlog.
+The November 20 PRD and addendum define the product behavior. This spine binds the Works, EventStore and
+Platform implementations to the same decisions. The architecture memlog records their history. Current
+implementation claims use Works `07020c84`. AD-19 distinguishes its recorded dependencies from the
+refreshed checkouts.
 
 Decision tags separate commitment from delivery: **ADOPTED** means the decision is settled,
 **CURRENT** means repository evidence verifies it today, **TARGET** means it is a binding migration
@@ -44,25 +48,21 @@ one logical writer; pure aggregate handlers emit raw-act events; projections bui
 models; and the **Reactor** is a Saga Process Manager that translates committed events into
 cross-aggregate commands without making domain decisions.
 
-The domain module owns business contracts and pure behavior. Hexalith.EventStore owns reusable
-runtime mechanics. Hexalith.Platform owns topology, environment policy, and operations.
+Works owns business contracts, pure behavior and SDK adapters. EventStore owns reusable runtime
+mechanics. Platform owns topology, environment policy and operations.
+
+The solid paths are implemented. The dashed branch is the proposed Work-Tree Registry flow under AD-21.
 
 ~~~mermaid
 flowchart LR
-    Edge[Authenticated edge] --> Gateway[EventStore gateway]
-    Gateway --> Registry[Work-Tree Registry actor]
-    Gateway --> Item[Work Item actor]
-    Registry --> RE[Registry events]
-    Item --> WE[Work events]
-    RE --> Reactor[Works Reactor]
-    WE --> Reactor
-    RE --> Projection[Projection delivery]
-    WE --> Projection
-    Reactor --> Gateway
-    Projection --> Reads[(Disposable read models)]
-    Platform[Hexalith.Platform] -. composes .-> Gateway
-    Platform -. composes .-> Reactor
-    Platform -. operates .-> Reads
+    Edge[Authenticated gateway] --> Item[Work Item aggregate]
+    Item --> WE[Committed work events]
+    WE --> Process[SDK process runner and Works Reactor]
+    Process --> Edge
+    WE --> Projection[Works fold through SDK shared-family writer]
+    Projection --> Reads[(Selected tenant generation)]
+    Edge -. parent admission .-> Registry[Target Work-Tree Registry]
+    Registry -. attachment events .-> Process
 ~~~
 
 ## Inherited Constraints
@@ -75,7 +75,7 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 | EventStore is the persistence substrate | Hexalith LLM baseline | Commands in, events out; state reconstructs by replay; no parallel repository |
 | Dapr is the infrastructure abstraction | Hexalith LLM baseline | No direct broker/database clients in domain contracts or behavior |
 | Root-declared submodules only | Repository guidance | Architecture and build evidence never depend on nested-submodule initialization |
-| .slnx, .NET 10+, C# 14+ | Repository guidance and build files | Build and test lanes use the checked solution and centrally pinned dependencies |
+| SDK and dependency selection | Works solution, build files and recorded Builds catalog | Debug uses reviewed root sources. CI validates Release packages. AD-19 governs their pairing. |
 
 ## Invariants & Rules
 
@@ -112,12 +112,19 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   Priority, earliest Due Date (absent last), then ordinal WorkItemId. No routing score or creation
   coordinate participates.
 
+  Authorization runs before Works reads state. The gateway supplies authenticated actor and workload
+  claims. Works resolves the requested Party through the Parties client with separate service authority.
+  Missing, expired or mismatched authority denies the query. Related documents come from one selected
+  generation.
+
   **Single-item detail and Roll-Up (approved target, 20 November 2026).** The current SDK permits
   ordinary-member reads for Queued items and the member's own Assigned items. Extend individual
   lookup to that member's own InProgress and Suspended items. A handoff transfers this access to
   the incoming Executor. Other ordinary-member lookups return the same result as an absent item.
   The coordinator's tenant-scoped all-work entitlement still applies. The list filters above are
-  unchanged. Implementation and conformance tests must cover Claim, suspension and active handoff.
+  unchanged. Establish the current Status and Executor independently of stale list membership. Withhold
+  both detail and Roll-Up when that binding cannot be established. Test Claim, suspension, terminal
+  status and a delayed projection after handoff that still names the former Executor.
 
 ### AD-04 [ADOPTED] [TARGET] — Effort Unit is immutable and inherited only at first estimate
 
@@ -133,14 +140,23 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 - **Prevents:** a second meter abstraction diverging from the public contract.
 - **Rule:** WorkItemEffort(Unit, Estimated, Done) is the sole v1 effort type; Remaining is derived and
   never stored as authoritative state. Future cost support must reuse these semantics under a distinct
-  concern rather than introduce another effort type.
+  concern rather than introduce another effort type. The raw event retains the full positive reported
+  delta. The fold adds up to the remaining estimate and preserves an existing overrun. ReEstimate
+  changes only Estimated. An accepted InProgress report that leaves Remaining at zero emits
+  ProgressReported followed by WorkItemCompleted in the same act, including a report on an existing
+  overrun.
 
-### AD-06 [TARGET] [ASSUMPTION] — Roll-up persists CAS-merged descendant slots
+### AD-06 [CURRENT] [TARGET] [ASSUMPTION] — The SDK owns roll-up writes
 
 - **Binds:** FR-11, EventStore R4, persisted DTO, key, merge, and materialization.
 - **Prevents:** whole-document lost updates, additive redelivery, cross-stream sequence comparison, and
   stale contributions after topology removal.
-- **Rule:** the logical document
+- **Rule:** the current SDK writer applies only changed logical operations after Works refolds the
+  bounded tenant histories. Capacity exhaustion leaves work pending and the affected reads stale or
+  unavailable. AD-16 governs the checkpoint and retry. Registry-based incremental merge is the target
+  below and depends on AD-21.
+
+  Under that target, the logical document
   works:v3:tenant:<base64url-tenant>:rollup:<base64url-ancestor> resolves through the tenant manifest
   to physical key works:v3:tenant:<base64url-tenant>:generation:<epoch>:rollup:<base64url-ancestor>.
   The manifest is the sole reader selector. The document contains:
@@ -162,9 +178,12 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   distinct types and serialized fields. Explicit Complete from InProgress or Suspended contributes
   zero without changing Estimated/Done. Progress reaching zero emits ProgressReported then
   WorkItemCompleted(CompletionKind=Progress); explicit completion writes
-  CompletionKind=Explicit. CorrectProgress writes an absolute audited ProgressCorrected;
-  when it restores positive Remaining after Progress completion it also emits WorkItemReopened and
-  returns to InProgress. Explicit completion remains terminal. Historical completion kind is inferred
+  CompletionKind=Explicit. In the target contract, CorrectProgress records the submitted cumulative Done
+  in ProgressCorrected. From InProgress, positive Remaining preserves status and zero Remaining appends
+  WorkItemCompleted with progress provenance. From a progress-completed item, positive Remaining appends
+  WorkItemReopened and returns it to InProgress. At zero the correction alone is recorded and it stays
+  Completed. Explicitly completed and abnormally terminated items reject correction. Historical
+  completion kind is inferred
   deterministically from the immediately preceding progress-to-zero transition.
 
 ### AD-08 [ADOPTED] [CURRENT] — Claim concurrency is EventStore-owned
@@ -184,7 +203,7 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   checkpoint, side effect, or quarantine capture commits. Idempotency comes from per-stream positions,
   AD-26 effect IDs, and state-machine semantics, never from broker order.
 
-### AD-10 [ADOPTED] [TARGET] — Reactor is the sole cross-aggregate process manager
+### AD-10 [ADOPTED] [CURRENT] [TARGET] — Reactor is the sole cross-aggregate process manager
 
 - **Binds:** FR-26 child creation, attachment, cascade, child resume, and recovery translations.
 - **Prevents:** shadow kernels and multiple cross-aggregate coordinators.
@@ -193,33 +212,39 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   re-issued with AD-26 identities after crashes. Domain aggregates remain available while effects
   converge unless an explicit fence or repair state says otherwise.
 
+  Today the SDK runs the checkpointed cascade and child-completion processes and delivers the Works
+  translations through the gateway. Date callbacks use the SDK reminder path. Registry attachment and
+  reconciliation of a later reopen remain targets.
+
   **Approved FR-10 reopening rule (20 November 2026).**
   If a progress correction reopens
   an attached descendant after a Cancel or Expire cascade skipped it while terminal, keep the correction
   and reopen events. The Reactor rediscovers the terminal ancestor, durably schedules the matching
   termination for this reopening and retries it after restart. The active contribution is visible
-  until termination commits, then the item contributes zero at quiescence.
+  until termination commits, then the item contributes zero at quiescence. Derive the AD-26 effect for
+  this reopening from the committed reopen occurrence and retain the ancestor termination as provenance.
+  Retries reuse that key. A receipt for an earlier termination cannot discharge a later reopen.
 
-### AD-11 [TARGET] [ASSUMPTION] — Time enters through durable typed reminder intents
+### AD-11 [ADOPTED] [CURRENT] — Time enters through durable typed reminder intents
 
 - **Binds:** DateReached resume and expiry scheduling across Works, EventStore, and Platform.
 - **Prevents:** clocks in handlers, incompatible actor families, and discovery indexes treated as truth.
-- **Rule:** Handle never reads a clock. App works, actor type WorkItemReminderActor, actor ID
-  wra-<digest> stores PendingWorkIntent with Kind DateResume or Expiry, canonical tenant/item, due
-  UTC instant, ScheduleToken, source sequence, and typed payload. The digest is uppercase Crockford
-  Base32 SHA-256 over the length-prefixed canonical tuple (reminder-actor, tenant, item); a stored full
-  tuple mismatch is collision plus quarantine. EventStore owns
-  generic registration and reconciliation; Works owns intent translation; Platform owns Scheduler
-  persistence, HA, backup, and callback policy. Streams are authoritative; tenant and pending indexes
-  are discovery aids governed by AD-15, AD-16, and AD-27.
+- **Rule:** Works folds committed work events into SDK `ReminderIntent` values for date resume and
+  expiry. The domain handler receives commands and never reads a clock. The SDK owns the persistent
+  actor, registration, scheduling callbacks and reconciliation. The default actor type is
+  `WorksSdkReminderActor`. Use the SDK reminder codec for the `wra-` actor ID and the `wrs-` schedule
+  token. AD-25 binds expiry and AD-26 binds transport identity. Platform owns Scheduler persistence,
+  availability and restore. Recovery uses the control index and retained membership for discovery and
+  verifies candidates against their streams.
 
-### AD-12 [ADOPTED] [TARGET] [ASSUMPTION] — Deadlines are advisory until a witnessed timer command arrives
+### AD-12 [ADOPTED] [CURRENT] — Deadlines are advisory until a witnessed timer command arrives
 
 - **Binds:** overdue and expiry semantics.
 - **Prevents:** wall-clock-dependent replay and local deadline interpretation.
-- **Rule:** an item is not domain-expired merely because wall time passed. Only an AD-25 command carrying
-  the current persisted schedule witness may cause expiry. Revalidate this rule before cost-aware
-  scheduling introduces a logical clock.
+- **Rule:** scheduled expiry takes effect only through an authenticated timer command carrying the
+  current AD-25 witness. The SDK retires superseded callbacks as audited no-ops. An authenticated
+  ancestor cascade uses the `CascadeExpire` effect kind and `works.cascade-expire` purpose and a
+  witness-free command. The kernel reads no clock.
 
 ### AD-13 [ADOPTED] [CURRENT] — Resume is exact-match, first-success, and narrowly idempotent
 
@@ -229,7 +254,8 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   conditions. Canonicalize each kind and key and record every member in submitted order, including
   duplicates. Read legacy singular evidence as one member. While Suspended, the first exact kind/key
   match committed in the Work Item turn records the consumed condition and clears the collection.
-  A nonmatch leaves the conditions intact. Upon return to InProgress, a fresh command for the last
+  A nonmatch while Suspended produces a domain rejection and leaves the conditions intact. Upon return
+  to InProgress, a fresh command for the last
   consumed condition is a domain no-op. Exact transport redelivery replays the original disposition
   under AD-26. Other fresh triggers and all fresh Resume commands on terminal items reject.
 
@@ -244,7 +270,7 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   and AwaitConditions. AuthorityLevel values are stored but do not authorize v1 behavior; provenance
   and responsibility authorization are AD-23.
 
-### AD-15 [ADOPTED] [TARGET] [ASSUMPTION] — Tenant isolation includes disjoint data and control namespaces
+### AD-15 [ADOPTED] [CURRENT] [TARGET] [ASSUMPTION] — Tenant isolation includes disjoint data and control namespaces
 
 - **Binds:** identities, aggregate references, state/read-model keys, indexes, checkpoints, queries, and
   logs.
@@ -259,56 +285,58 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   paths must migrate before their consumers switch. Canonical means the input is already a 1..64
   character lowercase ASCII slug matching ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$; trust boundaries reject
   rather than transform other input. Claims, envelopes, references, keys, hashes, and equality reuse
-  those exact UTF-8 bytes. The current isolated Works dispatcher compares the command tenant to
-  the envelope tenant case-insensitively. For a payload tenant `tenant-a` and envelope tenant
-  `TENANT-A`, that comparison succeeds at the adapter. Target production ingress rejects the
-  noncanonical envelope before dispatch. Reserved tenant IDs are refused in either case.
+  those exact UTF-8 bytes. The current Works dispatcher requires domain `work`, an ordinal aggregate ID
+  match, a case-insensitive payload/envelope tenant match and consistency with any established state. It
+  refuses reserved tenants. The isolated adapter accepts `tenant-a` against `TENANT-A`. Target
+  production ingress rejects the noncanonical envelope before dispatch.
 
-### AD-16 [TARGET] [ASSUMPTION] — Shared rebuild uses one tenant/family epoch
+### AD-16 [CURRENT] [TARGET] [ASSUMPTION] — Shared rebuild uses one tenant/family epoch
 
 - **Binds:** capture-through-Commit consistency for roll-up, what's-next, topology, pending intents, and
   quarantine/parking.
 - **Prevents:** acknowledged live writes omitted by promotion and rebuilt queries that cannot recover
   pending work.
-- **Rule:** a CAS-created works-runtime-v3 epoch seals inventory and source high-watermarks for one
-  tenant. EventStore is the sole epoch and journal writer; every family physical key includes the
-  epoch. BeginBuilding fails until every active writer holds the required rebuild-protocol lease, and
-  every write validates the current epoch and lease in its commit path; stale writers fail without
-  acknowledgement. During Building, refreshed writers atomically append the live update and consumer
-  checkpoint to the epoch's durable catch-up journal; they mutate neither active nor staging documents.
-  Journal identity is (tenant, epoch, family, source stream, envelope position) with canonical-digest
-  conflict detection. Stage contains the complete family; Commit atomically promotes the manifest as
-  the sole reader selector, then drains catch-up only into the promoted generation. Readers report
-  stale/unavailable from the first journaled write until every post-capture position is applied and the
-  fence opens. Abort drains the journal into active before it deletes staging or clears stale state.
-  Readers never see a partial generation. Process-effect checkpoints restore separately from backup
-  and reconcile from source events plus AD-26 IDs before readiness.
+- **Rule:** EventStore exclusively owns the `works-runtime-v3` tenant/family manifest, generation
+  selection, write leases, journal and checkpoints. A rebuild seals its inventory and source positions.
+  Reads of related documents use one selected generation. Only a complete staged family can be promoted
+  atomically. Return stale or unavailable while applicable catch-up, parking or conflict prevents a
+  current answer.
+  A writer fenced during capture or owner handoff returns retry without advancing the checkpoint or
+  acknowledging delivery. When the SDK accepts a delivery into the journal, it durably binds source
+  position and content to that disposition before acknowledgement. After promotion, apply accepted work
+  to the promoted generation. On abort, account for accepted work against the active generation before
+  releasing the fence. Never skip an over-capacity delivery. AD-06 and AD-22 govern the target
+  registry-aware contents of this family. Process-effect checkpoints recover separately from source
+  evidence and AD-26 receipts.
 
-### AD-17 [ADOPTED] [TARGET] — Lifecycle and numeric validation have one authority
+### AD-17 [ADOPTED] [CURRENT] [TARGET] — Lifecycle and numeric validation have one authority
 
 - **Binds:** FR-6 through FR-10 validation and transition outcomes.
 - **Prevents:** per-handler transition tables and projections inventing state.
 - **Rule:** docs/lifecycle-transition-matrix.md is authoritative and must change atomically with
   lifecycle code and tests. Reports carry a positive delta. CorrectProgress replaces cumulative Done
   with a nonnegative value in the established Unit. ReEstimate replaces only the nonnegative estimate.
-  Both folds derive Remaining as max(Estimated − Done, 0) and preserve visible overrun.
-  ReEstimate never completes or reopens the item. Unit follows AD-04. Terminal own contribution is zero; an unestimated item contributes zero plus count.
+  Both folds derive Remaining as max(Estimated − Done, 0) and preserve visible overrun. The report
+  saturation and re-estimation rules are implemented. Audited correction and conditional reopen remain
+  delivery targets under AD-07.
+  ReEstimate never completes or reopens the item. Unit follows AD-04. Terminal items contribute zero and
+  add nothing to the unestimated count. An active unestimated item contributes zero and increments that
+  count by one.
   Due/TTL policy is edge configuration, never kernel configuration. Handoff, correction, reopen,
   completion-kind, and Unit-inheritance changes ship atomically with this matrix, the durable catalog
   and validators, aggregate behavior, projection folds, golden corpus, and conflicting fitness, unit,
   and integration tests.
 
-### AD-18 [ADOPTED] [TARGET] — Dependencies and sibling boundaries point inward
+### AD-18 [ADOPTED] [CURRENT] — Dependencies and sibling boundaries point inward
 
 - **Binds:** project references, domain ports, and owns-versus-references boundaries.
 - **Prevents:** Projections/Reactors depending on Server and domain modules duplicating reusable runtime.
-- **Rule:** Server -> Contracts, Projections -> Contracts, Reactor -> Contracts, and
-  Testing -> pure Works units. The executable may reference EventStore SDK and inward Works units.
-  The current architecture suite enforces its four production-project allowlist; the expanded diagram
-  below is the target and each added edge needs an explicit fitness rule. Contracts owns
-  IExpectationResolver and IExecutorRouter; v1 ships the no-LLM expectation
-  resolver and leaves the router unwired. Generic behavior is contributed to EventStore before Works
-  consumes it. Works stores sibling IDs only and resolves owned data on demand.
+- **Rule:** Contracts is the inward dependency for Server, Projections, Reactor and Testing. The
+  executable composes the four kernel projects with EventStore.DomainService and the Parties client. Its
+  adapters supply domain behavior to the SDK. Generic runtime capabilities belong in EventStore. The
+  five published libraries are listed in `tools/release-packages.json`. Platform composes the
+  executable. Only the explicit synthetic qualification profile admits a Platform runtime project into
+  that executable. Integration fixtures can reference Platform Identity and Composition sources.
 
 ~~~mermaid
 flowchart RL
@@ -316,70 +344,79 @@ flowchart RL
     Projections --> Contracts
     Reactor --> Contracts
     Testing --> Contracts
-    Testing --> Server
-    Testing --> Projections
-    Testing --> Reactor
+    Executable --> Contracts
     Executable --> Server
     Executable --> Projections
     Executable --> Reactor
     Executable --> EventStoreSDK
+    Executable --> PartiesClient
     Platform --> Executable
-    Platform --> EventStoreSDK
 ~~~
 
-| Sibling | Works owns | Works references |
+| Sibling | Works owns | Sibling authority |
 | --- | --- | --- |
-| Hexalith.Parties | ExecutorBinding semantics | PartyId; no Party profile copy |
-| Hexalith.Conversations | optional link semantics | ConversationCorrelationId; no content copy |
-| Hexalith.Tenants | tenant-closed domain rules | membership and tenant policy truth |
-| Hexalith.Commons | Works value-object validation | ULID generation/encoding helpers |
-| Hexalith.EventStore | aggregate and projection behavior | envelope, persistence, delivery, and generic runtime seams |
+| Hexalith.Parties | ExecutorBinding and the filter on Works queries | Party identity, resolved for the exact tenant and actor |
+| Hexalith.Conversations | Optional ConversationCorrelationId | Conversation content |
+| Hexalith.Tenants | Tenant-closed domain rules | Membership and tenant policy |
+| Hexalith.Commons | Works value-object validation | Shared identifier helpers |
+| Hexalith.EventStore | Aggregate behavior, read-model shapes and effect translations | Persistence, delivery, scheduling, receipts and process infrastructure |
+| Hexalith.McpCli | Eligible operations declared in released Works contracts | Shared MCP/CLI exposure after enrollment, authorization and live conformance |
+
+Contracts owns `IExpectationResolver` and `IExecutorRouter`. v1 supplies a non-LLM expectation resolver
+and leaves routing unwired. The November PRD records zero enrolled Works operations in McpCli.
 
 ### AD-19 [ADOPTED] [CURRENT] — Version authority follows current ownership
 
 - **Binds:** SDK, package, runtime image, and target-host version changes.
 - **Prevents:** updating the wrong file or describing target ownership as current reality.
-- **Rule:** before R1, Works global.json owns .NET/Aspire SDK pins,
-  src/Hexalith.Works.AppHost/Hexalith.Works.AppHost.csproj owns the matching explicit AppHost SDK pin,
-  and BuildConfigurationTests enforces their equality;
-  references/Hexalith.Builds/Props/Directory.Packages.props owns package pins, and
-  DaprSelfHostedMtls.cs owns Dapr runtime images. After R1, Platform owns host SDK, runtime images,
-  components, and topology pins. Versions change through dependency work with restore, Release build,
-  focused integration, and Platform parity evidence; prose never overrides those sources.
+- **Rule:** Works `global.json` selects the .NET SDK. The root Builds gitlink and imported Builds
+  catalog select Release dependencies. Platform owns host composition, Dapr components and topology. Its
+  Works verifier reads the Dapr runtime and CLI pins from the bound Builds catalog for both bootstrap
+  and launched fleet. A Debug source pairing requires the same source revision in the reviewed manifest,
+  Works gitlink and checkout, plus the matching evaluated Release version. An independently advanced
+  checkout needs a fresh source review. Package-only Release and exact-source Platform parity each
+  require their own evidence.
 
-### AD-20 [ADOPTED] [TARGET] — Platform host migration is parity-gated
+### AD-20 [ADOPTED] [CURRENT] — Platform owns the host and qualifies each cutover
 
-- **Binds:** repository ownership, current-to-target transition, preview policy, and R1-R11 removal.
-- **Prevents:** Works and Platform each assuming the other owns live behavior.
-- **Rule:** Hexalith.Platform, accountable to the Platform Maintainer, is the target host. Works
-  AppHost and ServiceDefaults remain until every applicable matrix row is green from Platform and
-  rollback is proved. Core Aspire 13.5.3 is stable; the selected Dapr hosting integration is preview
-  and is development/test-only unless the Platform Maintainer records a time-bounded production
-  exception with owner and stable-upgrade trigger. An absent producer seam cannot be marked green.
+- **Binds:** ownership of the executable, topology and the R1–R11 qualification contract.
+- **Prevents:** a second active host or a dependency change inheriting an older release's approval.
+- **Rule:** Works starts through `AddEventStoreDomainService` and `UseEventStoreDomainService`.
+  Hexalith.Platform owns the active Aspire/Dapr topology. The former Works AppHost and ServiceDefaults
+  survive only in a byte-verified rollback archive. Every candidate must bind its release package,
+  producer, Works/Platform sources and launched artifacts to all eleven rows, 44 proof kinds and
+  complete-fleet rollback. The CI profile uses Release packages. The full profile also proves source
+  Debug conformance.
 
-| Row | Seam | Target owner | Availability on 2026-09-12 | Proof before Works removal |
-| --- | --- | --- | --- | --- |
-| R1 | Aspire/Dapr topology, components, ACLs | Platform | Target absent | verify-works-host and parity scenarios |
-| R2 | Service defaults, health, telemetry | EventStore SDK + Platform | Core available | no forked defaults; readiness proof |
-| R3 | event subscription/delivery | EventStore SDK; Works handlers | Partial | origin, retry, quarantine tests |
-| R4 | projection, fan-out, rebuild fence | EventStore SDK; Works merge | Fan-out/fence absent | API contract, convergence, fenced rebuild |
-| R5 | Works queries | Works behind SDK | Partial; tenant query exists, Executor filter absent | authorization and result-filter tests |
-| R6 | typed durable reminders/reconciliation | EventStore SDK; Works intents | Generic seam absent | HA/backup/stale-fire/recovery proof |
-| R7 | checkpointed process runner | EventStore SDK; Works translations | Generic seam absent | crash, page-boundary, reissue proof |
-| R8 | recovery health and operations | Platform + SDK | Target absent | degraded-readiness and alert proof |
-| R9 | minimal Works domain-service executable | Works | Partial/transitional | remove custom host plumbing; canonical two-line SDK composition |
-| R10 | mTLS, policy, production profile | Platform | Transitional Works only | AD-24 negative and positive tests |
-| R11 | gateway command submission | EventStore SDK; Works identity policy | Gateway + trusted-intent API available; Works adapter/effect receipt/retention binding absent | AD-26 conflict/replay tests |
+| Row | Who supplies the seam | What qualification exercises |
+| --- | --- | --- |
+| R1 | Platform AppHost and Dapr components | Live topology and component policy |
+| R2 | Platform and SDK service defaults | Health and telemetry |
+| R3 | Platform subscription, SDK delivery and Works handlers | Origin, retry and quarantine |
+| R4 | SDK epoch writer and Works family folds | Convergence, rebuild, catch-up and generation selection |
+| R5 | Works query policy behind SDK ingress | Parties authorization and scoped results |
+| R6 | SDK reminders, Works intents and Platform Scheduler | Restart, stale callback and recovery |
+| R7 | SDK process runner and Works translations | Paging, crash recovery and receipt replay |
+| R8 | SDK readiness and Platform operations | Degradation, alerting and audited disposition |
+| R9 | Works domain-service executable | Canonical SDK composition and protected routes |
+| R10 | Platform security policy | mTLS, origin refusals and production admission controls |
+| R11 | SDK gateway and Works delegated effects | Target receipt replay and identity conflicts |
 
-Each absent seam requires a named producer artifact, minimum published package/API contract test,
-consumer story, and proof command before the row can turn green.
+The refreshed Platform Development preview requires an owner-provisioned `Platform:Works:DevelopmentCatalogProfile`. When receipts are retained, restore the exact private profile, digest key ring, SDK catalogue custody and matching Redis/Scheduler fleet together. [Development profile](../../references/Hexalith.Platform/docs/works-development-catalog-profile.md)
+
+The October cutover established this boundary with a passing 11-row, 44-proof packet and fleet restore on EventStore 3.126.0. The archived topology serves rollback qualification. The Platform preview refuses production admission. Historical proofs, the local identity preflight and the current CI result have distinct scopes. See [the cutover record](../../docs/platform-hosting-cutover.md).
 
 ### AD-21 [TARGET] [ASSUMPTION] — The Work-Tree Registry is the sole topology authority
 
 - **Binds:** FR-13, FR-16, FR-26, wire identity, lifecycle, fencing, and topology reads.
 - **Prevents:** two parents, cycles from stale caller facts, ghost edges, late commands after release,
   and multiple topology truths.
-- **Rule:** the registry is EventStore aggregate
+- **Rule:** today Create and SpawnChild validate the supplied ancestry and depth against local evidence.
+  Separate parent streams cannot arbitrate competing claims on the same child. Until registry admission
+  and recovery pass the two-parent and restart cases, restrict parented operations to a trusted
+  single-writer workflow wherever stale ancestry could corrupt the tree.
+
+  The target registry is EventStore aggregate
   (tenant, domain=work-tree, aggregateId=registry), publishes work-tree.events, and is consumed
   at /work-tree/events. Its lifecycle is Reserved -> Creating -> Attached or Reserved -> Released;
   only Reserved may release before create authorization. EdgeReserved carries the complete child-create payload;
@@ -405,7 +442,10 @@ validates it immediately before registry dispatch. It binds tenant, parent, chil
 digest, suspend flag, and parent envelope sequence. suspend=false requires a nonterminal parent;
 suspend=true requires InProgress or Suspended, so Created, Assigned, and Queued reject before reserve.
 If the parent changes after admission, the attachment rules above cover the reachable
-InProgress/Suspended/terminal states. Retrying the identical witness is idempotent.
+InProgress/Suspended/terminal states. In the same registry turn that reserves the edge, check single
+parent, cycles and permitted depth against tenant topology, including outstanding reservations. Reject a
+conflicting request before authorizing any child write. An exact retry resolves to the original
+reservation.
 
 Reconcile the matching child's durable completion with installation of the wait for that attachment
 in either delivery order. If the child completes first, retain the evidence across restarts. Once the
@@ -423,7 +463,10 @@ process/schedule primitives; Platform resolves trusted MaxDepth and timeout poli
 tenant before admission. The v1 MaxDepth default is 32 and breadth is uncapped. Consumers switch only
   after a per-tenant migration proves registry equivalence. Production admission also requires a
   Platform-supplied tenant topology quota; missing or exhausted quota fails before EdgeReserved.
-  Breadth has no domain cap beneath that operational quota. EventStore snapshots the registry, bounds
+  Breadth has no domain cap beneath that operational quota. The current SDK process profile admits five
+  direct-child effects per terminal envelope. A sixth quarantines the whole envelope before target
+  submission. Qualify coherent process budgets for larger fan-out. EventStore snapshots the registry,
+  bounds
   per-command replay, exposes saturation/backpressure, and proves latency at the configured quota.
 
 ### AD-22 [TARGET] [ASSUMPTION] — Live roll-up fans out absolute folded contributions
@@ -438,9 +481,10 @@ tenant before admission. The v1 MaxDepth default is 32 and breadth is uncapped. 
   and CAS-merges it into the item's self slot plus every ancestor resolved through the exact AD-21
   Attached chain. A Reserved, missing, stale, or mismatched attachment is not acknowledged; an Attached
   transition triggers deterministic backfill. Shared rebuild is repair/migration, never routine fan-out.
-  Partial results are never served as complete; repair/rebuild exposes an explicit unavailable/stale
-  state. After a durable roll-up or what's-next change commits, the EventStore notifier seam publishes
-  only the changed key, never the model payload. WorkContributionSnapshot is a non-domain projection
+  Partial results are never served as complete. Repair or rebuild exposes the applicable unavailable or
+  stale state. The current SDK adapter emits no invalidations. A future notification transport may
+  publish only the changed key after durable commit. Its activation is deferred.
+  WorkContributionSnapshot is a non-domain projection
   message derived only from a committed EventStore envelope; it is never appended to Work Item or
   Registry streams and never advances payload Sequence. Works.Projections owns the fold and snapshot,
   EventStore owns the generic merge/relationship SPI without referencing Works, and only the Works
@@ -454,13 +498,19 @@ tenant before admission. The v1 MaxDepth default is 32 and breadth is uncapped. 
 - **Binds:** external ingress, internal effects, acting Party, and responsibility authorization.
 - **Prevents:** tenant assertion as authority, global-admin workload bypass, and a compromised service
   invoking unrelated commands.
-- **Rule:** Platform authenticates external OIDC identity and derives tenant/actor through
+- **Rule:** the current gateway checks a trusted effect's scope and Works verifies command, workload and
+  purpose before delegation to the kernel. The synthetic Platform fixture can issue effect authority.
+  Production issuance and the target actor-turn responsibility check require their own evidence. In the
+  production design, Platform authenticates external OIDC identity and derives tenant/actor through
   Hexalith.Tenants. The Hexalith.Platform Workload Delegation Service is the sole issuer of a
   short-lived asymmetric-signed WorkloadDelegation JWT. It binds the eventstore-gateway audience,
-  full AD-26 tuple and EffectId, target, command type, canonical command digest, tenant, purpose,
+  full AD-26 tuple and EffectId, target, command type, command digest, tenant, purpose,
   causation, issued time, and expiry. EventStore validates signature/audience/expiry, recomputes every
-  binding, and compares the target app to the mTLS/ACL-attested dapr-app-id before enforcing
-  CommandOriginPolicy[(domain, commandType)]; allow-listed workloads receive no global-admin bypass.
+  binding and enforces the origin policy for the domain and command. Domain-service ingress requires the
+  receiving sidecar's app-channel token and a separately signed workload assertion binding caller,
+  receiver and operation. If supplied, `dapr-caller-app-id` must agree with the signed caller.
+  `dapr-app-id` selects the destination. Delegated effects independently bind their purpose, causation,
+  target and command digest. Allow-listed workloads remain tenant-scoped.
 
 ReportProgress, CorrectProgress, Complete, Suspend, Handoff, and Reject additionally require the
 authenticated acting Party to equal the current Executor. Claim from Assigned requires the same match;
@@ -487,25 +537,30 @@ disclosure.
   publishes Works/registry events; only named identities invoke reminder, Reactor, replay, rebuild,
   repair, and quarantine paths. A machine-readable production profile is required; startup/admission
   refuses missing trust, ACL, delegation, secret-store, Scheduler, state-store, or audit configuration.
-  Direct-port, wrong-app, wrong-trust-domain, unauthorized publish, forged sequence, wrong tenant or
+  The canonical host defaults to denying privileged process revalidation until an authorized operator
+  and durable audit provider are configured. Platform's synthetic development authorities are confined
+  to qualification. Direct-port, wrong-app, wrong-trust-domain, unauthorized publish, forged sequence,
+  wrong tenant or
   purpose, and ordinary-user SpawnChild tests must fail; valid production-policy reminders must pass.
 
-### AD-25 [TARGET] [ASSUMPTION] — Expiry carries a persisted schedule witness
+### AD-25 [CURRENT] [TARGET] [ASSUMPTION] — Expiry carries a persisted schedule witness
 
 - **Binds:** FR-10 expiry, Due Date/TTL policy, reschedule safety, and recovery.
 - **Prevents:** stale reminders expiring rescheduled work and different hosts choosing different policy.
 - **Rule:** Platform resolves tenant-specific Due-Date/TTL policy and supplies an effective expiry
   instant before domain admission; create and reschedule facts persist that instant and a deterministic
   ScheduleToken additively. The token is wrs-<digest>, where digest is uppercase Crockford Base32
-  SHA-256 over the length-prefixed canonical tuple (schedule, tenant, item, effective-expiry UTC ticks,
-  WorkItem state-change schedule revision). Reminder names are date-<token> or expiry-<token>; a stored
+  SHA-256 over the canonical SDK tuple (schedule, tenant, item, effective-expiry UTC ticks, schedule
+  revision). A supplied expiry revision is positive and each replacement strictly increases it. Reminder
+  names are date-<token> or expiry-<token>; a stored
   full tuple mismatch is collision plus quarantine. One AD-11 Expiry intent mirrors them.
-  ExpireWorkItem echoes both; the aggregate rejects a mismatch and applies the
-  lifecycle matrix for a match. Registration, cancellation, and reschedule derive mechanically from
+  Scheduled ExpireWorkItem echoes the witness. A missing or mismatched witness on a witnessed item is
+  refused, while a match follows the lifecycle matrix. Separately authenticated CascadeExpire follows
+  AD-12. Registration, cancellation, and reschedule derive mechanically from
   committed lifecycle events. Policy never enters Handle; changing policy affects future commands,
   not historical replay.
 
-### AD-26 [TARGET] [ASSUMPTION] — Cross-aggregate effects have deterministic durable identity
+### AD-26 [CURRENT] [TARGET] [ASSUMPTION] — Cross-aggregate effects have deterministic durable identity
 
 - **Binds:** R11 and every Reactor, reminder, cascade, child-resume, and recovery submission.
 - **Prevents:** duplicate logical effects after redelivery, ownership migration, status expiry, backup
@@ -513,19 +568,24 @@ disclosure.
 - **Rule:** EffectId is uppercase Crockford Base32 SHA-256 over a fixed-order binary tuple:
   each text field is canonical UTF-8 preceded by a four-byte big-endian length; numeric fields are
   eight-byte big-endian. Tuple order is tenant, source domain, source aggregate, source envelope
-  sequence, effect kind, target domain, target aggregate, effect ordinal. One versioned EventStore-owned
-  codec defines canonical text, semantic command fields, effect-kind identifiers, tuple encoding, and
-  every AD-11/25/26 digest. Text uses the length rule above; integers are signed eight-byte big-endian;
+  sequence, effect kind, target domain, target aggregate, effect ordinal. EventStore's versioned effect
+  and reminder codecs own these encodings. For implemented delegated effects, the command digest is
+  SHA-256 over the exact submitted payload bytes. Retain or reproduce identical bytes for retries. The
+  target G1 semantic command encoding requires a versioned field contract and shared byte vectors before
+  producers switch. Text uses the length rule above; integers are signed eight-byte big-endian;
   SHA-256 renders most-significant-bit first through alphabet 0123456789ABCDEFGHJKMNPQRSTVWXYZ with
-  final zero-bit padding as exactly 52 uppercase characters and no separator padding. Effect ordinal is
-  an immutable catalog value per (source event, effect kind, target role), never traversal order.
+  final zero-bit padding as exactly 52 uppercase characters and no separator padding. Single-target
+  process effects use the SDK primary ordinal. DateResume derives each ordinal from the zero-based
+  position of a distinct DateReached condition sorted by ordinal correlation key within its source
+  suspension. Preserve these assignments on replay. New effect families must define their ordinal before
+  enrollment.
   MessageId and IdempotencyKey both reuse wrk-<EffectId>, satisfying gateway-safe identifiers.
 
   EventStore exclusively owns a private target-scoped effect inbox in the target actor partition.
-  Receipt lookup and a receipt containing EffectId, full tuple, semantic command digest, success,
+  Receipt lookup and a receipt containing EffectId, full tuple, command digest, success,
   rejection, or no-op disposition, workload, delegation purpose, and causation commit atomically with
   target events and metadata. Works domain streams contain no receipt event. A retry with the same key,
-  full tuple and semantic command digest returns its recorded disposition without redispatch. Reusing
+  full tuple and command digest returns its recorded disposition without redispatch. Reusing
   the key with a different tuple or digest creates an identity conflict and quarantine entry and leaves
   the receipt and target unchanged. Receipts survive the Work Item lifecycle and share the tenant's
   legal-hold/offboarding retention class. Receipt and
@@ -534,7 +594,7 @@ disclosure.
   EventStore Commit retention and are an optimization, not the correctness boundary. Golden vectors
   cover every effect family before its producer is registered.
 
-### AD-27 [TARGET] [ASSUMPTION] — Recovery is lossless, periodic, and readiness-affecting
+### AD-27 [CURRENT] [TARGET] [ASSUMPTION] — Recovery is lossless, periodic, and readiness-affecting
 
 - **Binds:** R7/R8 stream paging, checkpointing, retry, parking, and operations.
 - **Prevents:** page-boundary event loss, startup-only recovery, silent parking, and Ready while work is
@@ -544,9 +604,10 @@ disclosure.
   page validates domain, canonical tenant, aggregate, strictly increasing envelope positions, and
   complete decoding of state-affecting evidence. Bounded hot retry transitions to a durable
   tenant-scoped unresolved/quarantine record. The same validator and quarantine path govern live,
-  replay, repair, and rebuild. works-recovery readiness remains degraded, bounded
-  kind/reason metrics and alerts remain active, and periodic retry continues until authenticated,
-  audited disposition. A delivery acknowledges only after side effect/checkpoint or quarantine capture.
+  replay, repair, and rebuild. Works exposes SDK recovery status through `/ready` and bounded
+  `eventstore.domain.recovery.*` telemetry. Incomplete discovery remains retryable. Unresolved work
+  keeps readiness degraded until recovery or authenticated, audited disposition. A delivery acknowledges
+  only after side effect/checkpoint or quarantine capture.
 
 ### AD-28 [TARGET] [ASSUMPTION] — Durable data has explicit privacy, audit, and recovery owners
 
@@ -560,7 +621,8 @@ disclosure.
   authorization denial are audited; audit-sink failure blocks privileged mutation. Payloads never enter
   logs, metrics, traces, or ProblemDetails.
 
-Production objectives are RPO at most 15 minutes, RTO at most four hours, and quarterly restore drills.
+The proposed production objectives are RPO at most 15 minutes, RTO at most four hours, and quarterly
+restore drills. G6 and G8 require accountable owners to approve and demonstrate these objectives.
 No non-synthetic shared data or new durable catalog type is admitted until the accountable data owner
 approves retention/legal hold/offboarding and a restore drill proves stream, registry, projection,
 pending-intent, checkpoint, audit, and tenant-key order.
@@ -577,7 +639,9 @@ pending-intent, checkpoint, audit, and tenant-key order.
   tenant-scoped quarantine and degrades the affected capability. Replay/disposition is authenticated,
   audited, and re-enters the same validation path. Child streams without reservation evidence require
   the AD-21 one-time migration and never become newly Attached by inference. No V2 command/event
-  type or renamed discriminator replaces an existing durable type.
+  type or renamed discriminator replaces an existing durable type. Story 5.5's 4,000-character
+  Obligation limit applies at new Create admission when delivered. Replay must still accept longer
+  historical WorkItemCreated payloads.
 
 ## Consistency Conventions
 
@@ -594,47 +658,27 @@ pending-intent, checkpoint, audit, and tenant-key order.
 
 ## Stack
 
-This is seed observed on 2026-09-12; AD-19 names the live authorities.
+The following values come from the Works `07020c84` tree and its recorded Builds catalog. The Platform
+host and its release evidence own the deployed runtime versions.
 
-| Name | Version |
-| --- | --- |
-| .NET SDK | 10.0.400 floor with latestPatch; 10.0.401 resolves locally |
-| .NET runtime | 10.0.12 current servicing reference |
-| C# | 14 |
-| Aspire core | 13.5.3 |
-| CommunityToolkit Aspire Dapr hosting | 13.5.0-preview.1.260825-0345 |
-| Dapr runtime | 1.18.3 in transitional Works host; 1.18.4 current release |
-| Dapr .NET SDK packages | 1.18.5 at the root-tracked Builds gitlink; 1.18.7 in the locally advanced Builds checkout |
-| Hexalith.EventStore packages | 3.103.0 |
-| Hexalith.PolymorphicSerializations | 1.19.2 |
-| Hexalith.Commons | 2.30.0 |
-| xUnit v3 | 4.0.0 |
+| Name | Version | Authority |
+| --- | --- | --- |
+| .NET SDK / Works target | 11.0.100 with latestPatch / net11.0 | `global.json` and `Directory.Build.props` |
+| Compatibility SDK | 10.0.404 | README compatibility fixtures and Platform checks |
+| EventStore Release packages | 5.4.0 | Recorded Builds catalog and Works source-pair manifest |
+| PolymorphicSerializations Release package | 2.0.0 | Recorded Builds catalog and Works source-pair manifest |
+| Shared build catalog | 6.4.4 | Works gitlink `fe68718b` and `.github/hexalith-ci.json` |
 
-Source provenance is explicit: the root tracks EventStore at 6b0247ac and Builds at a32cb422; the
-local checkouts are advanced to a568af4e and fa647278 respectively. Reviewed EventStore APIs are
-unchanged across those two EventStore commits. The Builds advance changes Dapr SDK packages from
-1.18.5 to 1.18.7, so the table reports both rather than treating local submodule drift as root state.
+| Debug dependency | Works gitlink at `07020c84` | Reviewed source manifest | Pulled checkout on November 21 |
+| --- | --- | --- | --- |
+| EventStore | `8bfc4ca13` | `607072c68` | `7435254cc` |
+| PolymorphicSerializations | `df1a0e5c` | `c6d0dfce` | `c6d0dfce` |
+
+The refreshed Platform checkout (`abb62da8`) binds released Builds 6.4.4. The separate Builds checkout (`e1380b81`) carries later catalog changes. Use Platform's bound catalog to select the parity toolchain. Both dependency gitlinks in the table differ from the reviewed manifest in the recorded Works tree. On the refreshed checkout `scripts/verify-source-debug.py --check-only` refused EventStore source revision drift. Review the source/package pairs together before qualifying a new revision. [Reviewed dependency manifest](../../tools/source-debug-dependencies.json)
 
 ## Structural Seed
 
-~~~text
-src/
-  Hexalith.Works.Contracts/     # durable contracts, values, boundary ports
-  Hexalith.Works.Server/        # pure Work Item and Work-Tree Registry behavior
-  Hexalith.Works.Projections/   # pure folds, contribution snapshots, merge strategies
-  Hexalith.Works.Reactor/       # mechanical cross-aggregate translations
-  Hexalith.Works/               # minimal EventStore domain-service executable
-tests/
-  Hexalith.Works.UnitTests/
-  Hexalith.Works.PropertyTests/
-  Hexalith.Works.IntegrationTests/
-  Hexalith.Works.ArchitectureTests/
-~~~
-
-Every listed project exists now. The AppHost and ServiceDefaults, bespoke /project route, Dapr
-actor/reminder wiring, and local recovery are transitional migration sources, not target topology.
-Registry behavior and the generic EventStore R4/R6/R7 seams are target additions within these
-boundaries, not separate repositories.
+The Works solution contains four pure kernel libraries under `src/` (Contracts, Server, Projections and Reactor), the `Hexalith.Works` domain-service executable and the infrastructure-free `Hexalith.Works.Testing` package under `tests/`. Unit, property, integration and architecture tests exercise these boundaries. The sample host is a consumer. The Work-Tree Registry in AD-21 is proposed. [Solution inventory](../../Hexalith.Works.slnx)
 
 ## Capability → Architecture Map
 
@@ -652,34 +696,30 @@ boundaries, not separate repositories.
 
 ## Readiness Gates
 
-The target architecture is finalizable while implementation readiness remains conditional.
+Readiness is conditional. Each gate applies to the source, package and environment it verifies.
 
-| Gate | Required evidence |
+| Gate | Evidence required |
 | --- | --- |
-| Recovery correctness | Fix both double-advanced stream cursors; use the AD-27 validator on every path; prove multi-page, restart, retry, quarantine, disposition, alert, and degraded-readiness behavior |
-| Ordered delivery work | AD-26 transport identity before registry; then registry, fan-out, typed expiry, Reactor recovery |
-| Platform migration | Every AD-20 R1-R11 row has producer/API version, consumer story, and Platform proof |
-| Runtime compatibility | Upgrade or record accountable time-bounded risk acceptance for the exact .NET/Aspire/CommunityToolkit/Dapr tuple, then prove restore, Release build, focused integration, and Platform parity |
-| Security | AD-23/24 negative matrix plus positive production reminder path |
-| Production data | AD-28 owner approval, retention/offboarding policy, secret rotation, restore drill |
-| Lifecycle migration | Transition matrix, catalogs/validators, durable contracts, aggregate/projection logic, golden corpus, and conflicting tests change atomically |
-| CI architecture fitness | Works Maintainer adds a tracked step that runs dotnet tests/Hexalith.Works.ArchitectureTests/bin/Release/net10.0/Hexalith.Works.ArchitectureTests.dll after the Release build; compilation alone is not proof |
+| Dependency identity and CI | Reconcile both reviewed source/package pairs under AD-19. Run the four ordinary Release test projects, including ArchitectureTests, on the candidate revision. At Works `07020c84` the shared CI job failed at “Stage 3 unit tests” and skipped `custom-platform-parity`. [CI run](https://github.com/Hexalith/Hexalith.Works/actions/runs/44874235428) |
+| Platform and recovery | Pass all AD-20 rows, 44 proof kinds and fleet restore for the selected public package and exact source. Exercise page boundaries, restart, retries, conflict and audited disposition. Production requires the AD-23/24 origin and policy evidence and AD-28 data-owner approval. |
+| Runtime compatibility | Qualify the exact .NET, Aspire, Dapr hosting adapter and Dapr runtime tuple with restore, Release build, integration and Platform parity. Upgrade an unsupported or preview dependency, or record a time-bounded production exception with an accountable owner and upgrade trigger. |
+| Work-tree integration | Establish AD-26 receipts before registry effects. Prove parent-turn admission, pre-dispatch fencing, two competing parents, restart and per-tenant migration before concurrent registry-backed writes. |
+| Effort migration (G3) | Deploy aggregate and projection changes together. Identify affected snapshots and rehydrate from raw events on a restored copy. Rebuild into a fresh epoch, drain catch-up and verify aggregate, Roll-Up and eligible/ineligible queue results before reopening traffic. A snapshot that discarded Done requires its original events. |
+| Lifecycle and schema | Update the transition matrix, catalog, validators, folds, golden corpus and affected tests together. Cover handoff, correction/reopen, child-before-wait, termination after reopen and active-item detail authorization. Apply AD-29 to new wire fields and G5 to mixed-version readers. |
+| Capacity and recovery budgets (G8) | Product and Architecture bind an environment, realistic history sizes, latency percentiles, measurement window and failure policy. Exercise journal capacity and recovery at that load. |
 
-docs/eventstore-api-surface-constraints.md must be refreshed against the root-tracked EventStore
-gitlink before it can close the former VAL-H11 schema matrix. New registry, reminder, handoff,
-correction, and fencing types extend that evidence under AD-29.
+The PRD's G1–G8 exit criteria apply separately. G4 requires authorization and audit for the tenant control index. G6 requires approved retention and a restore drill. G7 requires verified identity and trusted ingress. G2 requires a successful production-policy reminder test. [Product gates](prds/prd-works-2026-06-14/prd.md#101-v1-dependency-and-exit-gates)
 
 ## Deferred
 
-| Item | Why it can wait | Revisit condition |
+| Item | Owner or decision already in force | Revisit condition |
 | --- | --- | --- |
-| Stable Aspire/Dapr hosting adapter | Transitional Works host remains; preview is not production-approved | Before R1 production acceptance |
-| EventStore generic R4/R6/R7 APIs | Target ownership is fixed; APIs do not yet exist | Producer artifact and minimum package before each consumer story |
-| Final legal retention/hold durations | AD-28 prevents real-data admission meanwhile | Accountable data-owner approval |
-| Cost-aware logical time | No v1 cost scheduling | Before Theme 5 |
-| AuthorityLevel enforcement/routing roles | Provenance and executor responsibility are already enforced independently | Before first multi-team production tenant or Theme 4 |
-| UI stack, including Fluent UI V5 | Works v1 is headless | First UI capability |
-| Provider-specific production infrastructure | Platform owns provider selection; security/DR contracts already bind it | Platform deployment design |
+| Production host admission | Platform owns host policy, workload identity, secrets, privileged audit and restore | Accountable owners qualify the production configuration and AD-28 data lifecycle |
+| Incremental roll-up and changed-key notifications | Works supplies folds and the SDK owns delivery | Registry equivalence and G8 measurements for fan-out, plus a transport and post-commit delivery decision for notifications |
+| Final legal retention and hold durations | Accountable data owner under AD-28 | Before non-synthetic shared data admission |
+| Cost-aware time and routing roles | The kernel preserves AuthorityLevel as data | Before the routing or cost-scheduling themes |
+| UI and production channel adapters | v1 is headless. Shared McpCli owns eligible MCP/CLI operations | First approved surface with released contracts and conformance evidence |
+| Provider-specific infrastructure | Platform owns provider selection | Production deployment design |
 
 ## Legacy Decision Map
 
