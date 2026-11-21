@@ -1,6 +1,6 @@
 # EventStore API Surface Constraints
 
-<!-- EventStore-current-source: 8bfc4ca132e2eb4b0a5f207908f10ea870e8aa99 -->
+<!-- EventStore-current-source: 2ec21f631a2e292fba8c5537fe665ab275ed1081 -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
