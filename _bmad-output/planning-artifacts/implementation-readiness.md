@@ -1,5 +1,22 @@
 # Implementation Readiness
 
+## Current assessment · 21 November 2026
+
+**Verdict: PASS for sprint planning.** Works `cd617eb1` is the reviewed product baseline. The five Epic 5 stories have implementable acceptance criteria, dependencies, source entry points and compatibility checks. Product execution and release qualification have their own outstanding work.
+
+| September finding | Evidence at this review |
+| --- | --- |
+| IR-01 · Re-estimation and replay | FR-9, AD-17, candidate F2-F and Story 5.3 preserve cumulative Done when the estimate falls. AD-17 and Story 5.3 identify the legacy replay fixture, snapshot recovery from the stream, cache invalidation and live/rebuilt comparison. Story 5.1 now binds one- and two-event exhaustion to an infrastructure fault before event construction. |
+| IR-02 · Standalone stories | Validated all five handoffs against the numbered stories in the epic. The 7, 7, 6, 5 and 6 acceptance scenarios in Stories 5.1 through 5.5 respectively match the epic text. All referenced source and test paths exist. |
+| IR-03 · Multiple Await-Conditions | FR-14/15, AD-13, the lifecycle matrix and Story 5.2 preserve submitted order and duplicates. The first committed exact match clears the wait. The current Suspend/Resume handlers and the legacy singular event reader support the preservation boundary. |
+| IR-04 · UX sources and actor authority | The design and experience documents cite the amended PRD/addendum. FR-17 and §9 identify the current outgoing Executor as the Handoff actor. The experience guide uses server-reported capability for display and submission feedback. |
+
+**Sequencing.** Stories 5.1 and 5.4 can start independently. Story 5.2 precedes final 5.3 integration. Changed durable evidence in 5.3 and any new rejection producer in 5.5 depend on 5.4. The Epic 1 retrospective gates still apply at implementation and completion. Story 4.9 remains active. This review supplies planning evidence only.
+
+[Change proposal](sprint-change-proposal-2026-11-21.md) · [Approved handoff](sprint-change-proposal-2026-09-15.md) · [Epic 5](epics.md#story-51-make-progress-and-event-ordinals-overflow-safe)
+
+## Historical assessment · 15 September 2026
+
 **Project:** works
 **Assessment date:** 2026-09-15
 **Intent:** Sprint planning

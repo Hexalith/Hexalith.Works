@@ -349,6 +349,21 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   and validators, aggregate behavior, projection folds, golden corpus, and conflicting fitness, unit,
   and integration tests.
 
+  **Payload ordinal exhaustion (Story 5.1 target).** After determining that a command will succeed,
+  determine the number of state-changing payloads for the whole result. For a current Works payload
+  sequence `s` (zero before creation) and a result of `n` payloads, require
+  `s <= long.MaxValue - n` before constructing the first event. On exhaustion the handler throws
+  `System.OverflowException` as an infrastructure integrity fault. It returns no domain result.
+  Nothing from the failed act is appended or published, and replay retains the previous state.
+  Rejections and no-ops consume zero payload ordinals. EventStore owns envelope sequence numbers.
+  Cover both two-event paths, progress followed by completion and spawn followed by suspension.
+  A two-event result fits exactly at `long.MaxValue - 2` and fails at `long.MaxValue - 1`.
+
+  **Replay migration (Story 5.3).** Replay a legacy stream whose estimate falls below recorded Done,
+  then rises again. Compare aggregate, query and rebuilt projection values at the same stream
+  position. A snapshot that already lost Done must be rebuilt from source events. Invalidate
+  affected caches and switch writers and readers together after that comparison passes.
+
 ### AD-18 [ADOPTED] [CURRENT] — Dependencies and sibling boundaries point inward
 
 - **Binds:** project references, domain ports, and owns-versus-references boundaries.

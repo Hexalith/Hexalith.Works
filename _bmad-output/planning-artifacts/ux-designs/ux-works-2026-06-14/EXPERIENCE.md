@@ -2,7 +2,7 @@
 name: Works
 description: Behavioral contract for Work Item coordination across the headless kernel and explicitly partitioned future surfaces.
 status: final
-updated: 2026-09-12
+updated: 2026-11-21
 sources:
   - "{planning_artifacts}/prds/prd-works-2026-06-14/prd.md"
   - "{planning_artifacts}/prds/prd-works-2026-06-14/.memlog.md"
@@ -46,8 +46,8 @@ The v1 outcome is headless. Builders exercise the full command pipeline through 
 
 Resolve conflicts in this order:
 
-1. The latest five accepted entries in the PRD workspace `.memlog.md` override conflicting rendered PRD/addendum text until regeneration.
-2. The amended PRD/addendum govern all other product semantics and horizons.
+1. The amended PRD and addendum govern product semantics and delivery horizons.
+2. The PRD decision log records provenance. An accepted entry supplies a temporary override only until its decision appears in the rendered PRD.
 3. Current FrontComposer context/spines govern shell and composition.
 4. Current Works architecture supplies compatible implementation constraints.
 5. The brief/addendum supply vision.
@@ -123,7 +123,7 @@ FrontComposer command lifecycle is inherited unchanged: Submitting, Acknowledged
 
 ## Lifecycle and Action Matrix
 
-The PRD workspace memlog owns the superseding Handoff/CorrectProgress decisions; the rendered PRD owns unchanged cells. Read this status matrix in parallel with **Actor and origin availability**: a legal status cell does not authorize an actor. `→X` means accepted and resting at X, `R` means domain rejection with no state change, and `NoOp` means an acknowledged duplicate with no event; authorization denial happens before the matrix.
+The amended PRD defines Handoff in FR-17, CorrectProgress in FR-8, and actor eligibility in §9. Read this status matrix in parallel with **Actor and origin availability**: a legal status cell does not authorize an actor. `→X` means accepted and resting at X, `R` means domain rejection with no state change, and `NoOp` means an acknowledged duplicate with no event; authorization denial happens before the matrix.
 
 | From / act | Assign | Queue | Claim | Suspend | Resume | Handoff | Complete | Cancel | Reject | Expire |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -137,7 +137,7 @@ The PRD workspace memlog owns the superseding Handoff/CorrectProgress decisions;
 | **Rejected** | R | R | R | R | R | R | R | R | NoOp for duplicate non-requeue Reject; requeue Reject is R | R |
 | **Expired** | R | R | R | R | R | R | R | R | R | NoOp |
 
-Starting work is Claim. Assign/rebind remains separate and does not replace active Handoff. Handoff is an auditable binding change available by status in InProgress and Suspended; it preserves Work Status and, when Suspended, the Await-Condition set. Its actor eligibility and confirmation policy remain source-open, so every surface uses the server-authoritative capability and denial result rather than inferring permission.
+Starting work is Claim. Assign/rebind remains separate and does not replace active Handoff. In the target Handoff flow, the authenticated current Executor transfers the binding while the item is InProgress or Suspended. Work Status and the ordered Await-Conditions survive the transfer. Show the action when the server reports it available and update responsibility after confirmation.
 
 ### Actor and origin availability
 
@@ -151,13 +151,13 @@ Starting work is Claim. Assign/rebind remains separate and does not replace acti
 | Queued Claim | An admitted tenant actor may Claim; the accepted winner becomes the bound Executor. Competing/stale claims recover through the domain/infrastructure outcomes below. |
 | Trusted-origin action | System/Reactor actions are never exposed as user actions. A missing or invalid designated origin is denied and audited; the UI reports unavailable system processing without exposing trust internals. |
 
-The full executor-bound action list and Handoff actor-eligibility rule are not yet rendered in the PRD. Consumers must not hard-code either list from this UX document; bind controls to authoritative command capability metadata and denial outcomes.
+PRD §9 defines executor-bound acts. For Handoff the outgoing Executor submits the command. A different acting Party receives an authorization denial. Bind controls to the capability returned by the server and retain the submitted input if authority changes before submission.
 
 ### Cross-cutting action consequences
 
-The governing PRD and accepted PRD-memlog decisions own command and Reactor mechanics; this section records only their UX consequences.
+The amended PRD governs command and Reactor behavior.
 
-- **Effort and completion:** accepted progress-to-zero may complete; explicit Complete is a separate terminal cause; cumulative CorrectProgress preserves prior evidence and may reopen only progress-completed work; ReEstimate/Reschedule never complete. CorrectProgress bounds, Unit/note rules, and confirmation remain source-open and come from authoritative command metadata.
+- **Effort and completion:** accepted progress-to-zero may complete; explicit Complete is a separate terminal cause; cumulative CorrectProgress preserves prior evidence and may reopen only progress-completed work; ReEstimate/Reschedule never complete. For CorrectProgress the current Executor supplies a nonnegative cumulative Done in the established Unit. Show overrun when Done exceeds Estimated and display zero Remaining. Preserve the entered value until the server confirms the outcome.
 - **Await and Conversation:** present accepted, consumed/idempotent, conflicting, and rejected outcomes from authoritative evidence. Name every active Await-Condition and keep Conversation correlation separate from content; do not reproduce matching or storage rules here.
 - **Child and termination:** use the Reserved/Creating/Attached/released-or-superseded states below and UJ-3 for presentation. Only Attached work enters tree/Roll-Up/cascade, only Cancel/Expire cascade, and delayed invalid work cannot mutate topology. The durable evidence name/protocol remains source-open.
 
@@ -172,7 +172,7 @@ The governing PRD and accepted PRD-memlog decisions own command and Reactor mech
 
 ## Roll-Up and Freshness
 
-The governing PRD (FR-11/FR-12) owns Roll-Up calculation and the accepted PRD memlog owns corrected-completion and attachment effects. The UI renders projection evidence; it does not recompute it.
+The governing PRD (FR-11/FR-12) owns Roll-Up calculation and FR-8 and FR-16 govern corrected completion and attachment effects. The UI renders projection evidence; it does not recompute it.
 
 - Show three distinct results: the selected item's own Remaining; recursive rolled Remaining for its Attached subtree, grouped by Unit; and the active-unestimated descendant count. Never add mixed Units or substitute zero for unestimated work.
 - Terminal contribution is zero even when explicit completion retains residual history. A correction-driven reopened contribution appears only when freshly projected; overrun or non-terminal zero never implies completion.
@@ -403,21 +403,21 @@ This final audit index maps UX treatment and disposition without restating the g
 |---|---|---|
 | FR-1 | `capture-command`; Created-with-binding evidence | v1 harness; future generated command form |
 | FR-2 | Obligation-first labels; optional expectation reference | v1 contract; all later surfaces |
-| FR-3 | `burn-down-meter`; edge-state semantics and cumulative correction display | v1 contract plus PRD memlog override |
+| FR-3 | `burn-down-meter`; edge-state semantics and cumulative correction display | amended PRD FR-3 |
 | FR-4 | Schedule display and exact What's-next ordering | v1 projection; later surfaces |
 | FR-5 | `work-tree`; parent/child and multi-await presentation | v1 contract/projection; later web |
 | FR-6 | Nine `work-status` variants and legal-action matrix | v1 contract; all later surfaces |
-| FR-7 | Trusted actor/origin history; additive Handoff/correction/rejection evidence | v1 evidence plus PRD memlog overrides |
-| FR-8 | Progress/explicit completion and correction-driven conditional reopen | v1 contract plus PRD memlog override |
+| FR-7 | Trusted actor/origin history; additive Handoff/correction/rejection evidence | amended PRD FR-7 |
+| FR-8 | Progress/explicit completion and correction-driven conditional reopen | amended PRD FR-8 |
 | FR-9 | ReEstimate/Reschedule; no completion by estimate | v1 contract; later actions |
 | FR-10 | Cancel/Reject/Expire and only Cancel/Expire cascade | v1 contract/Reactor; later actions |
 | FR-11 | `roll-up-summary`, freshness, residual terminal contribution | v1 projection; later surfaces |
 | FR-12 | Per-Unit totals plus unestimated count | v1 projection; later surfaces |
-| FR-13 | Reserved/Creating evidence, durable attachment, delayed-leg rejection | v1 registry plus PRD memlog override |
+| FR-13 | Reserved/Creating evidence, durable attachment, delayed-leg rejection | registry target under FR-13 |
 | FR-14 | Named multi-await suspension state | v1 contract; later detail |
 | FR-15 | Match, consumed no-op, eventual resume states | v1 contract/Reactor; later detail |
-| FR-16 | Reserved → Creating → durable child evidence → Attached; fresh-reservation recovery | v1 registry/Reactor plus PRD memlog override |
-| FR-17 | Neutral `party-reference`; Assign separate from active Handoff | v1 contract plus PRD memlog override |
+| FR-16 | Reserved → Creating → durable child evidence → Attached; fresh-reservation recovery | registry/Reactor target under FR-16 |
+| FR-17 | Neutral `party-reference`; Assign separate from active Handoff | amended PRD FR-17 |
 | FR-18 | Assigned/Queued Claim, queued winner binding, claim-loss recovery | v1 projection/contract; Theme 2+ adapters |
 | FR-19 | Server actor capability; AuthorityLevel carried, not enforced | v1 responsibility override; roles Theme 4 |
 | FR-20 | Exact Executor/coordinator predicate and ordering | v1 projection; later surfaces |

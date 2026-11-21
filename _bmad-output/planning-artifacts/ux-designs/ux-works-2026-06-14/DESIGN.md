@@ -2,7 +2,7 @@
 name: Works
 description: Calm operational visual contract for Work Item coordination through Hexalith.FrontComposer and Blazor Fluent UI V5.
 status: final
-updated: 2026-09-12
+updated: 2026-11-21
 sources:
   - "{planning_artifacts}/prds/prd-works-2026-06-14/prd.md"
   - "{planning_artifacts}/prds/prd-works-2026-06-14/.memlog.md"
@@ -68,7 +68,7 @@ This file owns how Works looks. `EXPERIENCE.md` owns behavior, states, accessibi
 
 Works is a work-item coordination kernel with a calm operational posture. It makes Remaining and responsibility legible under load without looking like a celebratory task app. The interface is precise, quiet, and evidence-led: no streaks, gamification, decorative dashboards, or visual branching between human, system, and external Parties.
 
-Works inherits FrontComposer and Blazor Fluent UI V5 wholesale. Fluent owns component anatomy, type, spacing, radii, elevation, focus, semantic color, hover, selection, light/dark behavior, reduced-motion treatment, and forced-colors treatment. FrontComposer owns the active accent, shell composition, and shared projection/command visuals. This spine defines only the domain-specific compositions below.
+The amended Works PRD and addendum govern product behavior, including actor eligibility. The PRD decision log records the history of those rules. Works architecture supplies implementation constraints. FrontComposer and Blazor Fluent UI V5 govern presentation. Fluent owns component anatomy, type, spacing, radii, elevation, focus, semantic color, hover, selection, light/dark behavior, reduced-motion treatment, and forced-colors treatment. FrontComposer owns the active accent, shell composition, and shared projection/command visuals. This spine defines only the domain-specific compositions below.
 
 ## Colors
 

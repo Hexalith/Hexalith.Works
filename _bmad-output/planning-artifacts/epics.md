@@ -136,10 +136,10 @@ NFR18: The eight PRD exit gates remain blocking dependencies: transport idempote
 - Treat the change from clamp-Done replay to preserve-Done replay as a semantic migration: replay representative legacy streams through aggregate and projection folds, compare live/rebuilt state, rebuild disposable projections, document snapshot/cache invalidation, and change write-side/read-side interpretations atomically.
 - Preserve exact historical story identities and delivered evidence for Epics 1-4: Stories 1.1-1.5, 2.1-2.5, 3.1-3.6, and 4.1-4.9 retain their approved titles and artifacts; later target acceptance criteria must not be retroactively applied to them. The human-approved 2026-09-23 split resets unfinished Story 4.9 to backlog while its prerequisites are drafted.
 - Quarantine the existing rewritten target bodies under non-executable provisional labels `F1-A`-`F1-D`, `F2-A`-`F2-H`, `F3-A`-`F3-J`, and `F4-A`-`F4-J`. An `F*` label cannot enter sprint status or inherit historical delivery status and requires a unique final ID, dependency review, validated artifact, and aligned traceability before promotion.
-- Preserve the approved Epic 5 remediation scopes without yet changing sprint tracking: overflow-safe progress/event ordinals; a singular executable lifecycle authority; overrun-preserving re-estimation plus bounded act notes; contract-derived durable-catalog completeness; and the 4,000-character Obligation admission bound with historical replay compatibility.
+- Epic 5 covers the approved remediation scopes: overflow-safe progress/event ordinals; a singular executable lifecycle authority; overrun-preserving re-estimation plus bounded act notes; contract-derived durable-catalog completeness; and the 4,000-character Obligation admission bound with historical replay compatibility.
 - Preserve Epic 5 dependencies: Story 5.2 precedes final 5.3 integration; 5.3 depends on 5.4 for changed durable evidence; 5.5 depends on 5.4 before any new rejection producer; 5.1 and 5.4 can proceed independently; named retrospective gates must be green before stories are marked done or unattended implementation resumes.
 - Keep `sprint-status.yaml` unchanged until `epics.md`, PRD, Architecture, and five validated Epic 5 artifacts agree. Then update it once and atomically, preserving every historical key/status, marking Epics 1-3 done, Epic 4 in progress, Epic 5/backlog keys in backlog, and adding no provisional `F*` keys.
-- Follow the approved remediation order: align PRD and Architecture authority, reconcile historical/provisional epic provenance, create and validate Stories 5.1-5.5, update tracking atomically, implement in dependency order with migration evidence, rerun implementation readiness to PASS, and only then rerun sprint planning.
+- Follow the approved remediation order: align PRD and Architecture authority, reconcile historical/provisional epic provenance, create and validate Stories 5.1-5.5, rerun implementation readiness, then update tracking atomically on PASS. Implementation follows the recorded dependency order and migration checks.
 - Do not roll back delivered source behavior or rewrite historical acceptance evidence. The approved plan is additive except for the explicit replay interpretation of downward re-estimation, and it authorizes planning reconciliation—not code implementation, dependency updates, commits, pushes, or premature tracker generation.
 - The human-approved 2026-09-23 Story 4.9 split adds draft prerequisite Stories 4.10–4.16 and their backlog tracker keys. These IDs do not promote or inherit delivery status from provisional `F4-*` candidates; Story 4.9 remains the sole host-removal gate.
 
@@ -2996,13 +2996,14 @@ So that valid work never wraps, partially succeeds, or corrupts durable replay.
 
 **Given** a command requires one success-event ordinal while the current Sequence is `long.MaxValue`
 **When** ordinal headroom is preflighted
-**Then** handling fails with the architecture-defined typed integrity fault before result construction
+**Then** handling fails with the AD-17 infrastructure integrity fault (`System.OverflowException`) before result construction
 **And** no success event is returned, appended, or published.
 
 **Given** progress would produce both `ProgressReported` and `WorkItemCompleted`
 **When** fewer than two event ordinals remain, including current Sequence `long.MaxValue - 1`
 **Then** handling fails before constructing either event
 **And** no partial result, state mutation, append, or publication occurs.
+**And** the same whole-result preflight applies when a spawn also suspends its parent.
 
 **Given** focused numeric-boundary tests
 **When** they exercise `decimal.MaxValue`, `long.MaxValue`, and `long.MaxValue - 1`
@@ -3132,13 +3133,13 @@ So that aggregate content stays appropriately small without invalidating previou
 
 **Given** a new `CreateWorkItem` command whose Obligation has a trimmed length from 1 through 4,000 characters
 **When** admission validation and aggregate handling run
-**Then** creation is accepted when all other rules pass and the existing Raw-Act contract preserves the accepted text verbatim
+**Then** creation is accepted when all other rules pass and the new Raw Act preserves the submitted text verbatim
 **And** surrounding whitespace is ignored only when determining whether the value is empty and whether its bounded content exceeds the limit.
 
 **Given** a new Obligation is empty, whitespace-only, or has a trimmed length greater than 4,000 characters
 **When** `CreateWorkItem` is handled
 **Then** the defined domain rejection is returned with no success event or state mutation
-**And** nothing is appended or published.
+**And** EventStore may persist the rejection under its own envelope sequence. No creation event is appended or published and the Works payload ordinal stays unchanged.
 
 **Given** the Obligation admission rule is represented at every boundary
 **When** the command validator, aggregate, contract catalog, golden payloads, headless evidence, and tests are inspected

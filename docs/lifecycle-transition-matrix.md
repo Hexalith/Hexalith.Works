@@ -40,7 +40,7 @@ state — "not created") is **rejected**; the sole way to leave the pre-creation
 | `AssignWorkItem` | Assign | `WorkItemAssigned` | Binds/rebinds an executor. |
 | `QueueWorkItem` | Queue | `WorkItemQueued` | Places into the shared pool. |
 | `ClaimWorkItem` | Claim | `WorkItemClaimed` | The only `InProgress`-entry event in the v1 catalog. |
-| `SuspendWorkItem` | Suspend | `WorkItemSuspended` | Requires one or more await conditions and records the full set. |
+| `SuspendWorkItem` | Suspend | `WorkItemSuspended` | Requires a nonempty ordered collection and records every member, including duplicates. |
 | `ResumeWorkItem` | Resume | `WorkItemResumed` | Requires a current await-condition match while `Suspended`; records the consumed condition and returns to `InProgress`. |
 | `CompleteWorkItem` | Complete | `WorkItemCompleted` | Explicit complete act. |
 | `ReportProgress` | ReportProgress | `ProgressReported` / `WorkItemCompleted` | Progress act accepted only from `InProgress` with estimated effort and matching Unit; completion is emitted when Remaining reaches zero. |
@@ -158,8 +158,9 @@ return `WorkItemTransitionRejected`.
 ## Suspend / Resume Await Conditions
 
 `SuspendWorkItem` is accepted only from `InProgress` and only when the command carries at least one
-await condition. The accepted `WorkItemSuspended` event records the full await-condition set and replay
-sets `Status = Suspended` without changing own effort or roll-up contribution.
+valid, non-null await condition. The accepted `WorkItemSuspended` event records every member in
+submitted order, including duplicates. A legacy singular condition reads as one member. Replay sets
+`Status = Suspended` and preserves own effort and roll-up contribution.
 
 Await conditions are kind-aware keys. The v1 cases are `ChildCompleted(childId)`,
 `DateReached(instant)`, and `ExternalSignal(correlationId)`. Matching compares kind plus stable
@@ -167,9 +168,9 @@ correlation key exactly; an external signal whose key text equals a child id is 
 completion condition.
 
 `ResumeWorkItem` while `Suspended` is accepted only when the supplied await condition matches one of
-the current conditions. The accepted `WorkItemResumed` consumes that one condition, clears the full
-condition set from that suspension, records the consumed condition for replay, and rests at
-`InProgress`.
+the current conditions. If several triggers match, the first matching Resume committed in the
+serialized Work Item turn wins. Its `WorkItemResumed` records the consumed condition, clears the
+entire ordered collection, and returns the item to `InProgress`.
 
 If a resume condition does not match the current suspended set, the command returns
 `WorkItemTransitionRejected`, emits no `WorkItemResumed`, consumes no state-changing payload ordinal,
