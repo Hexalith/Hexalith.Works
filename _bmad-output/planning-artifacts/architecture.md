@@ -17,6 +17,7 @@ sources:
   - _bmad-output/planning-artifacts/prds/prd-works-2026-06-14/.memlog.md
   - _bmad-output/planning-artifacts/prds/prd-works-2026-06-14/addendum.md
   - _bmad-output/planning-artifacts/architecture-validation-2026-09-12/ARCHITECTURE-VALIDATION.md
+  - _bmad-output/planning-artifacts/architecture-validation-2026-11-21/ARCHITECTURE-VALIDATION.md
   - docs/platform-hosting-cutover.md
   - docs/sdk-projection-query-adoption.md
   - docs/sdk-reminder-process-adoption.md
@@ -32,14 +33,16 @@ companions:
 
 The November 20 PRD and addendum define the product behavior. This spine binds the Works, EventStore and
 Platform implementations to the same decisions. The architecture memlog records their history. Current
-implementation claims use Works `07020c84`. AD-19 distinguishes its recorded dependencies from the
-refreshed checkouts.
+implementation claims use local Works `a4a91332`. AD-19 identifies the catalog used by each parity check.
+The registry admission and child Resume protocols in AD-21 are approved architecture targets as of
+21 November 2026. Works and EventStore own implementation and joint qualification.
 
 Decision tags separate commitment from delivery: **ADOPTED** means the decision is settled,
 **CURRENT** means repository evidence verifies it today, **TARGET** means it is a binding migration
 outcome, and **ASSUMPTION** means the Fast-path update chose a fail-closed default that remains
 explicit until user direction or implementation evidence replaces it. A decision may be adopted
-without being implemented.
+without being implemented. Where a protocol is marked **proposed**, its required outcome is settled
+and the named owners still need to agree on the mechanism.
 
 ## Design Paradigm
 
@@ -61,7 +64,9 @@ flowchart LR
     Process --> Edge
     WE --> Projection[Works fold through SDK shared-family writer]
     Projection --> Reads[(Selected tenant generation)]
-    Edge -. parent admission .-> Registry[Target Work-Tree Registry]
+    Edge -. reserve .-> Registry[Target Work-Tree Registry]
+    Registry -. request parent admission .-> Process
+    WE -. durable parent admission via Reactor .-> Registry
     Registry -. attachment events .-> Process
 ~~~
 
@@ -105,19 +110,21 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 - **Binds:** FR-4 and FR-20 query filtering and ordering.
 - **Prevents:** incompatible queue views and replay-dependent ties.
 - **Rule:** Priority orders Critical > High > Normal > Low, absent last. The current tenant-scoped
-  query returns Assigned and Queued items. The SDK grants all-work scope only to an allow-listed
+  query returns Assigned and Queued items. The Works query policy grants all-work scope only to an allow-listed
   non-delegated coordinator workload authorized for the tenant. A delegated caller must supply their
   own verified PartyId and receives their Assigned items plus the tenant Queued pool. A missing or
   mismatched PartyId is forbidden. A caller-supplied all-work flag cannot expand scope. Both views order by
   Priority, earliest Due Date (absent last), then ordinal WorkItemId. No routing score or creation
-  coordinate participates.
+  coordinate participates. The current comparator maps a missing date to `DateOnly.MaxValue`, so
+  an undated item can precede a dated one on 9999-12-31. Compare date presence before date value.
+  Prove the dated item wins at equal priority with either ordinal ID assignment. [Queue comparator](../../src/Hexalith.Works.Projections/Strategies/WhatsNextOrdering.cs)
 
   Authorization runs before Works reads state. The gateway supplies authenticated actor and workload
   claims. Works resolves the requested Party through the Parties client with separate service authority.
   Missing, expired or mismatched authority denies the query. Related documents come from one selected
   generation.
 
-  **Single-item detail and Roll-Up (approved target, 20 November 2026).** The current SDK permits
+  **Single-item detail and Roll-Up (approved target, 20 November 2026).** The current Works detail handler permits
   ordinary-member reads for Queued items and the member's own Assigned items. Extend individual
   lookup to that member's own InProgress and Suspended items. A handoff transfers this access to
   the incoming Executor. Other ordinary-member lookups return the same result as an absent item.
@@ -126,13 +133,16 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   both detail and Roll-Up when that binding cannot be established. Test Claim, suspension, terminal
   status and a delayed projection after handoff that still names the former Executor.
 
-### AD-04 [ADOPTED] [TARGET] — Effort Unit is immutable and inherited only at first estimate
+### AD-04 [ADOPTED] [TARGET] — Child Unit is captured at spawn and remains immutable
 
 - **Binds:** FR-3 and FR-12 across aggregate, child creation, projection, and query paths.
 - **Prevents:** silent conversion and independently chosen child units.
-- **Rule:** the first estimate fixes Unit; later progress, correction, and re-estimation with another
-  Unit reject. A child without an explicit Unit inherits its parent's Unit for its first estimate.
-  Mixed-Unit trees require an explicit child Unit and expose per-Unit subtotals only.
+- **Rule:** At spawn, persist the explicit child Unit if supplied, otherwise the parent's Unit at
+  admission. Capture that choice even for an unestimated child. An estimate at spawn requires a Unit
+  from one of those sources. If both are absent, the child may start unestimated and its first
+  estimate must supply the Unit. A later change to the parent cannot alter the captured choice.
+  The first estimate of a root establishes its Unit. Once fixed, a different Unit on an estimate,
+  report or correction rejects. Mixed-Unit trees expose per-Unit subtotals. [FR-12 truth table](prds/prd-works-2026-06-14/prd.md#fr-12-roll-up-across-heterogeneous-units-safely)
 
 ### AD-05 [ADOPTED] [CURRENT] — WorkItemEffort is the burn-down contract
 
@@ -154,7 +164,7 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 - **Rule:** the current SDK writer applies only changed logical operations after Works refolds the
   bounded tenant histories. Capacity exhaustion leaves work pending and the affected reads stale or
   unavailable. AD-16 governs the checkpoint and retry. Registry-based incremental merge is the target
-  below and depends on AD-21.
+  below and depends on AD-21. Current readers and writers use the lookup in AD-15.
 
   Under that target, the logical document
   works:v3:tenant:<base64url-tenant>:rollup:<base64url-ancestor> resolves through the tenant manifest
@@ -176,15 +186,17 @@ There is no parent spine. These repository-wide constraints are binding inputs.
 - **Prevents:** an eventual projection controlling aggregate state or ambiguous completion recovery.
 - **Rule:** aggregate state owns Status and WorkItemEffort; projections own rolled totals with
   distinct types and serialized fields. Explicit Complete from InProgress or Suspended contributes
-  zero without changing Estimated/Done. Progress reaching zero emits ProgressReported then
+  zero without changing Estimated/Done. An accepted report leaving zero Remaining emits ProgressReported then
   WorkItemCompleted(CompletionKind=Progress); explicit completion writes
   CompletionKind=Explicit. In the target contract, CorrectProgress records the submitted cumulative Done
   in ProgressCorrected. From InProgress, positive Remaining preserves status and zero Remaining appends
   WorkItemCompleted with progress provenance. From a progress-completed item, positive Remaining appends
   WorkItemReopened and returns it to InProgress. At zero the correction alone is recorded and it stays
-  Completed. Explicitly completed and abnormally terminated items reject correction. Historical
-  completion kind is inferred
-  deterministically from the immediately preceding progress-to-zero transition.
+  Completed. Explicitly completed and abnormally terminated items reject correction. For legacy
+  completions without a kind, replay the item stream. Classify an immediately preceding accepted
+  `ProgressReported` and `WorkItemCompleted` from the same act as progress completion when the folded
+  Remaining is zero. An explicit Complete at zero remains explicit. Exercise both histories with
+  Estimated 4 and Done 7. A later correction to Done 3 reopens only the progress-completed item.
 
 ### AD-08 [ADOPTED] [CURRENT] — Claim concurrency is EventStore-owned
 
@@ -246,7 +258,7 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   ancestor cascade uses the `CascadeExpire` effect kind and `works.cascade-expire` purpose and a
   witness-free command. The kernel reads no clock.
 
-### AD-13 [ADOPTED] [CURRENT] — Resume is exact-match, first-success, and narrowly idempotent
+### AD-13 [ADOPTED] [CURRENT] [TARGET] — Resume matches the active wait and preserves the winning disposition
 
 - **Binds:** FR-14 and FR-15 across domain, reminder, child-completion, and external-signal paths.
 - **Prevents:** different adapters acknowledging the same nonmatching trigger differently.
@@ -258,14 +270,18 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   to InProgress, a fresh command for the last
   consumed condition is a domain no-op. Exact transport redelivery replays the original disposition
   under AD-26. Other fresh triggers and all fresh Resume commands on terminal items reject.
+  Today's Resume carries tenant, item and condition. For trusted child reconciliation, the approved AD-21 target requires
+  an additional target-turn check of the wait occurrence before issuing the domain Resume. The
+  public command retains its existing match and rejection rules. [Resume contract](../../src/Hexalith.Works.Contracts/Commands/ResumeWorkItem.cs)
 
-### AD-14 [ADOPTED] [TARGET] — One Executor Binding; AuthorityLevel remains carried
+### AD-14 [ADOPTED] [TARGET] — At most one Executor Binding per Work Item
 
 - **Binds:** FR-17 through FR-19 and active handoff.
 - **Prevents:** binding lists, executor-kind branches, and AuthorityLevel becoming an accidental role
   system.
-- **Rule:** an item has one ExecutorBinding(PartyId, Channel, AuthorityLevel). Assign and Claim set
-  it under the lifecycle matrix. HandoffWorkItem is the only active-work binding change: in
+- **Rule:** an item has at most one ExecutorBinding(PartyId, Channel, AuthorityLevel).
+  Creation with or without an intended binding replays to Created. Assigned, InProgress and Suspended
+  each require one responsible Party. Assign and Claim establish the binding under the lifecycle matrix. HandoffWorkItem is the only active-work binding change: in
   InProgress or Suspended it emits WorkItemHandedOff, changes only the binding, and preserves Status
   and AwaitConditions. AuthorityLevel values are stored but do not authorize v1 behavior; provenance
   and responsibility authorization are AD-23.
@@ -276,14 +292,20 @@ There is no parent spine. These repository-wide constraints are binding inputs.
   logs.
 - **Prevents:** cross-tenant traversal, reserved-name collisions, non-atomic checkpoint regression, and
   tenant indexes with no offboarding path.
-- **Rule:** validate canonical TenantId before key creation. Tenant state begins
-  works:v3:tenant:<base64url(UTF-8 canonical TenantId)>; control state begins
-  works:v3:control, which no TenantId can form. Parent/child references are tenant-closed and query
-  authorization is independent of key prefixing. The control tenant index has one actor/CAS writer;
-  indexes and checkpoints use ETag-protected monotonic merges, bounded cursor paging, audited
+- **Rule:** today Works passes the authenticated query's tenant and the `works-runtime-v3` family
+  in a `SharedProjectionScope`. `WorksReadModelKeys.RuntimeRollUpKey(item)` supplies the logical key
+  `works-runtime-v3:rollup:<item>`. The SDK coordinator reads queue, roll-up and parking together
+  in its selected generation and derives the physical keys. [Current lookup](../../src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs) · [Key definitions](../../src/Hexalith.Works/Projections/WorksReadModelKeys.cs)
+
+  The registry migration targets separate namespaces `works:v3:tenant:<base64url(UTF-8 canonical TenantId)>`
+  and `works:v3:control`. Before switching formats, prove a new reader can open the existing writer's
+  selected generation, then qualify rebuild, catch-up and promotion with both sides of the migration.
+  Parent/child references stay tenant-closed and queries require independent authorization. In the
+  target design the control tenant index has one actor/CAS writer.
+  Indexes and checkpoints use ETag-protected monotonic merges, bounded cursor paging, audited
   tombstone/prune, and crash reconciliation. Legacy raw singleton keys and read/check/save checkpoint
   paths must migrate before their consumers switch. Canonical means the input is already a 1..64
-  character lowercase ASCII slug matching ^[a-z0-9]([a-z0-9-]*[a-z0-9])?$; trust boundaries reject
+  character lowercase ASCII slug matching `^[a-z0-9]([a-z0-9-]*[a-z0-9])?$`; trust boundaries reject
   rather than transform other input. Claims, envelopes, references, keys, hashes, and equality reuse
   those exact UTF-8 bytes. The current Works dispatcher requires domain `work`, an ordinal aggregate ID
   match, a case-insensitive payload/envelope tenant match and consistency with any established state. It
@@ -370,9 +392,13 @@ and leaves routing unwired. The November PRD records zero enrolled Works operati
 - **Binds:** SDK, package, runtime image, and target-host version changes.
 - **Prevents:** updating the wrong file or describing target ownership as current reality.
 - **Rule:** Works `global.json` selects the .NET SDK. The root Builds gitlink and imported Builds
-  catalog select Release dependencies. Platform owns host composition, Dapr components and topology. Its
-  Works verifier reads the Dapr runtime and CLI pins from the bound Builds catalog for both bootstrap
-  and launched fleet. A Debug source pairing requires the same source revision in the reviewed manifest,
+  catalog select Release dependencies. Platform owns host composition, Dapr components and topology. The
+  Works-owned parity bootstrap links the Works root Builds checkout into the Platform snapshot and exports
+  it as `HexalithBuildsRoot`. The Works verifier selects its SDK and fleet toolchain from that linked
+  catalog. Its separate Agents check materializes Platform's recorded Builds gitlink and verifies
+  its catalog against the published binding. Record each input's revision and catalog digest under
+  its consumer. Exercise the two paths with different catalog pins. [Works bootstrap](../../scripts/verify-platform-parity-ci.py) · [Platform verifier](../../references/Hexalith.Platform/eng/verify_works_host.py)
+  A Debug source pairing requires the same source revision in the reviewed manifest,
   Works gitlink and checkout, plus the matching evaluated Release version. An independently advanced
   checkout needs a fresh source review. Package-only Release and exact-source Platform parity each
   require their own evidence.
@@ -437,22 +463,38 @@ The October cutover established this boundary with a passing 11-row, 44-proof pa
   evidence or marks an orphan only after proving a permanent conflict. EventStore validates the
   reservation token immediately before CreateWorkItem dispatch.
 
-Before EdgeReserved, EventStore obtains a ParentAdmissionWitness inside the serialized parent turn and
-validates it immediately before registry dispatch. It binds tenant, parent, child, AD-26 reserved-payload
-digest, suspend flag, and parent envelope sequence. suspend=false requires a nonterminal parent;
-suspend=true requires InProgress or Suspended, so Created, Assigned, and Queued reject before reserve.
-If the parent changes after admission, the attachment rules above cover the reachable
-InProgress/Suspended/terminal states. In the same registry turn that reserves the edge, check single
-parent, cycles and permitted depth against tenant topology, including outstanding reservations. Reject a
-conflicting request before authorizing any child write. An exact retry resolves to the original
-reservation.
+**Parent admission order [ADOPTED] [TARGET].** The public entry remains
+the registry reserve command. The Reactor submits the request to the parent. In its serialized turn,
+the parent appends an admission keyed by tenant, parent and stable request ID. Persist the verbatim
+child-create payload, child ID, suspend flag and FR-12 Unit choice together so recovery can reconstruct
+the command. Verify the persisted digest on delivery and recovery. Reuse of the request ID with
+different caller input is a conflict. An exact retry reuses the original captured Unit.
+This parent append is the FR-10 termination cutoff. A new request after termination rejects. With
+suspend requested, only InProgress and Suspended can admit. On replay, propagate the captured Unit
+through reservation and child creation even if the parent subsequently acquired a different estimate.
 
-Reconcile the matching child's durable completion with installation of the wait for that attachment
-in either delivery order. If the child completes first, retain the evidence across restarts. Once the
-parent records this wait, submit exactly one effective Resume while it still applies. An earlier
-nonmatching Resume and its rejection receipt cannot fulfill the later wait. Use the newly established
-wait as a distinct causal occurrence under AD-26. If another trigger won or the parent is terminal,
-close the pending work for this wait without changing the parent or a subsequent suspension.
+The Reactor resumes from that record after a crash. In one registry turn, check the parent record,
+tenant quota, single parent, cycles and depth against attached and outstanding edges before appending
+`EdgeReserved`. Only this append creates a reservation. A competing or inadmissible edge receives a
+durable refusal. Exact retries of the same request resolve its existing outcome even after termination.
+A fresh delivery duplicating an identical attached pair is a semantic no-op. It leaves the edge,
+wait and cascade intact. Conflicting input, a competing parent or a released token receives its
+recorded refusal or a new refusal as applicable. A later Cancel or Expire must track every earlier parent admission until the registry refuses it,
+releases it, or attaches the child and the matching cascade reaches closure. This includes a request
+still in transit when termination commits. A restart at either append boundary must give the same
+result. Only attached edges enter topology reads.
+
+**Child Resume bound to the installed wait [ADOPTED] [TARGET].** Retain child completion and wait installation across
+restart and reconcile in either order. Identify the intended wait by tenant, parent, the parent
+envelope sequence that installed the child condition, and its canonical kind/key. An additional child
+condition on an already suspended parent uses its own installation sequence. A duplicate that adds
+nothing preserves the original occurrence. Pass that witness in the authenticated internal effect
+and bind it to the AD-26 digest. In the serialized parent turn, compare it with the active installation
+before applying Resume. Retry until exactly one effective Resume commits for an eligible wait or a
+competing trigger durably closes it. A consumed or superseded installation,
+including one replaced by the same child condition, gets a durable obsolete no-op receipt and leaves
+current state intact. Redelivery returns that disposition after restart. An earlier nonmatching
+attempt cannot discharge a later installation.
 
 All fan-out, cascade, child-completion recovery, rebuild, and repair code uses one Works-owned
 IWorkTreeTopologyReader over the registry read model. It exposes exact-token
@@ -578,7 +620,14 @@ disclosure.
   process effects use the SDK primary ordinal. DateResume derives each ordinal from the zero-based
   position of a distinct DateReached condition sorted by ordinal correlation key within its source
   suspension. Preserve these assignments on replay. New effect families must define their ordinal before
-  enrollment.
+  enrollment. In the approved AD-21 child reconciliation target, use the parent installation envelope
+  as the source and the parent as target. For a single installation event containing several child
+  keys, assign ordinals by zero-based ordinal sort of the distinct canonical child keys in that event.
+  Use the installation envelope's message ID as the effect's CausationId. When a child has completed
+  more than once, select the earliest matching completion by child stream sequence after verifying
+  the ordered history through that evidence. Freeze its envelope reference and the effect payload
+  durably before first submission. Retries after a reopen, reverse delivery or restart reuse both.
+  A later wait gets its own effect ID.
   MessageId and IdempotencyKey both reuse wrk-<EffectId>, satisfying gateway-safe identifiers.
 
   EventStore exclusively owns a private target-scoped effect inbox in the target actor partition.
@@ -647,7 +696,7 @@ pending-intent, checkpoint, audit, and tenant-key order.
 
 | Concern | Convention |
 | --- | --- |
-| IDs | Existing non-whitespace IDs remain readable; the target edge emits ULIDs; infrastructure keys encode canonical IDs instead of raw concatenation |
+| IDs | Existing Work Item IDs accepted by EventStore `AggregateIdentity` remain readable (up to 256 ASCII characters, alphanumeric at both ends, with interior dots, hyphens and underscores permitted). The target edge emits ULIDs. Infrastructure keys encode canonical IDs. |
 | Time | DateTimeOffset/UTC at edges; domain behavior consumes persisted instants, never wall clocks |
 | Envelopes | EventStore envelope sequence is canonical; Works payload Sequence is state-change ordinal only |
 | Serialization | Options-free PascalCase concrete writer; shared case-insensitive tolerant reader; no polymorphic marker at rest |
@@ -658,7 +707,7 @@ pending-intent, checkpoint, audit, and tenant-key order.
 
 ## Stack
 
-The following values come from the Works `07020c84` tree and its recorded Builds catalog. The Platform
+The following values come from the local Works `a4a91332` tree and its recorded Builds catalog. The Platform
 host and its release evidence own the deployed runtime versions.
 
 | Name | Version | Authority |
@@ -669,12 +718,15 @@ host and its release evidence own the deployed runtime versions.
 | PolymorphicSerializations Release package | 2.0.0 | Recorded Builds catalog and Works source-pair manifest |
 | Shared build catalog | 6.4.4 | Works gitlink `fe68718b` and `.github/hexalith-ci.json` |
 
-| Debug dependency | Works gitlink at `07020c84` | Reviewed source manifest | Pulled checkout on November 21 |
+| Debug dependency | Works gitlink at `a4a91332` | Reviewed source manifest | Checked-out revision |
 | --- | --- | --- | --- |
-| EventStore | `8bfc4ca13` | `607072c68` | `7435254cc` |
-| PolymorphicSerializations | `df1a0e5c` | `c6d0dfce` | `c6d0dfce` |
+| EventStore | `7435254cc` | `607072c68` | `7435254cc` |
+| PolymorphicSerializations | `c6d0dfce` | `c6d0dfce` | `c6d0dfce` |
 
-The refreshed Platform checkout (`abb62da8`) binds released Builds 6.4.4. The separate Builds checkout (`e1380b81`) carries later catalog changes. Use Platform's bound catalog to select the parity toolchain. Both dependency gitlinks in the table differ from the reviewed manifest in the recorded Works tree. On the refreshed checkout `scripts/verify-source-debug.py --check-only` refused EventStore source revision drift. Review the source/package pairs together before qualifying a new revision. [Reviewed dependency manifest](../../tools/source-debug-dependencies.json)
+Works records Builds 6.4.4 (`fe68718b`), selecting EventStore 5.4.0 and Dapr runtime 1.19.1.
+The local Builds checkout (`e1380b81`) selects EventStore 5.4.0 and Dapr runtime 1.19.2 for Works.
+Platform `abb62da8` binds the Agents check to `fe68718b`. Dapr CLI is 1.19.1 in both catalogs.
+These values describe inputs. The parity bootstrap stopped before launch. [Platform producer verification](../../references/Hexalith.Platform/eng/bound_builds.py) · [Reviewed source pairs](../../tools/source-debug-dependencies.json)
 
 ## Structural Seed
 
@@ -700,10 +752,10 @@ Readiness is conditional. Each gate applies to the source, package and environme
 
 | Gate | Evidence required |
 | --- | --- |
-| Dependency identity and CI | Reconcile both reviewed source/package pairs under AD-19. Run the four ordinary Release test projects, including ArchitectureTests, on the candidate revision. At Works `07020c84` the shared CI job failed at “Stage 3 unit tests” and skipped `custom-platform-parity`. [CI run](https://github.com/Hexalith/Hexalith.Works/actions/runs/44874235428) |
-| Platform and recovery | Pass all AD-20 rows, 44 proof kinds and fleet restore for the selected public package and exact source. Exercise page boundaries, restart, retries, conflict and audited disposition. Production requires the AD-23/24 origin and policy evidence and AD-28 data-owner approval. |
+| Dependency identity and CI | At local `a4a91332`, the source preflight refuses EventStore revision drift. PolymorphicSerializations matches its reviewed source. Reconcile EventStore and rerun both pair checks under AD-19. Run the four ordinary Release test projects, including ArchitectureTests, on the candidate revision. At Works `07020c84` the shared CI job failed at “Stage 3 unit tests” and skipped `custom-platform-parity`. [CI run](https://github.com/Hexalith/Hexalith.Works/actions/runs/44874235428) |
+| Platform and recovery | The bootstrap exits with `Parity requires a stable public EventStore version` because it reads the Works package wrapper literally. Qualify evaluated catalog selection in bootstrap and downstream consumer-pin checks and verify the producer. Pass all AD-20 rows, 44 proof kinds and fleet restore for the selected public package and exact source. Exercise page boundaries, restart, retries, conflict and audited disposition. Production requires the AD-23/24 origin and policy evidence and AD-28 data-owner approval. |
 | Runtime compatibility | Qualify the exact .NET, Aspire, Dapr hosting adapter and Dapr runtime tuple with restore, Release build, integration and Platform parity. Upgrade an unsupported or preview dependency, or record a time-bounded production exception with an accountable owner and upgrade trigger. |
-| Work-tree integration | Establish AD-26 receipts before registry effects. Prove parent-turn admission, pre-dispatch fencing, two competing parents, restart and per-tenant migration before concurrent registry-backed writes. |
+| Work-tree integration | Establish AD-26 receipts before registry effects. Works and EventStore must record their joint review and qualify both approved protocols before rollout. Pause after parent admission, terminate, then resume registry delivery. Reverse the order, race two parents and restart between durable acts. Deliver a child Resume for the first time after another trigger won and the same child wait was reinstalled, then replay its receipt after restart. Require per-tenant migration proof before concurrent registry-backed writes. |
 | Effort migration (G3) | Deploy aggregate and projection changes together. Identify affected snapshots and rehydrate from raw events on a restored copy. Rebuild into a fresh epoch, drain catch-up and verify aggregate, Roll-Up and eligible/ineligible queue results before reopening traffic. A snapshot that discarded Done requires its original events. |
 | Lifecycle and schema | Update the transition matrix, catalog, validators, folds, golden corpus and affected tests together. Cover handoff, correction/reopen, child-before-wait, termination after reopen and active-item detail authorization. Apply AD-29 to new wire fields and G5 to mixed-version readers. |
 | Capacity and recovery budgets (G8) | Product and Architecture bind an environment, realistic history sizes, latency percentiles, measurement window and failure policy. Exercise journal capacity and recovery at that load. |
