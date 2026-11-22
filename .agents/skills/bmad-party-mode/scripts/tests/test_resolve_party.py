@@ -4,6 +4,8 @@
 # ///
 """Unit tests for resolve_party.py — merge, alias, override, group resolution."""
 
+import json
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -80,6 +82,58 @@ class TestCodeMap(unittest.TestCase):
         col, idx, _ = rp.build_collective(AGENTS, [{"code": "analyst", "name": "Mary-Custom"}])
         self.assertEqual(rp.code_map(col, idx)["analyst"],
                          {"code": "bmad-agent-analyst", "name": "Mary-Custom"})
+
+
+class TestListCodesCli(unittest.TestCase):
+    def test_list_codes_reports_the_collision_catalog_and_agent_resolution(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            scripts = root / "_bmad" / "scripts"
+            scripts.mkdir(parents=True)
+            skill = root / "skill"
+            skill.mkdir()
+            (skill / "customize.toml").write_text(
+                '[workflow]\nparty_members = [{code = "morpheus", name = "Morpheus"}]\n',
+                encoding="utf-8",
+            )
+            config_resolver = scripts / "resolve_config.py"
+            config_json = json.dumps({"agents": AGENTS})
+            config_resolver.write_text(f"print({config_json!r})\n", encoding="utf-8")
+            customization_resolver = scripts / "resolve_customization.py"
+            workflow_json = json.dumps({"workflow": {"party_members": [
+                {"code": "analyst", "name": "Mary-Custom"},
+                {"code": "morpheus", "name": "Morpheus"},
+            ]}})
+            customization_resolver.write_text(f"print({workflow_json!r})\n", encoding="utf-8")
+
+            invocation = [
+                sys.executable, rp.__file__, "--project-root", str(root),
+                "--skill", str(skill), "--list-codes",
+            ]
+            result = subprocess.run(invocation, cwd=root, capture_output=True, encoding="utf-8", timeout=10, check=True)
+            self.assertEqual(result.stderr, "")
+            self.assertEqual(json.loads(result.stdout), {
+                "installed_agents_resolved": True,
+                "codes": {
+                    "analyst": {"code": "bmad-agent-analyst", "name": "Mary-Custom"},
+                    "bmad-agent-analyst": {"code": "bmad-agent-analyst", "name": "Mary-Custom"},
+                    "bmad-agent-pm": {"code": "bmad-agent-pm", "name": "John"},
+                    "john": {"code": "bmad-agent-pm", "name": "John"},
+                    "mary": {"code": "bmad-agent-analyst", "name": "Mary-Custom"},
+                    "mary-custom": {"code": "bmad-agent-analyst", "name": "Mary-Custom"},
+                    "morpheus": {"code": "morpheus", "name": "Morpheus"},
+                    "pm": {"code": "bmad-agent-pm", "name": "John"},
+                },
+            })
+
+            config_resolver.unlink()
+            customization_resolver.unlink()
+            result = subprocess.run(invocation, cwd=root, capture_output=True, encoding="utf-8", timeout=10, check=True)
+            self.assertEqual(result.stderr, "")
+            self.assertEqual(json.loads(result.stdout), {
+                "installed_agents_resolved": False,
+                "codes": {"morpheus": {"code": "morpheus", "name": "Morpheus"}},
+            })
 
 
 class TestGroups(unittest.TestCase):

@@ -225,22 +225,30 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         }
     }
 
-    [Fact]
-    public async Task Missing_child_keeps_reliable_local_shapes_but_refuses_both_rolled_shapes()
+    [Theory]
+    [InlineData("hour")]
+    [InlineData("point")]
+    [InlineData(null)]
+    public async Task Missing_child_keeps_reliable_local_shapes_but_refuses_both_rolled_shapes(string? spawnUnit)
     {
         var store = new InMemoryReadModelStore();
+        var spawnEffort = spawnUnit is null ? null : new WorkItemEffort(4m, new Unit(spawnUnit));
         await RebuildAsync(
             store,
             Tenant,
             "rebuild-missing-child",
-            [(ParentId, ParentWithSpawnHistory(Tenant))]).ConfigureAwait(true);
+            [(ParentId, ParentWithSpawnHistory(Tenant, spawnEffort))]).ConfigureAwait(true);
 
         WorkItemRollUp missing = await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true);
         missing.Status.ShouldBe(WorkItemStatus.Assigned);
         missing.OwnEffort.ShouldBe(new WorkItemEffort(10m, Hour));
         missing.ChildWorkItemIds.ShouldBe([new WorkItemId(ChildId)]);
+        missing.ExposedChildCount.ShouldBe(1);
         missing.RolledRemaining.ShouldBeNull();
         missing.RolledRemainingByUnit.ShouldBeEmpty();
+        var queued = (await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true)).Items[ParentId];
+        queued.RolledRemaining.ShouldBeNull();
+        queued.RolledRemainingByUnit.ShouldBeEmpty();
     }
 
     [Fact]
@@ -261,7 +269,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             "rebuild-malformed-child",
             [
                 (ChildId, new[] { malformedCreate }),
-                (ParentId, ParentWithSpawnHistory(Tenant)),
+                (ParentId, ParentWithSpawnHistory(Tenant, new WorkItemEffort(4m, Hour))),
             ]).ConfigureAwait(true);
     }
 
@@ -813,6 +821,41 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         await RefuseRebuildAsync(new InMemoryReadModelStore(), Tenant, "empty-aggregate-lifecycle", [(ParentId, [])]);
     }
 
+    /// <summary>Rejected envelopes advance retained history independently of the accepted projection watermark.</summary>
+    [Fact]
+    public async Task RejectionEnvelopesDoNotAdvanceAcceptedProjectionWatermarks()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var tenant = new TenantId(Tenant);
+        var parent = new WorkItemId(ParentId);
+        var leading = new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(tenant, parent, WorkItemStatus.Created, "first");
+        var trailing = new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(tenant, parent, WorkItemStatus.Assigned, "last");
+        var store = new InMemoryReadModelStore();
+        await RebuildAsync(store, Tenant, "accepted-watermark", [(ParentId,
+        [
+            Dto(leading, 1),
+            Dto(new WorkItemCreated(ParentId, 1, tenant, parent, new Obligation("Parent")), 2),
+            Dto(new WorkItemAssigned(ParentId, 2, tenant, parent, Binding), 3),
+            Dto(trailing, 4),
+        ])]).ConfigureAwait(true);
+
+        WorkItemRollUp rollUp = await ReadCurrentRollUpAsync(store, Tenant, ParentId).ConfigureAwait(true);
+        rollUp.Status.ShouldBe(WorkItemStatus.Assigned);
+        rollUp.LatestAcceptedSourceSequence.ShouldBe(3);
+        WorksWhatsNextTenantIndex index = await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true);
+        index.LastSequences[ParentId].ShouldBe(3);
+        index.Items[ParentId].LatestAcceptedSourceSequence.ShouldBe(3);
+        (await QueryWhatsNextAsync(store, Tenant).ConfigureAwait(true)).ShouldHaveSingleItem().LatestAcceptedSourceSequence.ShouldBe(3);
+        (await QueryWorkItemAsync(store, Tenant, ParentId).ConfigureAwait(true)).LatestAcceptedSourceSequence.ShouldBe(3);
+
+        var reopened = new SharedProjectionEpochCoordinator(store, store);
+        var scope = new WorkItemSharedProjectionRebuildHandler().CreateScope(Tenant);
+        long generation = (await reopened.GetStatusAsync(scope, ct).ConfigureAwait(true)).ActiveGeneration;
+        var retained = await WorkItemRuntimeHistoryStore.ReadAsync(reopened, scope, generation, ParentId, ct).ConfigureAwait(true);
+        retained.Events.Select(ev => ev.SequenceNumber).ShouldBe([1L, 2L, 3L, 4L]);
+        retained.Events[^1].EventTypeName.ShouldBe(trailing.GetType().Name);
+    }
+
     private static DomainSharedProjectionRebuildRequest Accumulate(
         DomainSharedProjectionRebuildIdentity identity,
         long ordinal,
@@ -934,7 +977,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         ];
     }
 
-    private static ProjectionEventDto[] ParentWithSpawnHistory(string tenantId)
+    private static ProjectionEventDto[] ParentWithSpawnHistory(string tenantId, WorkItemEffort? spawnEffort)
     {
         var tenant = new TenantId(tenantId);
         var parent = new WorkItemId(ParentId);
@@ -942,7 +985,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         [
             Dto(new WorkItemCreated(ParentId, 1, tenant, parent, new Obligation("Parent"), new WorkItemEffort(10m, Hour)), 1),
             Dto(new WorkItemAssigned(ParentId, 2, tenant, parent, Binding), 2),
-            Dto(new ChildSpawned(ParentId, 3, tenant, parent, new WorkItemId(ChildId), new Obligation("Child"), new WorkItemEffort(4m, Hour)), 3),
+            Dto(new ChildSpawned(ParentId, 3, tenant, parent, new WorkItemId(ChildId), new Obligation("Child"), spawnEffort), 3),
         ];
     }
 

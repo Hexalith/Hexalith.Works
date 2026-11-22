@@ -46,6 +46,8 @@ tests/Hexalith.Works.IntegrationTests/WorksPlatformHostingCompositionTests.cs wh
 tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingEvidence.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksSdkProofHostingStartup.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryPipelineSmokeTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorkItemSharedProjectionRebuildHandlerTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksDeclaredProofRuntime.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksDeclaredProofRuntimeTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksPlatformProofRuntime.targets whitespace=cr-at-eol

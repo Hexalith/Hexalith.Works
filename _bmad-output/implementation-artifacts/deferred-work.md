@@ -2179,10 +2179,14 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29B-D1 — Show which AD-20 R-row proves staged-family restart with concurrent delivery on a durable store (unverified medium).
   evidence: The Dapr/Redis restart fact was deleted and the five restart tests are in-memory only; `WORKS_SDK_DAPR_GRPC_ENDPOINT` no longer exists. The projection smoke is `Explicit` and run by `eng/verify_works_host.py`. Settled by naming the covering R-row proof.
+  status: done 2026-11-22
+  resolution: The [hosting cutover guide](../../docs/platform-hosting-cutover.md) names R4's durable rebuild and separate restart proofs. It records the retired test's post-Commit, pre-catch-up coordinator reconstruction and the distinct Stage-to-Commit shutdown scenario.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29B-D2 — Map scenarios from the retired legacy-dispatcher tests to surviving tests (unverified medium).
   evidence: About 2k lines of query-handler, adapter and generation tests and three post-commit dispatch tests were deleted. Watermark under rejection, mixed-unit and effortless-child refusals, and post-commit new-aggregate admission were not shown to survive. Settled by a scenario-to-test map.
+  status: done 2026-11-22
+  resolution: The [hosting cutover guide](../../docs/platform-hosting-cutover.md) maps the retired behavior to current tests. Executing regressions cover rejected-envelope watermarks, rolled effort with missing child history, and SDK admission of a new owner after Commit.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29B-D3 — Confirm `WorksSdkRebuildBatchObserver` observes staged batches (unverified medium).
@@ -2213,6 +2217,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29R-V1 — Add a real --list-codes CLI JSON contract test during the next BMAD party-mode skill refresh.
   evidence: The independent verification-gap layer read TestCodeMap and searched CLI consumers: tests call code_map directly, while create-party instructions consume main/CLI JSON keys codes and installed_agents_resolved. Removing the args.list_codes branch leaves helper assertions green. This is separate agent-context tooling; no repository skill inside references was loaded or changed.
+  status: done 2026-11-22
+  resolution: The subprocess test exercises the real `--list-codes` command and checks both JSON fields when installed-agent resolution succeeds and when only custom members are available. All three maintained skill copies carry the test.
 
 ## Deferred from: Story 4.9 submodule implementation review (2026-10-29)
 
@@ -2241,6 +2247,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R30C-D1 — Live SDK callback and cascade/date restart-replay proofs are Explicit-only.
   evidence: WorksSdkRecoveryPipelineSmokeTests lines 111 and 223 are `[Fact(Explicit = true)]`; Platform `verify_works_host.py` runs them with `-explicit on`; live requalification owned by Story 4.16.
+  status: done 2026-11-22
+  resolution: The [hosting cutover guide](../../docs/platform-hosting-cutover.md) records the exact required verifier methods and links their passing archived CI5 results. Fresh live qualification remains with the Platform gate.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R30C-D2 — Map deleted cascade and date-reminder test scenarios to surviving tests (unverified medium).
   evidence: Seven test files and three source tests removed; check cascade pacing, deterministic target correlation id, truncated descendant reads and Cancelled/Expired translation against TerminalCascadeTranslatorTests, WorksSourceStreamReaderTests, WorksSdkProcessRecoveryTests.
@@ -2249,6 +2257,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R30C-D3 — WaitForNamedProjectionLifecycleIdleAsync may pass vacuously (unverified medium).
   evidence: Hand-built ProjectionLifecycleActor ids and 204/404-as-idle; settle with a live run observing a real Delivering row or comparing id/key shape with the SDK.
+  status: done 2026-11-22
+  resolution: The actor IDs use the SDK aggregate identity and Works projection name. The poll reads phase and revision together from the SDK lifecycle snapshot and requires a positive revision somewhere in the idle scope. HTTP controls cover the untouched scope, retained revision, active lease, and unavailable state. [Verification spec](spec-five-deferred-projection-and-cli-checks.md).
 
 - source_spec: `spec-sync-upgrade-and-release-workspace.md`
   summary: Isolate owned infrastructure subprocess groups so descendants remain terminable after their immediate parent exits.

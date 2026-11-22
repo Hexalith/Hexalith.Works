@@ -20,9 +20,11 @@ using Hexalith.EventStore.Contracts.Effects;
 using Hexalith.EventStore.Contracts.Identity;
 using Hexalith.EventStore.Contracts.Reminders;
 using Hexalith.EventStore.DomainService;
+using Hexalith.EventStore.Server.Actors;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.ValueObjects;
+using Hexalith.Works.Projections;
 
 using NSubstitute;
 
@@ -34,6 +36,9 @@ namespace Hexalith.Works.IntegrationTests;
 [Collection(WorksAppHostTestCollection.Name)]
 public sealed class WorksSdkRecoveryPipelineSmokeTests
 {
+    private static readonly JsonSerializerOptions LifecycleSnapshotJson =
+        new(JsonSerializerDefaults.Web) { RespectRequiredConstructorParameters = true };
+
     /// <summary>A delayed clear sampled before or at settlement cannot satisfy the phase, even when received afterward.</summary>
     [Fact]
     public void AlertClearRequiresAnExporterObservationStrictlyAfterSettlement()
@@ -54,17 +59,38 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         => point.Name == "eventstore.domain.recovery.alert" && point.Value == 0 && point.ReceivedAt > settledAt
             && point.UnixTimeNanoseconds > checked((ulong)(settledAt - DateTimeOffset.UnixEpoch).Ticks * 100UL);
 
-    /// <summary>Absent and idle lifecycle rows may be disposed; a delivery or erase row may not.</summary>
-    [Fact]
-    public void NamedProjectionLifecycleIdleRecognizesTheAbsentBaselineAndAPersistedIdlePhase()
+    /// <summary>A restart can proceed only after every lifecycle snapshot is idle and at least one has a persisted revision.</summary>
+    /// <param name="status">The snapshot response for the second source.</param>
+    /// <param name="revision">The second source's SDK revision.</param>
+    /// <param name="phase">The second source's SDK phase.</param>
+    /// <param name="expected">Whether the observation counts as idle.</param>
+    [Theory]
+    [InlineData(HttpStatusCode.OK, 0, ProjectionLifecyclePhase.Idle, false)]
+    [InlineData(HttpStatusCode.OK, 2, ProjectionLifecyclePhase.Idle, true)]
+    [InlineData(HttpStatusCode.OK, 2, ProjectionLifecyclePhase.Delivering, false)]
+    [InlineData(HttpStatusCode.OK, 2, ProjectionLifecyclePhase.Erasing, false)]
+    [InlineData(HttpStatusCode.ServiceUnavailable, 2, ProjectionLifecyclePhase.Idle, false)]
+    public async Task NamedProjectionLifecyclePollRequiresPositivePersistedEvidence(
+        HttpStatusCode status, long revision, ProjectionLifecyclePhase phase, bool expected)
     {
-        IsAbsentOrIdleLifecycle("").ShouldBeTrue();
-        IsAbsentOrIdleLifecycle("null").ShouldBeTrue();
-        IsAbsentOrIdleLifecycle("""{"phase":0}""").ShouldBeTrue();
-        IsAbsentOrIdleLifecycle("""{"Phase":"Idle"}""").ShouldBeTrue();
-        IsAbsentOrIdleLifecycle("""{"phase":3}""").ShouldBeFalse();
-        IsAbsentOrIdleLifecycle("""{"phase":"Delivering"}""").ShouldBeFalse();
-        IsAbsentOrIdleLifecycle("""{"phase":1}""").ShouldBeFalse();
+        const string first = "/v1.0/actors/ProjectionLifecycleActor/tenant%3Awork%3Auntouched%3Aworks-runtime-v3/method/ReadSnapshotAsync";
+        const string second = "/v1.0/actors/ProjectionLifecycleActor/tenant%3Awork%3Awritten%3Aworks-runtime-v3/method/ReadSnapshotAsync";
+        using var client = new HttpClient(new WorksSdkHttpEvidenceHandler((request, _) =>
+        {
+            request.Method.ShouldBe(HttpMethod.Put);
+            HttpResponseMessage response = request.RequestUri!.AbsolutePath switch
+            {
+                first => new(HttpStatusCode.OK)
+                    { Content = JsonContent.Create(new ProjectionLifecycleSnapshot(ProjectionLifecyclePhase.Idle, 0)) },
+                second => new(status) { Content = JsonContent.Create(new ProjectionLifecycleSnapshot(phase, revision)) },
+                string path => throw new InvalidOperationException($"Unexpected actor invocation: {path}"),
+            };
+            return Task.FromResult(response);
+        })) { BaseAddress = new Uri("http://localhost/") };
+
+        ProcessSource[] sources = [new("tenant", "work", "untouched"), new("tenant", "work", "written")];
+        (await IsNamedProjectionLifecycleIdleAsync(client, NamedProjectionActorIds(sources),
+            TestContext.Current.CancellationToken).ConfigureAwait(true)).ShouldBe(expected);
     }
 
     /// <summary>A store that ignores cancellation cannot hold the retained-plan helper after its linked deadline is cancelled.</summary>
@@ -1090,35 +1116,14 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         idleDeadline.CancelAfter(TimeSpan.FromMinutes(4));
         ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", idleDeadline.Token, token).ConfigureAwait(false);
         using HttpClient actorState = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gateway, "EventStore", token).ConfigureAwait(false);
-        string[] actorIds = [.. sources.Select(source => $"{tenant}:work:{source.Aggregate}:works-runtime-v3").Distinct(StringComparer.Ordinal)];
+        string[] actorIds = NamedProjectionActorIds(sources);
         int consecutiveIdle = 0;
         try
         {
             await WaitAsync(async () =>
             {
-                foreach (string actorId in actorIds)
-                {
-                    using HttpResponseMessage response = await actorState.GetAsync(
-                        $"v1.0/actors/ProjectionLifecycleActor/{Uri.EscapeDataString(actorId)}/state/projection-lifecycle", idleDeadline.Token).ConfigureAwait(false);
-                    if (response.StatusCode is HttpStatusCode.NoContent or HttpStatusCode.NotFound)
-                        continue;
-                    if ((int)response.StatusCode is 500 or 503)
-                    {
-                        consecutiveIdle = 0;
-                        return false;
-                    }
-
-                    string body = await response.Content.ReadAsStringAsync(idleDeadline.Token).ConfigureAwait(false);
-                    if (response.StatusCode != HttpStatusCode.OK)
-                        throw new InvalidOperationException($"Projection lifecycle read for '{actorId}' failed {(int)response.StatusCode}: {body}");
-                    if (!IsAbsentOrIdleLifecycle(body))
-                    {
-                        consecutiveIdle = 0;
-                        return false;
-                    }
-                }
-
-                consecutiveIdle++;
+                bool idle = await IsNamedProjectionLifecycleIdleAsync(actorState, actorIds, idleDeadline.Token).ConfigureAwait(false);
+                consecutiveIdle = idle ? consecutiveIdle + 1 : 0;
                 return consecutiveIdle >= 5;
             }, idleDeadline.Token).ConfigureAwait(false);
         }
@@ -1129,23 +1134,39 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         }
     }
 
-    /// <summary>A missing row is the idle baseline. A persisted idle phase is also safe to dispose.</summary>
-    private static bool IsAbsentOrIdleLifecycle(string body)
+    private static string[] NamedProjectionActorIds(IReadOnlyList<ProcessSource> sources)
+        => [.. sources.Select(source =>
+            $"{new AggregateIdentity(source.Tenant, source.Domain, source.Aggregate).ActorId}:{WorksReadModelKeys.RuntimeFamily}")
+            .Distinct(StringComparer.Ordinal)];
+
+    /// <summary>
+    /// Reads phase and revision in one SDK actor turn. An untouched actor reports Idle at revision zero,
+    /// so at least one positive revision must corroborate the scope before it can settle.
+    /// </summary>
+    private static async Task<bool> IsNamedProjectionLifecycleIdleAsync(
+        HttpClient actorClient, IReadOnlyList<string> actorIds, CancellationToken token)
     {
-        if (string.IsNullOrWhiteSpace(body) || body == "null")
-            return true;
-        using JsonDocument document = JsonDocument.Parse(body);
-        JsonElement root = document.RootElement;
-        if (root.ValueKind != JsonValueKind.Object)
-            return false;
-        if (!root.TryGetProperty("phase", out JsonElement phase) && !root.TryGetProperty("Phase", out phase))
-            return false;
-        return phase.ValueKind switch
+        bool observedRevision = false;
+        foreach (string actorId in actorIds)
         {
-            JsonValueKind.Number => phase.GetInt32() == 0,
-            JsonValueKind.String => phase.GetString() is "0" or "Idle",
-            _ => false,
-        };
+            string route = $"v1.0/actors/{ProjectionLifecycleActor.ActorTypeName}/{Uri.EscapeDataString(actorId)}"
+                + $"/method/{nameof(IProjectionLifecycleActor.ReadSnapshotAsync)}";
+            using HttpResponseMessage response = await actorClient.PutAsync(route, null, token).ConfigureAwait(false);
+            if (response.StatusCode is HttpStatusCode.InternalServerError or HttpStatusCode.ServiceUnavailable)
+                return false;
+
+            response.EnsureSuccessStatusCode();
+            if (response.StatusCode != HttpStatusCode.OK)
+                return false;
+
+            ProjectionLifecycleSnapshot? snapshot = await response.Content.ReadFromJsonAsync<ProjectionLifecycleSnapshot>(LifecycleSnapshotJson, token)
+                .ConfigureAwait(false);
+            if (snapshot is not { Phase: ProjectionLifecyclePhase.Idle, Revision: >= 0 })
+                return false;
+            observedRevision |= snapshot.Revision > 0;
+        }
+
+        return observedRevision;
     }
 
     private static async Task WaitAsync(Func<Task<bool>> condition, CancellationToken token)

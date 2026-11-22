@@ -483,6 +483,36 @@ public sealed class WorksSdkProjectionQueryTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         promoted.Success.ShouldBeTrue();
         promoted.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
+
+        // An owner first seen after Commit must enter the promoted generation through ordinary SDK delivery.
+        const string newOwner = "work-after-commit";
+        var newItem = new WorkItemId(newOwner);
+        var identityOptions = new DomainProjectionIdentityOptions { AppId = "works-post-commit-test", ServiceVersion = "v1" };
+        string fingerprint = ProjectionRouteCatalogFingerprint.Compute(identityOptions.AppId, identityOptions.ServiceVersion,
+            [new ProjectionDispatchRoute("work", WorksReadModelKeys.RuntimeFamily)]);
+        ProjectionEventDto created = Dto(new WorkItemCreated(newOwner, 1, tenant, newItem, new Obligation("After commit")), 1);
+        ProjectionEventDto queued = Dto(new WorkItemQueued(newOwner, 2, tenant, newItem), 2);
+        var request = new ProjectionDispatchRequest(
+            new ProjectionRequest(Tenant, "work", newOwner, [created, queued]),
+            [WorksReadModelKeys.RuntimeFamily], "post-commit-owner", fingerprint);
+        using ServiceProvider provider = NamedProjectionProvider(store, store, coordinator, handler);
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        (await DomainProjectionDispatcher.DispatchAsync(provider, request, new ProjectionDispatchOptions(), identityOptions, ct)
+            .ConfigureAwait(true)).Outcomes.ShouldHaveSingleItem().Status.ShouldBe(ProjectionDispatchStatus.Completed);
+
+        var reopened = new SharedProjectionEpochCoordinator(store, store);
+        var queue = await reopened.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, ct).ConfigureAwait(true);
+        queue.Generation.ShouldBe(current.Generation);
+        var promotedIndex = queue.Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>();
+        promotedIndex.MemberWorkItemIds.ShouldBe([newOwner, Aggregate]);
+        promotedIndex.Items[newOwner].Status.ShouldBe(WorkItemStatus.Queued);
+        promotedIndex.Items[Aggregate].Status.ShouldBe(WorkItemStatus.Queued);
+        var detail = await reopened.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(newOwner), ct)
+            .ConfigureAwait(true);
+        detail.Value.ShouldNotBeNull().As<WorkItemRollUp>().LatestAcceptedSourceSequence.ShouldBe(2);
+        (await reopened.GetCheckpointAsync(scope, newOwner, ct).ConfigureAwait(true)).ShouldNotBeNull().OwnerSequenceNumber.ShouldBe(2);
+        (await WorkItemRuntimeHistoryStore.ReadAsync(reopened, scope, queue.Generation, newOwner, ct).ConfigureAwait(true))
+            .Events.Select(ev => ev.SequenceNumber).ShouldBe([1L, 2L]);
     }
 
     [Fact]
