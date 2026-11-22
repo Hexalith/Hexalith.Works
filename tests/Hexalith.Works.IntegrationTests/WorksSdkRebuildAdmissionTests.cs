@@ -224,7 +224,8 @@ public sealed class WorksSdkRebuildAdmissionTests
         (await Should.ThrowAsync<ArgumentException>(() => store.ExecuteAsync(logicalBatch, ct))).Message.ShouldContain("canonical manifest");
         store.Count.ShouldBe(0);
         using ServiceProvider provider = Provider(store, handler, observed);
-        await RebuildAsync(provider, handler, "tenant-byte-ceiling", histories);
+        await RebuildAsync(provider, handler, "tenant-byte-ceiling", histories,
+            stageProof: (observed, WorksSdkRebuildBatchObserver.WriteDigests(logicalPlan.Operations)));
 
         observed.Batches.Count.ShouldBeGreaterThan(4);
         observed.Batches.ShouldAllBe(batch => batch.Operations <= configured.MaxOperations && batch.CanonicalBytes <= configured.MaxCanonicalManifestBytes);
@@ -234,6 +235,15 @@ public sealed class WorksSdkRebuildAdmissionTests
         queue.IsAvailable.ShouldBeTrue();
         queue.IsStale.ShouldBeFalse();
         queue.Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>().MemberWorkItemIds.ShouldBe(histories.Select(history => history.AggregateId));
+        foreach (ReadModelBatchOperation operation in logicalPlan.Operations)
+        {
+            operation.Kind.ShouldBe(ReadModelBatchOperationKind.Write);
+            var expected = JsonSerializer.Deserialize<WorksRuntimeDocument>(operation.CanonicalValue.Span, s_json).ShouldNotBeNull();
+            var persisted = (await cold.ReadGenerationAsync<WorksRuntimeDocument>(scope, queue.Generation, operation.Key, ct))
+                .Value.ShouldNotBeNull(operation.Key);
+            persisted.Kind.ShouldBe(expected.Kind, operation.Key);
+            JsonElement.DeepEquals(persisted.Value, expected.Value).ShouldBeTrue(operation.Key);
+        }
         foreach (ProjectionRequest history in histories)
         {
             WorkItemSharedRebuildAggregateHistory restored = await WorkItemRuntimeHistoryStore.ReadAsync(cold, scope, queue.Generation, history.AggregateId, ct);
@@ -282,7 +292,8 @@ public sealed class WorksSdkRebuildAdmissionTests
     }
 
     private static async Task RebuildAsync(ServiceProvider provider, WorkItemSharedProjectionRebuildHandler handler, string operation,
-        IReadOnlyList<ProjectionRequest> histories, bool expectRefusal = false)
+        IReadOnlyList<ProjectionRequest> histories, bool expectRefusal = false,
+        (WorksSdkRebuildBatchObserver Observer, string[] ExpectedWrites)? stageProof = null)
     {
         CancellationToken ct = TestContext.Current.CancellationToken;
         var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", handler.ProjectionType, operation, Catalog(handler));
@@ -327,7 +338,17 @@ public sealed class WorksSdkRebuildAdmissionTests
             return;
         }
         finalized.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Finalized);
+        int batchesBeforeStage = stageProof?.Observer.Batches.Count ?? 0;
         (await Dispatch(Request(DomainSharedProjectionRebuildAction.Stage)).ConfigureAwait(false)).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Prepared);
+        if (stageProof is { } proof)
+        {
+            // Reconcile the successful writes from Stage with the finalized plan before Commit runs.
+            string[][] stagedWrites = [.. proof.Observer.Batches.Skip(batchesBeforeStage)
+                .Select(batch => batch.SuccessfulWrites).Where(writes => writes.Length > 0)];
+            stagedWrites.Length.ShouldBeGreaterThan(1);
+            stagedWrites.SelectMany(writes => writes).Order(StringComparer.Ordinal)
+                .ShouldBe(proof.ExpectedWrites.Order(StringComparer.Ordinal));
+        }
         (await Dispatch(Request(DomainSharedProjectionRebuildAction.Commit)).ConfigureAwait(false)).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
         (await Dispatch(Request(DomainSharedProjectionRebuildAction.Verify)).ConfigureAwait(false)).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
     }

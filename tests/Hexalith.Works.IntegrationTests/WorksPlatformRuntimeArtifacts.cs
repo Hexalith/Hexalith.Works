@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.Json;
 
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
@@ -66,7 +67,7 @@ internal static class WorksPlatformRuntimeArtifacts
             builder.CreateResourceBuilder(project).WithArgs("--no-build", "--no-restore");
     }
 
-    /// <summary>Uses the selected project's framework, including an explicitly retained historical SDK target.</summary>
+    /// <summary>Resolves the .NET 11 project's evaluated output directory in its own SDK context.</summary>
     internal static string DefaultDirectoryFor(string project, string configuration)
     {
         project = Path.GetFullPath(project);
@@ -77,16 +78,16 @@ internal static class WorksPlatformRuntimeArtifacts
             UseShellExecute = false,
             WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(project))!,
         };
-        foreach (string argument in new[] { "msbuild", project, "-nologo", "-nr:false", "-getProperty:TargetFramework", "-p:Configuration=" + configuration })
+        foreach (string argument in new[] { "msbuild", project, "-nologo", "-nr:false", "-getProperty:TargetFramework,TargetDir", "-p:Configuration=" + configuration })
             start.ArgumentList.Add(argument);
-        string framework = InspectFramework(start, TimeSpan.FromSeconds(30));
-        return Path.Combine(Path.GetDirectoryName(project)!, "bin", configuration, framework);
+        using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not inspect the selected runtime project.");
+        return InspectTargetDirectory(process, TimeSpan.FromSeconds(30));
     }
 
-    internal static string InspectFramework(ProcessStartInfo start, TimeSpan timeout)
+    /// <summary>Reads the evaluated target metadata within a deadline that also bounds redirected streams.</summary>
+    internal static string InspectTargetDirectory(Process process, TimeSpan timeout)
     {
         using var deadline = new CancellationTokenSource(timeout);
-        using Process process = Process.Start(start) ?? throw new InvalidOperationException("Could not inspect the selected runtime project.");
         Task<string> output = process.StandardOutput.ReadToEndAsync(deadline.Token);
         Task<string> diagnostic = process.StandardError.ReadToEndAsync(deadline.Token);
         try
@@ -102,13 +103,33 @@ internal static class WorksPlatformRuntimeArtifacts
                 Task.WhenAll(output, diagnostic, process.WaitForExitAsync(cleanup.Token)).WaitAsync(cleanup.Token).GetAwaiter().GetResult();
             }
             catch (OperationCanceledException) when (!cleanup.IsCancellationRequested) { }
-            throw new InvalidOperationException("Selected runtime project framework inspection exceeded its finite deadline.");
+            throw new InvalidOperationException("Selected runtime project metadata inspection exceeded its finite deadline.");
         }
-        string framework = output.GetAwaiter().GetResult().Trim();
+        string metadata = output.GetAwaiter().GetResult();
         string errors = diagnostic.GetAwaiter().GetResult();
-        if (process.ExitCode != 0 || framework != "net11.0")
-            throw new InvalidOperationException($"Cannot establish the selected runtime project's supported framework: {framework} {errors}");
-        return framework;
+        if (process.ExitCode != 0)
+            throw new InvalidOperationException($"Cannot evaluate the selected runtime project's output directory: {metadata} {errors}");
+
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(metadata);
+            if (document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("Properties", out JsonElement properties)
+                && properties.ValueKind == JsonValueKind.Object
+                && properties.TryGetProperty("TargetFramework", out JsonElement framework)
+                && framework.ValueKind == JsonValueKind.String && framework.ValueEquals("net11.0")
+                && properties.TryGetProperty("TargetDir", out JsonElement directory) && directory.ValueKind == JsonValueKind.String
+                && directory.GetString() is { } target && Path.IsPathFullyQualified(target))
+            {
+                return Path.TrimEndingDirectorySeparator(Path.GetFullPath(target));
+            }
+        }
+        catch (JsonException exception)
+        {
+            throw new InvalidOperationException($"Invalid output metadata for the selected runtime project: {errors}", exception);
+        }
+
+        throw new InvalidOperationException($"Cannot establish the selected runtime project's .NET 11 output directory: {metadata} {errors}");
     }
 
 }

@@ -2187,6 +2187,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29B-D3 — Confirm `WorksSdkRebuildBatchObserver` observes staged batches (unverified medium).
   evidence: It wraps `IReadModelBatchStore` only. If the SDK stages through `IReadModelBatchStagingStore`, the ceiling assertion misses those batches. Settled by inspecting the SDK write path.
+  status: done 2026-11-22
+  resolution: The Works epoch handler stages through the SDK coordinator's `IReadModelBatchStore` path. The tenant-ceiling test now checks multiple successful Stage batches, reconciles their payloads with the plan, and reopens each logical document and history from persisted state. [Verification spec](spec-five-deferred-hosting-verification.md).
 
 ## Deferred from: Story 4.9 Build resume review (2026-10-29)
 
@@ -2205,6 +2207,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29R-B8 — Prevent proof-input recheck reports from overwriting any inspected source or auxiliary input.
   evidence: A disposable fixture executed scripts/recheck-platform-proof-inputs.py with output equal to its inspected Works src/Works/Work.cs and reproduced exit 0, no mismatches and replaced source bytes. The helper was introduced separately by e53439bf08b87ea8041e5147a18a706055ad30db and is not the canonical story gate. Protect inspected source/configuration/helper paths and their aliases before success or refusal writes; retain an executing CLI regression.
+  status: done 2026-11-22
+  resolution: The CLI validates a separate report destination before either kind of write and refuses source paths, linked aliases, missing recorded inputs, and redirected directories. Malformed metadata that prevents destination validation produces an explicit refusal without a fresh report. [Verification spec](spec-five-deferred-hosting-verification.md).
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29R-V1 — Add a real --list-codes CLI JSON contract test during the next BMAD party-mode skill refresh.
@@ -2240,6 +2244,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R30C-D2 — Map deleted cascade and date-reminder test scenarios to surviving tests (unverified medium).
   evidence: Seven test files and three source tests removed; check cascade pacing, deterministic target correlation id, truncated descendant reads and Cancelled/Expired translation against TerminalCascadeTranslatorTests, WorksSourceStreamReaderTests, WorksSdkProcessRecoveryTests.
+  status: done 2026-11-22
+  resolution: The [hosting cutover guide](../../docs/platform-hosting-cutover.md) maps retired scenarios to current translation, stream, checkpoint, cancellation, and receipt tests and identifies retired dispatcher, index, and remoting contracts.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R30C-D3 — WaitForNamedProjectionLifecycleIdleAsync may pass vacuously (unverified medium).
   evidence: Hand-built ProjectionLifecycleActor ids and 204/404-as-idle; settle with a live run observing a real Delivering row or comparing id/key shape with the SDK.
@@ -2295,10 +2301,14 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 - source_spec: `spec-release-dependency-refresh-2026-11-16.md`
   summary: Verify whether an MSBuild metadata-evaluation descendant can retain redirected stream handles after its parent exits.
   evidence: Unverified review candidate in WorksPlatformRuntimeArtifacts.DefaultDirectoryFor; no reachable selected-project reproducer exists. A process-double that retains a pipe after the launcher exits would settle whether the current process timeout also needs bounded stream completion.
+  status: done 2026-11-22
+  resolution: The executing process fixture confirms that the launcher exits successfully while its child still holds the pipes. Runtime metadata inspection returns a deadline failure within the bound. [Verification spec](spec-five-deferred-hosting-verification.md).
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-release-dependency-refresh-2026-11-16.md`
   summary: The default runtime artifact resolver still assumes the standard bin/configuration/framework layout; arbitrary custom output or RID layouts need evaluated TargetDir.
   evidence: The baseline resolver already reconstructed this layout. Current canonical nondefault builds use WORKS_PLATFORM_RUNTIME_ARTIFACTS, while the default branch has no evaluated OutputPath/RID handling.
+  status: done 2026-11-22
+  resolution: The default resolver evaluates both `TargetFramework` and `TargetDir` in the selected project directory. Real MSBuild controls cover the standard layout, custom paths containing spaces, and RID-specific output. [Verification spec](spec-five-deferred-hosting-verification.md).
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-reduce-works-ci-duration.md`
   summary: Requalify the complete Works parity and rollback gate from stable, immutable repository identities.

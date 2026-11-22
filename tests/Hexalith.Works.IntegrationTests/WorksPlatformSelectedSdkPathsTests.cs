@@ -86,11 +86,11 @@ public sealed class WorksPlatformSelectedSdkPathsTests
         string directory = Directory.CreateTempSubdirectory("works-selected-framework-").FullName;
         try
         {
-            string project = Path.Combine(directory, "Host.proj");
-            File.WriteAllText(project, $"<Project><PropertyGroup><TargetFramework>{framework}</TargetFramework></PropertyGroup></Project>");
+            string project = Path.Combine(directory, "Host.csproj");
+            File.WriteAllText(project, $"""<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFramework>{framework}</TargetFramework></PropertyGroup></Project>""");
             WorksPlatformRuntimeArtifacts.DefaultDirectoryFor(project, "Release")
                 .ShouldBe(Path.Combine(directory, "bin", "Release", framework));
-            File.WriteAllText(project, "<Project><PropertyGroup><TargetFramework>net10.0;net11.0</TargetFramework></PropertyGroup></Project>");
+            File.WriteAllText(project, """<Project Sdk="Microsoft.NET.Sdk"><PropertyGroup><TargetFrameworks>net10.0;net11.0</TargetFrameworks></PropertyGroup></Project>""");
             Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.DefaultDirectoryFor(project, "Release"));
             File.WriteAllText(project, "<Project>");
             Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.DefaultDirectoryFor(project, "Release"));
@@ -99,6 +99,33 @@ public sealed class WorksPlatformSelectedSdkPathsTests
         {
             Directory.Delete(directory, true);
         }
+    }
+
+    /// <summary>MSBuild accounts for the selected configuration and runtime identifier in custom output paths.</summary>
+    [Theory]
+    [InlineData(null)]
+    [InlineData("linux-x64")]
+    public void SelectedProjectUsesEvaluatedCustomRuntimeOutput(string? runtimeIdentifier)
+    {
+        string directory = Directory.CreateTempSubdirectory("works-custom-output-").FullName;
+        try
+        {
+            string project = Path.Combine(directory, "Host.csproj");
+            string runtime = runtimeIdentifier is null ? string.Empty : $"<RuntimeIdentifier>{runtimeIdentifier}</RuntimeIdentifier>";
+            File.WriteAllText(project, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                  <PropertyGroup>
+                    <TargetFramework>net11.0</TargetFramework>
+                    <OutputPath>custom output/$(Configuration)/</OutputPath>
+                    {runtime}
+                  </PropertyGroup>
+                </Project>
+                """);
+            string expected = Path.Combine(directory, "custom output", "Release", "net11.0");
+            if (runtimeIdentifier is not null) expected = Path.Combine(expected, runtimeIdentifier);
+            WorksPlatformRuntimeArtifacts.DefaultDirectoryFor(project, "Release").ShouldBe(expected);
+        }
+        finally { Directory.Delete(directory, recursive: true); }
     }
 
     /// <summary>An unavailable SDK selected by the project cannot fall back to the caller's SDK.</summary>
@@ -141,8 +168,11 @@ public sealed class WorksPlatformSelectedSdkPathsTests
         using WorksIsolatedFixtureProcess fixture = await WorksIsolatedFixtureProcess.CreateAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
         var start = fixture.StartInfo("pipes", Path.Combine(fixture.DirectoryPath, "descendant.pid"));
         var elapsed = System.Diagnostics.Stopwatch.StartNew();
-        Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.InspectFramework(start, TimeSpan.FromSeconds(5)))
+        using var launcher = System.Diagnostics.Process.Start(start).ShouldNotBeNull();
+        Should.Throw<InvalidOperationException>(() => WorksPlatformRuntimeArtifacts.InspectTargetDirectory(launcher, TimeSpan.FromSeconds(5)))
             .Message.ShouldContain("deadline");
+        launcher.HasExited.ShouldBeTrue();
+        launcher.ExitCode.ShouldBe(0);
         elapsed.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(8));
         File.Exists(Path.Combine(fixture.DirectoryPath, "descendant.pid")).ShouldBeTrue();
     }

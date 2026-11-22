@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Reflection;
+using System.Security.Cryptography;
 
 using Hexalith.EventStore.Client.Projections;
 
@@ -12,18 +13,24 @@ internal sealed class WorksSdkRebuildBatchObserver(IReadModelBatchStore inner) :
         .GetType("Hexalith.EventStore.Client.Projections.ReadModelBatchFingerprint", throwOnError: true)!
         .GetMethod("BuildCanonicalManifest", BindingFlags.Public | BindingFlags.Static)!;
 
-    private readonly ConcurrentQueue<(int Operations, int CanonicalBytes)> _batches = new();
+    private readonly ConcurrentQueue<(int Operations, int CanonicalBytes, string[] SuccessfulWrites)> _batches = new();
 
     /// <summary>Gets a consistent snapshot of operation and canonical-byte measurements.</summary>
-    internal IReadOnlyList<(int Operations, int CanonicalBytes)> Batches => _batches.ToArray();
+    internal IReadOnlyList<(int Operations, int CanonicalBytes, string[] SuccessfulWrites)> Batches => _batches.ToArray();
 
     /// <inheritdoc/>
-    public Task<ReadModelBatchResult> ExecuteAsync(ReadModelBatch batch, CancellationToken cancellationToken = default)
+    public async Task<ReadModelBatchResult> ExecuteAsync(ReadModelBatch batch, CancellationToken cancellationToken = default)
     {
-        byte[] canonical = (byte[])s_canonicalManifest.Invoke(null, [batch])!;
-        _batches.Enqueue((batch.Operations.Count, canonical.Length));
-        return inner.ExecuteAsync(batch, cancellationToken);
+        int canonicalBytes = CanonicalBytes(batch);
+        ReadModelBatchResult result = await inner.ExecuteAsync(batch, cancellationToken).ConfigureAwait(false);
+        _batches.Enqueue((batch.Operations.Count, canonicalBytes, result.IsSuccess ? WriteDigests(batch.Operations) : []));
+        return result;
     }
+
+    /// <summary>Identifies staged write payloads independently of the SDK's generation key encoding.</summary>
+    internal static string[] WriteDigests(IEnumerable<ReadModelBatchOperation> operations)
+        => [.. operations.Where(operation => operation.Kind == ReadModelBatchOperationKind.Write)
+            .Select(operation => Convert.ToHexString(SHA256.HashData(operation.CanonicalValue.Span)))];
 
     /// <summary>Measures the SDK's exact encoding without copying its serialization contract.</summary>
     internal static int CanonicalBytes(ReadModelBatch batch)
