@@ -30,7 +30,10 @@
   "solution": "Hexalith.Works.slnx",
   "submodules": [
     "references/Hexalith.Platform",
-    "references/Hexalith.Parties"
+    "references/Hexalith.Parties",
+    "references/Hexalith.Commons",
+    "references/Hexalith.EventStore",
+    "references/Hexalith.PolymorphicSerializations"
   ],
   "tests": {
     "exclude": {},
