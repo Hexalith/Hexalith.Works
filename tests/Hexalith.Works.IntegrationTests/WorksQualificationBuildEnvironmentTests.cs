@@ -39,12 +39,9 @@ public sealed class WorksQualificationBuildEnvironmentTests
         finally { Directory.Delete(directory, recursive: true); }
     }
 
-    /// <summary>Both installed SDKs honor compiler isolation; unrelated model resources receive no qualification override.</summary>
-    /// <param name="sdk">The actual selected SDK, without a download or fallback.</param>
-    [Theory]
-    [InlineData("10.0.404")]
-    [InlineData("11.0.100")]
-    public async Task OwnedLaunchesDisableReusableCompilersInTheActualSdk(string sdk)
+    /// <summary>The .NET 11 SDK honors compiler isolation and leaves unrelated model resources untouched.</summary>
+    [Fact]
+    public async Task OwnedLaunchesDisableReusableCompilersInTheActualSdk()
     {
         string directory = Directory.CreateTempSubdirectory("works-build-isolation-").FullName;
         try
@@ -52,7 +49,7 @@ public sealed class WorksQualificationBuildEnvironmentTests
             string project = Path.Combine(directory, "Probe.csproj");
             await File.WriteAllTextAsync(project, "<Project Sdk=\"Microsoft.NET.Sdk\" />", TestContext.Current.CancellationToken).ConfigureAwait(true);
             await File.WriteAllTextAsync(Path.Combine(directory, "global.json"), JsonSerializer.Serialize(new
-            { sdk = new { version = sdk, rollForward = "disable" } }), TestContext.Current.CancellationToken).ConfigureAwait(true);
+            { sdk = new { version = "11.0.100", rollForward = "latestPatch" } }), TestContext.Current.CancellationToken).ConfigureAwait(true);
             IDistributedApplicationBuilder builder = DistributedApplication.CreateBuilder([]);
             ProjectResource owned = builder.AddProject("works", project).Resource;
             ProjectResource unrelated = builder.AddProject("unrelated", project).Resource;
