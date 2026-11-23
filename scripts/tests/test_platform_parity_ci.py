@@ -55,7 +55,6 @@ def bootstrap_fixture(directory):
     for name in PARITY.DEPENDENCIES:
         dependency = works / "references" / name
         dependency.mkdir(parents=True)
-        (dependency / ".git").mkdir()
     catalog = works / "references/Hexalith.Builds/Props/Directory.Packages.props"
     catalog.parent.mkdir()
     catalog.write_text(
@@ -79,6 +78,10 @@ def bootstrap_fixture(directory):
         '#!/usr/bin/env bash\nset -euo pipefail\n[[ "$1" == "--help" ]]\n'
     )
     commit(platform)
+    for dependency in (works / "references").iterdir():
+        if dependency not in (platform, sdk):
+            (dependency / "Directory.Build.props").write_text("<Project />")
+            commit(dependency)
     return works, sdk, platform
 
 

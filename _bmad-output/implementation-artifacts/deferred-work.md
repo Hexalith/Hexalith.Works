@@ -1933,6 +1933,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Extend Platform canonical source closure to consumed root-dependency build and source inputs.
+  status: done 2026-11-23
+  resolution: Direct checkouts and exported snapshots now capture the selected root dependencies, their owning commits and current build/source file hashes. Changes to imported props, linked source, embedded resources and dependency revisions invalidate the result. [Verification spec](spec-five-deferred-verifier-inputs.md).
   evidence: Review R2B3: a temporary fixture changed Hexalith.Builds/Props/Hexalith.Build.props without changing dependency_inputs, which binds only Directory.Packages.props. This unchanged owner policy predates the CI bootstrap; current qualification independently captures all 1,779 Builds inputs. Record dependency revisions and consumed overlays and test drift refusal in the owner.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -1943,6 +1945,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Bind reusable EXT-HOST-1 component attempts to actual suite and dependency inputs.
+  status: done 2026-11-23
+  resolution: The component verifier records the evaluated custody and guard projects, inputs, imports and dependency revisions for the selected build mode. Changed inputs prevent reuse of the first attempt. The full installed-cohort route keeps its own qualification. [Verification spec](spec-five-deferred-verifier-inputs.md).
   evidence: Review R2B7: the pre-existing attempt key contains HEAD, plan and profile (now also Release mode), and a matching key returns stored success without inspecting dirty suite or external guard sources. The fresh Works gate does not reuse this complete-profile success path; fix and test cache source identity in EXT-HOST-1.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2063,6 +2067,8 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Bind reusable Platform package-cache admission to independent public-feed integrity evidence.
+  status: done 2026-11-23
+  resolution: The verifier compares cached archive bytes to the SHA-512 obtained from the official NuGet catalog before inspecting the same bytes and matching the deployed DLL. A matching locally modified archive and DLL are refused. [Verification spec](spec-five-deferred-verifier-inputs.md).
   evidence: published_producers records feed/SHA-512 metadata and archive-to-DLL equality but does not authenticate the archive against independently obtained public bytes; the boundary predates this resume. This release separately verified the official Aspire/Client/DomainService packages; add reusable forged-cache controls without weakening those checks.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2234,10 +2240,14 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29S-B2 — Re-enumerate complete live runtime artifact membership at final canonical closure.
+  status: done 2026-11-23
+  resolution: Preparation records the runtime output roots. Final verification re-enumerates those roots and checks file membership and hashes, including nested resource files. [Verification spec](spec-five-deferred-verifier-inputs.md).
   evidence: require_unchanged_inputs compares only existing runtimeArtifacts entries, allowing added files to escape its final dictionary check. The exact recorded-path loop already exists in pre-cutover Platform a9ac6640944efd8c581aaad70b335b7117b932b5. Add owning membership-addition/removal controls across every recorded runtime directory; do not transfer this limitation into claims of exhaustive executable influence.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29S-B3 — Determine whether the selected SDK global.json can influence actual canonical compiler selection without source closure detecting it (unverified medium).
+  status: done 2026-11-23
+  resolution: The canonical Works-directed build uses the Works SDK pin. An Aspire project-directory launch also resolves the producer SDK pin, even with a prebuilt binary. The producer comparison and end-of-run checks now bind global.json in both source modes. [Verification spec](spec-five-deferred-verifier-inputs.md).
   evidence: verify_works_producer.py omits global.json from BUILD_FILES in both pre-cutover Platform a9ac6640944efd8c581aaad70b335b7117b932b5 and current source. Current commands run from bound Works/Platform roots, so the claimed active SDK-selection drift was not demonstrated. Execute an SDK-selection control before extending producer qualification to that file.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
