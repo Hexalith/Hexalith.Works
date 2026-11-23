@@ -258,12 +258,13 @@ public sealed class WorksAppHostDiscoveryIsolationTests
                 { AppId = "eventstore", Config = policy, DaprHttpPort = 48123, DaprGrpcPort = 48124 }));
             var admin = builder.AddProject("eventstore-admin", project).WithDaprSidecar(sidecar => sidecar.WithOptions(new DaprSidecarOptions
                 { AppId = "eventstore-admin", Config = policy }));
-            DevelopmentRouteCatalogReceiver[] receivers = [new(gateway, []) { TechnicalHttp = true },
+            DevelopmentRouteCatalogReceiver<ProjectResource>[] receivers = [new(gateway, []) { TechnicalHttp = true },
                 new(admin, []) { TechnicalHttp = true, ActorStateOwners = [gateway] }];
-            var applications = new Dictionary<ProjectResource, string> { [gateway.Resource] = "eventstore", [admin.Resource] = "eventstore-admin" };
+            var applications = new Dictionary<IDotnetProgramResource, string> { [gateway.Resource] = "eventstore", [admin.Resource] = "eventstore-admin" };
             // Use the published SDK's own observer; reflection exposes no replacement implementation or weakened check.
             Type observerType = typeof(DevelopmentRouteCatalogReceiver).Assembly.GetType(
-                "Hexalith.EventStore.Aspire.DevelopmentRouteCatalogOwnerReadObserver", throwOnError: true)!;
+                "Hexalith.EventStore.Aspire.DevelopmentRouteCatalogOwnerReadObserver`1", throwOnError: true)!
+                .MakeGenericType(typeof(ProjectResource));
             var observer = (IDistributedApplicationEventingSubscriber)Activator.CreateInstance(observerType,
                 System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic, binder: null,
                 args: [builder, receivers, applications, fixture], culture: null)!;
