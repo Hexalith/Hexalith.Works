@@ -11,8 +11,8 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     private readonly Func<string[], CancellationToken, Task<string>> _docker = dockerCommand;
     private bool _redisStarted;
     private bool _volumeCreated;
-    private Dictionary<string, (byte[] Dump, DateTimeOffset? ExpiresAt, string Fingerprint)>? _snapshot;
-    private readonly Dictionary<string, WorksSdkProofRedisHashSnapshot> _hashSnapshots = new(StringComparer.Ordinal);
+    private Dictionary<string, (byte[] Dump, long? ExpiresAt, string Fingerprint)>? _snapshot;
+    private Dictionary<string, WorksSdkProofRedisHashSnapshot> _hashSnapshots = new(StringComparer.Ordinal);
     private Dictionary<string, byte[]>? _files;
     private Dictionary<string, UnixFileMode>? _fileModes;
     private string? _schedulerInventory;
@@ -297,43 +297,61 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         }
     }
 
-    /// <summary>Captures every owned Redis key, offline Scheduler file, component and retained credential byte.</summary>
-    /// <remarks>Run-scoped workload issuer credentials are removed by Platform. Retained digest and independent app-channel material remains private.</remarks>
-    internal async Task<IReadOnlyDictionary<string, string>> CaptureFleetAsync(CancellationToken cancellationToken)
+    /// <summary>Captures the owned stopped fleet's Redis values and absolute hash-field deadlines.</summary>
+    internal async Task CaptureRedisAsync(CancellationToken cancellationToken)
     {
         await RequireStoppedFleetAsync(cancellationToken).ConfigureAwait(false);
         using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
         IDatabase database = redis.GetDatabase();
         await VerifyCatalogCustodyAsync(database, cancellationToken).ConfigureAwait(false);
-        _snapshot = new(StringComparer.Ordinal);
-        _hashSnapshots.Clear();
+        var snapshot = new Dictionary<string, (byte[] Dump, long? ExpiresAt, string Fingerprint)>(StringComparer.Ordinal);
+        var hashSnapshots = new Dictionary<string, WorksSdkProofRedisHashSnapshot>(StringComparer.Ordinal);
         foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
         {
             var captured = await CaptureKeyAsync(database, key).ConfigureAwait(false);
             if (captured is null) continue;
             var entry = captured.Value;
-            if (entry.Hash is not null) _hashSnapshots.Add(key.ToString(), entry.Hash);
-            _snapshot.Add(key.ToString(), (entry.Dump, entry.ExpiresAt, entry.Fingerprint));
+            if (entry.Hash is not null) hashSnapshots.Add(key.ToString(), entry.Hash);
+            snapshot.Add(key.ToString(), (entry.Dump, entry.ExpiresAt, entry.Fingerprint));
         }
-        _files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+        // A complete Redis capture replaces its predecessor; only a subsequent file and Scheduler
+        // capture can make it a full fleet backup.
+        _files = null;
+        _fileModes = null;
+        _schedulerInventory = null;
+        _hashSnapshots = hashSnapshots;
+        _snapshot = snapshot;
+    }
+
+    /// <summary>Captures every owned Redis key, offline Scheduler file, component and retained credential byte.</summary>
+    /// <remarks>Run-scoped workload issuer credentials are removed by Platform. Retained digest and independent app-channel material remains private.</remarks>
+    internal async Task<IReadOnlyDictionary<string, string>> CaptureFleetAsync(CancellationToken cancellationToken)
+    {
+        await CaptureRedisAsync(cancellationToken).ConfigureAwait(false);
+        var snapshot = _snapshot ?? throw new InvalidOperationException("Redis capture did not complete.");
+        var files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
             .ToDictionary(path => Path.GetRelativePath(directory, path), File.ReadAllBytes, StringComparer.Ordinal);
+        Dictionary<string, UnixFileMode>? fileModes = null;
         if (!OperatingSystem.IsWindows())
         {
-            _fileModes = new(StringComparer.Ordinal);
-            foreach (string relative in _files.Keys) _fileModes.Add(relative, File.GetUnixFileMode(Path.Combine(directory, relative)));
+            fileModes = new(StringComparer.Ordinal);
+            foreach (string relative in files.Keys) fileModes.Add(relative, File.GetUnixFileMode(Path.Combine(directory, relative)));
         }
         await ArchiveSchedulerAsync(restore: false, cancellationToken).ConfigureAwait(false);
-        _schedulerInventory = await SchedulerInventoryAsync(cancellationToken).ConfigureAwait(false);
-        Dictionary<string, string> hashes = _files.ToDictionary(pair => pair.Key, pair => Convert.ToHexString(SHA256.HashData(pair.Value)), StringComparer.Ordinal);
+        string schedulerInventory = await SchedulerInventoryAsync(cancellationToken).ConfigureAwait(false);
+        Dictionary<string, string> hashes = files.ToDictionary(pair => pair.Key, pair => Convert.ToHexString(SHA256.HashData(pair.Value)), StringComparer.Ordinal);
         hashes["scheduler.tar"] = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(directory, "scheduler.tar"), cancellationToken).ConfigureAwait(false)));
-        hashes["scheduler-file-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(_schedulerInventory)));
-        hashes["redis-key-count"] = _snapshot.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
-        string inventory = string.Join("\n", _snapshot.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+        hashes["scheduler-file-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(schedulerInventory)));
+        hashes["redis-key-count"] = snapshot.Count.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        string inventory = string.Join("\n", snapshot.OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(pair.Key))) + ":" + Convert.ToHexString(SHA256.HashData(pair.Value.Dump))));
         hashes["redis-full-value-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(inventory)));
-        string logicalInventory = string.Join("\n", _snapshot.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+        string logicalInventory = string.Join("\n", snapshot.OrderBy(pair => pair.Key, StringComparer.Ordinal)
             .Select(pair => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(pair.Key))) + ":" + pair.Value.Fingerprint));
         hashes["redis-logical-value-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(logicalInventory)));
+        _schedulerInventory = schedulerInventory;
+        _fileModes = fileModes;
+        _files = files;
         return hashes;
     }
 
@@ -341,13 +359,15 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     /// <param name="database">The owned Redis database.</param>
     /// <param name="key">The previously enumerated key.</param>
     /// <returns>Captured bytes and logical evidence, or null if the atomic hash observation proves expiry.</returns>
-    internal static async Task<(byte[] Dump, DateTimeOffset? ExpiresAt, string Fingerprint, WorksSdkProofRedisHashSnapshot? Hash)?> CaptureKeyAsync(
+    internal static async Task<(byte[] Dump, long? ExpiresAt, string Fingerprint, WorksSdkProofRedisHashSnapshot? Hash)?> CaptureKeyAsync(
         IDatabase database, RedisKey key)
     {
         ArgumentNullException.ThrowIfNull(database);
         byte[] dump = await database.KeyDumpAsync(key).ConfigureAwait(false)
             ?? throw new InvalidOperationException("The stopped synthetic fleet changed during capture.");
-        TimeSpan? remaining = await database.KeyTimeToLiveAsync(key).ConfigureAwait(false);
+        long deadline = (long)await database.ExecuteAsync("PEXPIRETIME", key).ConfigureAwait(false);
+        if (deadline == -2) throw new InvalidOperationException("The stopped synthetic fleet changed during capture.");
+        long? expiresAt = deadline == -1 ? null : deadline;
         string fingerprint;
         WorksSdkProofRedisHashSnapshot? hash = null;
         if (await database.KeyTypeAsync(key).ConfigureAwait(false) == RedisType.Hash)
@@ -357,8 +377,9 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             if (hash.Type != "hash") throw new InvalidOperationException("The stopped synthetic hash changed type during capture.");
             fingerprint = HashFingerprint(hash.Fields);
         }
-        else fingerprint = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
-        return (dump, remaining is null ? null : DateTimeOffset.UtcNow + remaining, fingerprint, hash);
+        else fingerprint = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("A restored or captured synthetic key is missing.");
+        return (dump, expiresAt, fingerprint, hash);
     }
 
     /// <summary>The capture-only inventory of original DUMP bytes, which a re-observation cannot reproduce.</summary>
@@ -378,7 +399,8 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         IDatabase database = redis.GetDatabase();
         var fingerprints = new SortedDictionary<string, string>(StringComparer.Ordinal);
         foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
-            fingerprints.Add(key.ToString(), await RedisValueFingerprintAsync(database, key).ConfigureAwait(false));
+            fingerprints.Add(key.ToString(), await RedisValueFingerprintAsync(database, key).ConfigureAwait(false)
+                ?? throw new InvalidOperationException("A restored or captured synthetic key is missing."));
         Dictionary<string, string> hashes = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
             .Select(path => Path.GetRelativePath(directory, path))
             .Where(relative => relative != "scheduler.tar")
@@ -400,16 +422,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         if (_snapshot is null || _files is null) throw new InvalidOperationException("No compatible fleet snapshot exists.");
         using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
         IDatabase database = redis.GetDatabase();
-        const string sentinel = "story416:post-snapshot-sentinel";
-        await database.StringSetAsync(sentinel, "must-be-removed").ConfigureAwait(false);
-        await redis.GetServer(RedisEndpoint).FlushDatabaseAsync().ConfigureAwait(false);
-        foreach ((string key, (byte[] dump, DateTimeOffset? expiresAt, _)) in _snapshot)
-        {
-            TimeSpan? remaining = expiresAt - DateTimeOffset.UtcNow;
-            if (remaining <= TimeSpan.Zero) continue;
-            await database.KeyRestoreAsync(key, dump, remaining).ConfigureAwait(false);
-        }
-        await VerifyRestoredRedisAsync(cancellationToken).ConfigureAwait(false);
+        await RestoreCapturedRedisAsync(redis, cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(Path.Combine(directory, "post-snapshot-sentinel"), "must-be-removed", cancellationToken).ConfigureAwait(false);
         foreach (string path in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
             .Where(path => Path.GetFileName(path) != "scheduler.tar")) File.Delete(path);
@@ -429,6 +442,30 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             throw new InvalidOperationException("Restored Scheduler file inventory differs from its stopped backup.");
     }
 
+    /// <summary>Restores and verifies the captured Redis values of this owned, stopped fleet.</summary>
+    internal async Task RestoreRedisAsync(CancellationToken cancellationToken)
+    {
+        await RequireStoppedFleetAsync(cancellationToken).ConfigureAwait(false);
+        using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
+        await RestoreCapturedRedisAsync(redis, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task RestoreCapturedRedisAsync(ConnectionMultiplexer redis, CancellationToken cancellationToken)
+    {
+        if (_snapshot is null) throw new InvalidOperationException("No compatible Redis snapshot exists.");
+        IDatabase database = redis.GetDatabase();
+        const string sentinel = "story416:post-snapshot-sentinel";
+        await database.StringSetAsync(sentinel, "must-be-removed").ConfigureAwait(false);
+        await redis.GetServer(RedisEndpoint).FlushDatabaseAsync().ConfigureAwait(false);
+        foreach ((string key, (byte[] dump, long? expiresAt, _)) in _snapshot)
+        {
+            // Redis applies an absolute deadline at the command boundary, including a deadline
+            // that already elapsed. Zero is RESTORE's persistent-key sentinel.
+            await database.ExecuteAsync("RESTORE", (RedisKey)key, expiresAt ?? 0, dump, "ABSTTL").ConfigureAwait(false);
+        }
+        await VerifyRestoredRedisAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     /// <summary>Verifies complete keys, full value bytes and absolute expiry after restoring the owned store.</summary>
     internal async Task VerifyRestoredRedisAsync(CancellationToken cancellationToken)
     {
@@ -436,34 +473,35 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         if (_snapshot is null) throw new InvalidOperationException("No compatible Redis snapshot exists.");
         using ConnectionMultiplexer redis = await ConnectionMultiplexer.ConnectAsync(RedisEndpoint + ",allowAdmin=true").ConfigureAwait(false);
         IDatabase database = redis.GetDatabase();
-        foreach ((string key, (_, DateTimeOffset? expiresAt, string fingerprint)) in _snapshot)
+        IServer server = redis.GetServer(RedisEndpoint);
+        foreach ((string key, (_, long? expiresAt, string fingerprint)) in _snapshot)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (expiresAt <= DateTimeOffset.UtcNow) continue;
+            bool noLiveFields = false;
             string expected = fingerprint;
-            string actual;
+            string? actual;
             if (_hashSnapshots.TryGetValue(key, out WorksSdkProofRedisHashSnapshot? captured))
             {
                 WorksSdkProofRedisHashSnapshot observed = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
                 var live = captured.LiveFieldsAt(observed.ObservedAt);
-                if (live.Length == 0 && observed.Type == "none") continue;
+                noLiveFields = live.Length == 0;
+                if ((noLiveFields || expiresAt < observed.ObservedAt) && observed.Type == "none") continue;
                 if (observed.Type != "hash") throw new InvalidOperationException("A restored synthetic hash changed type or disappeared.");
                 expected = HashFingerprint(live);
                 actual = HashFingerprint(observed.Fields);
             }
             else actual = await RedisValueFingerprintAsync(database, key).ConfigureAwait(false);
-            if (expiresAt <= DateTimeOffset.UtcNow) continue;
+            long restoredDeadline = (long)await database.ExecuteAsync("PEXPIRETIME", (RedisKey)key).ConfigureAwait(false);
+            if (restoredDeadline == -2 && (noLiveFields || (expiresAt is not null
+                && expiresAt < await ServerTimeMillisecondsAsync().ConfigureAwait(false)))) continue;
+            if (restoredDeadline != (expiresAt ?? -1))
+                throw new InvalidOperationException("A restored synthetic expiry differs from its backup.");
             if (actual != expected)
                 throw new InvalidOperationException("A restored synthetic value or type differs from its backup; key SHA256="
                     + Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key))));
-            TimeSpan? remaining = await database.KeyTimeToLiveAsync(key).ConfigureAwait(false);
-            if (expiresAt is null ? remaining is not null : remaining is null
-                || Math.Abs(((DateTimeOffset.UtcNow + remaining!.Value) - expiresAt.Value).TotalMilliseconds) > 500)
-                throw new InvalidOperationException("A restored synthetic expiry differs from its backup.");
         }
-        HashSet<string> actualKeys = redis.GetServer(RedisEndpoint).Keys().Select(key => key.ToString()).ToHashSet(StringComparer.Ordinal);
-        HashSet<string> expectedKeys = _snapshot.Where(pair => pair.Value.ExpiresAt is null || pair.Value.ExpiresAt >= DateTimeOffset.UtcNow)
-            .Select(pair => pair.Key).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> actualKeys = server.Keys().Select(key => key.ToString()).ToHashSet(StringComparer.Ordinal);
+        HashSet<string> expectedKeys = _snapshot.Keys.ToHashSet(StringComparer.Ordinal);
         foreach ((string key, WorksSdkProofRedisHashSnapshot captured) in _hashSnapshots)
         {
             WorksSdkProofRedisHashSnapshot observed = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
@@ -475,26 +513,30 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         }
         // The hash observations await Redis. Use one later clock observation for both whole-key
         // inventories so a TTL crossing those round trips cannot leave a stale expected key.
-        DateTimeOffset inventoryObservedAt = DateTimeOffset.UtcNow;
-        expectedKeys.RemoveWhere(key => _snapshot[key].ExpiresAt <= inventoryObservedAt);
+        long inventoryObservedAt = await ServerTimeMillisecondsAsync().ConfigureAwait(false);
+        expectedKeys.RemoveWhere(key => _snapshot[key].ExpiresAt < inventoryObservedAt);
         foreach (string key in actualKeys.ToArray())
-            if (_snapshot.TryGetValue(key, out var entry) && entry.ExpiresAt <= inventoryObservedAt
+            if (_snapshot.TryGetValue(key, out var entry) && entry.ExpiresAt < inventoryObservedAt
                 && !await database.KeyExistsAsync(key).ConfigureAwait(false)) actualKeys.Remove(key);
         if (!actualKeys.SetEquals(expectedKeys) || await database.KeyExistsAsync("story416:post-snapshot-sentinel").ConfigureAwait(false))
             throw new InvalidOperationException("The full synthetic Redis restore did not reproduce its key inventory. Missing key SHA256: "
                 + string.Join(",", expectedKeys.Except(actualKeys).Select(key => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key)))))
                 + "; unexpected key SHA256: "
                 + string.Join(",", actualKeys.Except(expectedKeys).Select(key => Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(key))))));
+
+        async Task<long> ServerTimeMillisecondsAsync()
+            => new DateTimeOffset(await server.TimeAsync().ConfigureAwait(false)).ToUnixTimeMilliseconds();
     }
 
     /// <summary>Hashes all exact value bytes, canonicalizing only unordered Redis hashes and sets.</summary>
-    internal static async Task<string> RedisValueFingerprintAsync(IDatabase database, RedisKey key)
+    private static async Task<string?> RedisValueFingerprintAsync(IDatabase database, RedisKey key)
     {
         RedisType type = await database.KeyTypeAsync(key).ConfigureAwait(false);
         if (type == RedisType.Hash)
         {
             WorksSdkProofRedisHashSnapshot hash = await ReadHashSnapshotAsync(database, key).ConfigureAwait(false);
-            if (hash.Type != "hash") throw new InvalidOperationException("A synthetic hash expired or changed type during observation.");
+            if (hash.Type == "none") return null;
+            if (hash.Type != "hash") throw new InvalidOperationException("A synthetic hash changed type during observation.");
             return HashFingerprint(hash.Fields);
         }
         using var bytes = new MemoryStream();
@@ -511,8 +553,8 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
             {
                 // Keep the full RDB encoding for ordered values and streams, including consumer groups,
                 // pending entries and other stream metadata that XRANGE alone would omit.
-                byte[] dump = await database.KeyDumpAsync(key).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException("A restored or captured synthetic key is missing.");
+                byte[]? dump = await database.KeyDumpAsync(key).ConfigureAwait(false);
+                if (dump is null) return null;
                 writer.Write(dump.Length);
                 writer.Write(dump);
             }

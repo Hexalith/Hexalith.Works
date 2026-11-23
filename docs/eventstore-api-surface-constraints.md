@@ -1,6 +1,6 @@
 # EventStore API Surface Constraints
 
-<!-- EventStore-current-source: 2ec21f631a2e292fba8c5537fe665ab275ed1081 -->
+<!-- EventStore-current-source: 9590106d411347d992ee29b812feacf56bed2c30 -->
 
 Current source characterization follows the EventStore revision in the marker above and its consumed checkout.
 The architecture lane verifies this binding. Published package producers and historical proof revisions below retain their separate scope.
@@ -12,7 +12,7 @@ This source/package pairing records supported build inputs and does not claim
 producer equivalence or extend historical archive/signature verification.
 Current runtime/parity acceptance requires the separate full CI gate.
 
-The previous Release selection was EventStore `4.0.4` (tag `v4.0.4`, producer
+An earlier Release selected EventStore `4.0.4` (tag `v4.0.4`, producer
 `326bfef884543cdbcaf96de7f4c4ad378dbad6d7`). The current source marker has separate scope.
 The nine 4.0.4 archives consumed by the package graph have verified exact identity, official
 repository/source metadata and signatures, with executed consumer DLLs matching their archives.
@@ -236,7 +236,7 @@ surface documented below is unchanged from the original `c6b72caa` verification.
 - **The generic processor shares the case-insensitive payload reader.** `EventStoreDomainEventProcessor` binds
   both EventPersister's PascalCase bytes and camelCase Web compatibility inputs through
   `EventStorePayloadSerialization.Options`. That file is byte-identical between `b43e963403efa848eda9621b5e3e7e446c7faa2d`
-  and the current pin `c61739206fd89619b7d29dfb0812225a234066bb`, so the withdrawn "not Web-JSON compatible /
+  and the August 28 review pin `c61739206fd89619b7d29dfb0812225a234066bb`, so the withdrawn "not Web-JSON compatible /
   silently binds a zero-valued record" characterization was wrong at both revisions rather than something the pin
   bump changed. Works retains its host-local endpoint for stricter tenant/work-item/aggregate identity validation
   and its explicit terminal handling of malformed or unhandled deliveries; casing compatibility was never the
@@ -349,7 +349,7 @@ recovery-discovery model while keeping every read per-aggregate.
 
 ## Story 4.15 producer correction history
 
-Before public 3.123.0 acceptance, Works verified local Story 4.15 candidates on the published EventStore 3.122.0 base containing the accepted 4.14 projection fixes. Those candidate results remain historical. Story 4.16 verification selected public 3.126.0; current dependency pins select public 3.128.3. `IProcessTranslator` permits bounded cancellable contextual reads around pure domain translation, and `ProcessEvidenceUnavailableException` retains retry/park semantics without checkpoint advance. `ReminderIntent.Ordinal` and `SourceMessageId` are additive default-preserving seams. Optional `IReminderTargetCatalog.ListAsync(afterKey, limit, cancellationToken)` enables SDK-owned periodic discovery from existing Works family membership. Authenticated `TrustedEffectOrigin` is an ephemeral domain-service handoff validated against the exact gateway workload and request bindings; it is never caller privilege or durable credentials. See [sdk-reminder-process-adoption.md](sdk-reminder-process-adoption.md) for composition, authority and rollback contracts.
+Before public 3.123.0 acceptance, Works verified local Story 4.15 candidates on the published EventStore 3.122.0 base containing the accepted 4.14 projection fixes. Those candidate results remain historical. Story 4.16 verification selected public 3.126.0. The October 28 dependency review recorded public 3.128.3. `IProcessTranslator` permits bounded cancellable contextual reads around pure domain translation, and `ProcessEvidenceUnavailableException` retains retry/park semantics without checkpoint advance. `ReminderIntent.Ordinal` and `SourceMessageId` are additive default-preserving seams. Optional `IReminderTargetCatalog.ListAsync(afterKey, limit, cancellationToken)` enables SDK-owned periodic discovery from existing Works family membership. Authenticated `TrustedEffectOrigin` is an ephemeral domain-service handoff validated against the exact gateway workload and request bindings; it is never caller privilege or durable credentials. See [sdk-reminder-process-adoption.md](sdk-reminder-process-adoption.md) for composition, authority and rollback contracts.
 
 Review iteration 1 adds optional `ProcessSourcePage.IsIncomplete` for healthy keyset results plus SDK-owned unresolved discovery. The SDK's optional `ProcessSourceState.PendingPlan` holds `ProcessEnvelopePlan` until receipt-backed checkpoint commit; null plans retain historical control JSON. Restored plans must match immutable committed source semantics and current effect/byte budgets. Works consumes these local `.4` seams without inventing persistence. SDK runtime owners remain responsible for retention and complete restore; production authority and publication remain separate gates.
 
@@ -365,4 +365,4 @@ The unpublished `3.124.1-story415.20261018.1` candidate uses SDK `77d9af18a54d92
 
 For a failed create-only write with an empty ETag, typed `IReadModelStore.TrySaveAsync`, expiring `TrySaveWithTimeToLiveAsync` and the SDK raw batch accessor's `TryWriteAsync` return `false` only after a strong read-back of the same key proves a nonempty ETag. Missing or unreadable proof preserves the original write failure. Caller cancellation, including cancellation during read-back, remains failure. Existing nonempty-ETag updates and successful creates keep their behavior. SDK source commit `575c8070355ff9b6afb17521d6eb529a85327e4d`, rebased unchanged as `f43b121c6c7539487b1f38b3c28508e3ab6264cc`, additionally counts the read-back as one state RPC in delivery-cost diagnostics. That diagnostic is source-only and is absent from the archived `3.124.1-story415.20261018.1` candidate DLLs; the candidate verifies the create-conflict behavior described above. This contract prevents an existing shared receipt from blocking journal dequeue without treating a transient create failure as a delivery conflict or gap.
 
-The correction is published in EventStore 3.125.0 and later, and the current pin selects public 3.128.3 (tag `v3.128.3`); Story 4.16 verified 3.126.0 (tag `v3.126.0`). Story 4.16 verifies Platform parity against that explicitly identified producer; this correction does not admit production data or remove the transitional host.
+EventStore 3.125.0 introduced the published correction. Story 4.16 verified Platform parity with 3.126.0 (tag `v3.126.0`). The October 28 dependency review recorded tag `v3.128.3`. Production admission and retirement of the transitional host remained separate decisions.

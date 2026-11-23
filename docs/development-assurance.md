@@ -14,12 +14,15 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-Current maintenance pairs EventStore source `2ec21f631a2e292fba8c5537fe665ab275ed1081`
-with Release `5.4.0`, and PolymorphicSerializations source
-`c6d0dfce6dc4f9a0699a51f80baf021ba5ef5d60` with Release `2.0.0`.
-The official package metadata names producers `2ec21f631a2e292fba8c5537fe665ab275ed1081`
-and `52282d023156725c811fa21299f349a6fd62d989`, respectively. The EventStore source matches
-its package producer. PolymorphicSerializations uses the separately reviewed source revision above.
+Works uses EventStore source `9590106d411347d992ee29b812feacf56bed2c30` in Debug.
+Release selects `5.4.0`, whose NuGet producer is `2ec21f631a2e292fba8c5537fe665ab275ed1081`.
+The Debug revision includes later changes to generated query contracts and command admission.
+
+For PolymorphicSerializations, Debug uses `99c2344f08d3e3560a891f79ab63f8722fa14e60`.
+The Works Release catalog selects `2.0.1`, whose NuGet producer is
+`c6d0dfce6dc4f9a0699a51f80baf021ba5ef5d60`. The two subsequent commits changed
+CI configuration and the Builds gitlink. The library sources at those revisions are identical.
+
 The full local source gate and canonical Platform
 parity retain their independent requirements. Historical package authentication
 and live-proof observations below apply only to their recorded producers.

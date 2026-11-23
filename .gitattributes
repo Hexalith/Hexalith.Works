@@ -3,6 +3,7 @@ global.json text eol=crlf whitespace=cr-at-eol
 
 # Existing compatibility controls retain their authored CRLF bytes.
 scripts/tests/test_release_builds_compatibility.py whitespace=cr-at-eol
+scripts/tests/test_release_build_policy.py whitespace=cr-at-eol
 
 # Preserve the runnable host project's authored CRLF bytes.
 src/Hexalith.Works/Hexalith.Works.csproj whitespace=cr-at-eol
@@ -96,6 +97,9 @@ tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryProfileTests.cs whitespace
 
 # Recognize authored CRLF in the binary preflight evidence writer.
 tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackBinaryTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksRedisCaptureAcquisitionTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs whitespace=cr-at-eol
 
 # Preserve authored CRLF in the source verifier and runtime adapter changes.
 scripts/tests/test_source_debug_verification.py whitespace=cr-at-eol

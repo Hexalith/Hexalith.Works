@@ -2349,3 +2349,7 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
   evidence: External /pushall committed the interrupted run's large inventories while this build was active. This session preserves those external commits and changes rather than deleting user work; subsequent useful evidence should remain outside source commits.
 
 Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification: the complete immutable four-processor run passed all eleven rows, 44 proof kinds, full rollback and final integrity closure. Evidence: `/home/administrator/.codex/artifacts/works-ci-duration-stable4-20261117T114900Z`. The earlier unstable and Redis-startup attempts remain nonqualifying history.
+
+- source_spec: `spec-repair-works-release-gates.md`
+  summary: A second complete fleet backup on the same fixture can restore the first Scheduler archive.
+  evidence: Before and after the Redis test repair, full capture reads configuration files before writing the new `scheduler.tar`. On the second capture the previous archive is one of those files. Full restore writes that copy back before extracting it. A regression fixture should take two complete snapshots with distinct Scheduler contents and restore the second.

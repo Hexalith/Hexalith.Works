@@ -13,6 +13,7 @@ public sealed class WorksRedisCaptureAcquisitionTests
     /// <param name="boundary">The command immediately before which the last hash field expires.</param>
     [Theory]
     [InlineData("dump")]
+    [InlineData("deadline")]
     [InlineData("type")]
     [InlineData("hash")]
     public async Task LastFieldExpiryAtCaptureBoundaryRemainsFailClosed(string boundary)
@@ -49,7 +50,6 @@ public sealed class WorksRedisCaptureAcquisitionTests
             await ExpireAsync("dump").ConfigureAwait(false);
             return await real.KeyDumpAsync(key).ConfigureAwait(false);
         });
-        gated.KeyTimeToLiveAsync(key).Returns(_ => real.KeyTimeToLiveAsync(key));
         gated.KeyTypeAsync(key).Returns(async _ =>
         {
             await ExpireAsync("type").ConfigureAwait(false);
@@ -57,8 +57,10 @@ public sealed class WorksRedisCaptureAcquisitionTests
         });
         gated.ExecuteAsync(Arg.Any<string>(), Arg.Any<object[]>()).Returns(async call =>
         {
-            await ExpireAsync("hash").ConfigureAwait(false);
-            return await real.ExecuteAsync(call.ArgAt<string>(0), call.ArgAt<object[]>(1)).ConfigureAwait(false);
+            string command = call.ArgAt<string>(0);
+            if (command == "EVAL") await ExpireAsync("hash").ConfigureAwait(false);
+            if (command == "PEXPIRETIME") await ExpireAsync("deadline").ConfigureAwait(false);
+            return await real.ExecuteAsync(command, call.ArgAt<object[]>(1)).ConfigureAwait(false);
         });
 
         try

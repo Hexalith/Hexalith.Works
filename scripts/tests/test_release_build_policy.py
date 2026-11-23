@@ -29,7 +29,7 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
         add_source_root_markers(self.root)
         shutil.copyfile(ROOT / "Directory.Build.props", self.root / "Directory.Build.props")
         shutil.copyfile(ROOT / "global.json", self.root / "global.json")
-        # The guard reads the actual committed pin; the package-free fixtures need no central imports.
+        # The guard reads the Builds catalog; the package-free project needs no central imports.
         (self.root / "Directory.Packages.props").write_text(
             f"<Project><PropertyGroup><HexalithEventStoreVersion>{PIN}</HexalithEventStoreVersion>"
             "</PropertyGroup></Project>"
@@ -39,6 +39,9 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
         self.environment = {
             key: value for key, value in os.environ.items()
             if key.casefold() not in {
+                "hexalithbuildsroot", "hexalithcommonsroot", "hexalithmcpcliroot",
+                "hexalithsourcemappingmode", "hexalithsourcemappinghash",
+                "hexalith_source_mapping_hash", "hexalith_source_mapping_path",
                 "hexalitheventstoreversion", "worksallowlocaleventstorecandidate",
                 "usehexalithprojectreferences", "usenugetdeps", "configuration",
                 "hexalitheventstorefromsource", "hexalithpolymorphicserializationsfromsource",
@@ -65,21 +68,33 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
                 result = self.msbuild("-t:ValidateHexalithDependencyMode", "-p:Configuration=Release", *arguments)
                 self.assertEqual(0, result.returncode, result.stdout + result.stderr)
 
+    def test_release_selects_the_builds_catalog_when_the_works_catalog_disagrees(self):
+        works_pin = f"{PIN}-works-only"
+        (self.root / "Directory.Packages.props").write_text(
+            f"<Project><PropertyGroup><HexalithEventStoreVersion>{works_pin}</HexalithEventStoreVersion>"
+            "</PropertyGroup></Project>"
+        )
+        arguments = ("-t:ValidateHexalithDependencyMode", "-p:Configuration=Release")
+        approved = self.msbuild(*arguments, f"-p:HexalithEventStoreVersion={PIN}")
+        self.assertEqual(0, approved.returncode, approved.stdout + approved.stderr)
+        refused = self.msbuild(*arguments, f"-p:HexalithEventStoreVersion={works_pin}")
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn("HXW0003", refused.stdout)
+        self.assertIn(f"committed EventStore pin '{PIN}'; received '{works_pin}'", refused.stdout)
+
     def test_debug_source_mode_still_refuses_each_missing_root_marker(self):
         markers = (
             self.root / "references/Hexalith.Builds/Props/Directory.Packages.props",
             self.root / "references/Hexalith.Commons/src/libraries/Hexalith.Commons.UniqueIds",
             self.root / "references/Hexalith.McpCli/src/Hexalith.McpCli.Abstractions",
         )
-        environment = {key: value for key, value in self.environment.items()
-                       if key.casefold() not in {"hexalithbuildsroot", "hexalithcommonsroot", "hexalithmcpcliroot"}}
         for marker in markers:
             with self.subTest(marker=str(marker.relative_to(self.root))):
                 retained = marker.with_name(marker.name + ".not-selected")
                 marker.rename(retained)
                 try:
                     result = self.msbuild(
-                        "-t:ValidateHexalithDependencyMode", "-p:Configuration=Debug", environment=environment
+                        "-t:ValidateHexalithDependencyMode", "-p:Configuration=Debug"
                     )
                     self.assertNotEqual(0, result.returncode)
                     self.assertIn("HXW0001", result.stdout)

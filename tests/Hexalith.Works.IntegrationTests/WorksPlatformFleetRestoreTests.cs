@@ -23,30 +23,54 @@ public sealed class WorksPlatformFleetRestoreTests
         await database.HashSetAsync("partial-expiry", [new("short", "expires"), new("persistent", new byte[] { 0, 128, 255 }),
             new("long", "retained")]).ConfigureAwait(true);
         await database.HashSetAsync("complete-expiry", "short", "expires").ConfigureAwait(true);
-        long deadline = DateTimeOffset.UtcNow.AddSeconds(8).ToUnixTimeMilliseconds();
+        IServer server = connection.GetServer(fixture.RedisEndpoint);
+        DateTimeOffset expiresAt = new DateTimeOffset(await server.TimeAsync().ConfigureAwait(true)).AddSeconds(expireBeforeRestore ? 8 : 45);
+        long deadline = expiresAt.ToUnixTimeMilliseconds();
         long retainedDeadline = deadline + 1_800_000;
-        await database.StringSetAsync("whole-expiry", "expires", TimeSpan.FromSeconds(8)).ConfigureAwait(true);
+        await database.StringSetAsync("whole-expiry", "expires").ConfigureAwait(true);
+        await database.ExecuteAsync("PEXPIREAT", "whole-expiry", deadline).ConfigureAwait(true);
         await database.ExecuteAsync("HPEXPIREAT", "partial-expiry", deadline, "FIELDS", 1, "short").ConfigureAwait(true);
         await database.ExecuteAsync("HPEXPIREAT", "complete-expiry", deadline, "FIELDS", 1, "short").ConfigureAwait(true);
         await database.ExecuteAsync("HPEXPIREAT", "partial-expiry", retainedDeadline, "FIELDS", 1, "long").ConfigureAwait(true);
-        await fixture.CaptureFleetAsync(ct).ConfigureAwait(true);
+        await fixture.CaptureRedisAsync(ct).ConfigureAwait(true);
         (await database.HashExistsAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBeTrue("Capture must retain the short-lived field.");
         if (!expireBeforeRestore)
         {
-            await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
-            (await database.HashExistsAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBeTrue("This case must restore before expiration.");
+            await fixture.RestoreRedisAsync(ct).ConfigureAwait(true);
+            RedisResult[] restoredDeadlines = (RedisResult[])(await database.ExecuteAsync(
+                "HPEXPIRETIME", "partial-expiry", "FIELDS", 2, "short", "long").ConfigureAwait(true))!;
+            ((long)restoredDeadlines[0]).ShouldBe(deadline, "The short field must be restored alive with its original deadline.");
+            ((long)restoredDeadlines[1]).ShouldBe(retainedDeadline);
+            (await database.HashGetAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBe((RedisValue)"expires");
+            (await database.HashGetAsync("complete-expiry", "short").ConfigureAwait(true)).ShouldBe((RedisValue)"expires");
+            RedisResult[] completeDeadlines = (RedisResult[])(await database.ExecuteAsync(
+                "HPEXPIRETIME", "complete-expiry", "FIELDS", 1, "short").ConfigureAwait(true))!;
+            ((long)completeDeadlines.Single()).ShouldBe(deadline);
+            (await database.StringGetAsync("whole-expiry").ConfigureAwait(true)).ShouldBe((RedisValue)"expires");
+            ((long)await database.ExecuteAsync("PEXPIRETIME", "whole-expiry").ConfigureAwait(true)).ShouldBe(deadline);
         }
-        TimeSpan wait = DateTimeOffset.FromUnixTimeMilliseconds(deadline).AddMilliseconds(100) - DateTimeOffset.UtcNow;
-        if (wait > TimeSpan.Zero) await Task.Delay(wait, ct).ConfigureAwait(true);
-        if (expireBeforeRestore) await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+        // Redis defines field visibility through the deadline millisecond (inclusive).
+        using (var expiry = CancellationTokenSource.CreateLinkedTokenSource(ct))
+        {
+            expiry.CancelAfter(TimeSpan.FromSeconds(60));
+            var firstExpired = DateTimeOffset.FromUnixTimeMilliseconds(deadline + 1);
+            DateTimeOffset observed = await server.TimeAsync().WaitAsync(expiry.Token).ConfigureAwait(true);
+            while (observed < firstExpired)
+            {
+                await Task.Delay(firstExpired - observed, expiry.Token).ConfigureAwait(true);
+                observed = await server.TimeAsync().WaitAsync(expiry.Token).ConfigureAwait(true);
+            }
+        }
+        if (expireBeforeRestore) await fixture.RestoreRedisAsync(ct).ConfigureAwait(true);
         await fixture.VerifyRestoredRedisAsync(ct).ConfigureAwait(true);
         (await database.KeyExistsAsync("whole-expiry").ConfigureAwait(true)).ShouldBeFalse();
         (await database.HashGetAllAsync("complete-expiry").ConfigureAwait(true)).ShouldBeEmpty();
         (await database.HashExistsAsync("partial-expiry", "short").ConfigureAwait(true)).ShouldBeFalse();
         (await database.HashGetAsync("partial-expiry", "persistent").ConfigureAwait(true)).ShouldBe((RedisValue)new byte[] { 0, 128, 255 });
+        if (!expireBeforeRestore) return;
         foreach (string mutation in new[] { "value", "removed", "deadline", "resurrected", "resurrected-key", "type" })
         {
-            await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+            await fixture.RestoreRedisAsync(ct).ConfigureAwait(true);
             switch (mutation)
             {
                 case "value": await database.HashSetAsync("partial-expiry", "persistent", "corrupt").ConfigureAwait(true); break;
@@ -257,6 +281,9 @@ public sealed class WorksPlatformFleetRestoreTests
             await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
             (await fixture.SchedulerInventoryAsync(ct).ConfigureAwait(true)).ShouldBe(captured, mutation);
         }
+        await fixture.CaptureRedisAsync(ct).ConfigureAwait(true);
+        InvalidOperationException error = await Should.ThrowAsync<InvalidOperationException>(() => fixture.RestoreFleetAsync(ct)).ConfigureAwait(true);
+        error.Message.ShouldBe("No compatible fleet snapshot exists.");
     }
 
     /// <summary>Full restored-state validation refuses changed bytes, collections, types and expiry.</summary>
@@ -268,6 +295,7 @@ public sealed class WorksPlatformFleetRestoreTests
     [InlineData("type")]
     [InlineData("ttl-removed")]
     [InlineData("ttl-extended")]
+    [InlineData("ttl-shifted-one-ms")]
     [InlineData("ttl-added")]
     [InlineData("extra-key")]
     [InlineData("missing-key")]
@@ -306,6 +334,10 @@ public sealed class WorksPlatformFleetRestoreTests
                 break;
             case "ttl-removed": await database.KeyPersistAsync("expiring").ConfigureAwait(true); break;
             case "ttl-extended": await database.KeyExpireAsync("expiring", TimeSpan.FromHours(1)).ConfigureAwait(true); break;
+            case "ttl-shifted-one-ms":
+                long expiry = (long)await database.ExecuteAsync("PEXPIRETIME", "expiring").ConfigureAwait(true);
+                await database.ExecuteAsync("PEXPIREAT", "expiring", expiry + 1).ConfigureAwait(true);
+                break;
             case "ttl-added": await database.KeyExpireAsync("bytes", TimeSpan.FromMinutes(1)).ConfigureAwait(true); break;
             case "extra-key": await database.StringSetAsync("extra", "unexpected").ConfigureAwait(true); break;
             case "missing-key": await database.KeyDeleteAsync("bytes").ConfigureAwait(true); break;

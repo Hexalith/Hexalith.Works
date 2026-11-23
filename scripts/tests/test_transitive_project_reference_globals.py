@@ -16,6 +16,7 @@ from scripts.tests.build_policy_fixtures import add_source_root_markers
 
 ROOT = Path(__file__).resolve().parents[2]
 PIN = ET.parse(ROOT / "Directory.Packages.props").findtext(".//HexalithEventStoreVersion")
+TARGET_FRAMEWORK = ET.parse(ROOT / "Directory.Build.props").findtext(".//TargetFramework")
 
 
 class TransitiveProjectReferenceGlobalsTests(unittest.TestCase):
@@ -40,7 +41,8 @@ class TransitiveProjectReferenceGlobalsTests(unittest.TestCase):
                 f"<Project><PropertyGroup><HexalithEventStoreVersion>{PIN}</HexalithEventStoreVersion>"
                 "</PropertyGroup></Project>")
             (external / "Directory.Build.props").write_text(
-                "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>")
+                f"<Project><PropertyGroup><TargetFramework>{TARGET_FRAMEWORK}</TargetFramework>"
+                "</PropertyGroup></Project>")
             for parent in (works, external):
                 (parent / "NuGet.Config").write_text(
                     '<configuration><packageSources><clear /><add key="offline" '
@@ -127,7 +129,7 @@ class ParallelSolutionNodeIdentityTests(unittest.TestCase):
             f"<Project><PropertyGroup><HexalithEventStoreVersion>{PIN}</HexalithEventStoreVersion>"
             "</PropertyGroup></Project>"))
         self.write_xml(external / "Directory.Build.props", ET.fromstring(
-            "<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework></PropertyGroup></Project>"))
+            f"<Project><PropertyGroup><TargetFramework>{TARGET_FRAMEWORK}</TargetFramework></PropertyGroup></Project>"))
         for owner in (works, external):
             config = ET.Element("configuration")
             sources = ET.SubElement(config, "packageSources")
@@ -190,10 +192,7 @@ class ParallelSolutionNodeIdentityTests(unittest.TestCase):
             for line in record.read_text().splitlines():
                 project, *properties = line.split("|")
                 records.setdefault(Path(project).resolve(), []).append(properties)
-        works_framework = ET.parse(works / "Directory.Build.props").findtext(".//TargetFramework")
-        outputs = [path.parent / "bin" / configuration
-                   / (works_framework if path.is_relative_to(works) else "net10.0")
-                   / f"{path.stem}.dll" for path in graph]
+        outputs = [path.parent / "bin" / configuration / TARGET_FRAMEWORK / f"{path.stem}.dll" for path in graph]
         return records, graph, outputs
 
     @staticmethod
@@ -253,7 +252,7 @@ class MappedProjectReferenceGlobalsTests(unittest.TestCase):
             shutil.copyfile(ROOT / "Directory.Build.targets", root / "Directory.Build.targets")
             shutil.copyfile(ROOT / "global.json", root / "global.json")
             (owner / "Directory.Build.props").write_text(
-                '<Project><PropertyGroup><TargetFramework>net10.0</TargetFramework>'
+                f'<Project><PropertyGroup><TargetFramework>{TARGET_FRAMEWORK}</TargetFramework>'
                 f'<HexalithEventStoreVersion>{PIN}</HexalithEventStoreVersion>'
                 '</PropertyGroup></Project>')
             (root / "NuGet.Config").write_text(
@@ -290,7 +289,7 @@ class MappedProjectReferenceGlobalsTests(unittest.TestCase):
                 ET.SubElement(item, "AdditionalProperties").text = "Configuration=Release"
             task = ET.SubElement(target, "SourceMappingReconciliationTask", MappingFile=str(mapping_path),
                                  MappingHash=mapping_hash, Projects="@(ProjectReference)",
-                                 Configuration="$(Configuration)", Platform="AnyCPU", TargetFramework="net10.0",
+                                 Configuration="$(Configuration)", Platform="AnyCPU", TargetFramework=TARGET_FRAMEWORK,
                                  ManagePackageVersionsCentrally="true")
             ET.SubElement(task, "Output", TaskParameter="SelectedProjects", ItemName="CheckedProjects")
             hooks_path = root / "check.targets"
