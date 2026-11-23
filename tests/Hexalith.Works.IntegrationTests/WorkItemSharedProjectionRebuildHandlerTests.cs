@@ -8,6 +8,7 @@ using Hexalith.EventStore.Contracts.Queries;
 using Hexalith.EventStore.DomainService;
 using Hexalith.EventStore.Testing.Fakes;
 using Hexalith.Works.Contracts.Events;
+using Hexalith.Works.Contracts.Events.Rejections;
 using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
@@ -144,6 +145,17 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         seeded.IsBuilding.ShouldBeFalse();
         seeded.ActiveGeneration.ShouldBeGreaterThan(0);
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        SharedProjectionScope scope = handler.CreateScope(Tenant);
+        SharedProjectionLease oldLease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, ct);
+        string[] rollbackKeys = [WorksReadModelKeys.WhatsNextIndexKey(Tenant),
+            WorksReadModelKeys.RollUpKey(Tenant, ParentId), WorksReadModelKeys.RollUpKey(Tenant, ChildId)];
+        var rollbackEtags = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (string key in rollbackKeys)
+        {
+            var retained = await store.GetAsync<System.Text.Json.Nodes.JsonObject>(WorksReadModelKeys.StateStoreName, key, ct);
+            rollbackEtags.Add(key, retained.ETag.ShouldNotBeNull());
+        }
         ProjectionEventDto[] parentCapture = [.. ParentHistory(Tenant, estimate: 99m),
             Dto(new ReEstimated(ParentId, 3, new TenantId(Tenant), new WorkItemId(ParentId), 10m, Hour), 3)];
         DomainSharedProjectionRebuildResponse current = await DispatchAsync(provider, Begin(identity,
@@ -203,6 +215,33 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         committed.IsAborting.ShouldBeFalse();
         committed.PendingDeliveryCount.ShouldBe(0);
         committed.ActiveGeneration.ShouldBeGreaterThan(seeded.ActiveGeneration);
+
+        var next = Dto(new ReEstimated(ParentId, 4, new TenantId(Tenant), new WorkItemId(ParentId), 15m, Hour), 4);
+        var delivery = new SharedProjectionDelivery(ParentId, 4,
+            JsonSerializer.SerializeToUtf8Bytes(new ProjectionRequest(Tenant, "work", ParentId, [next]), Web),
+            JsonSerializer.SerializeToUtf8Bytes(4), new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex),
+            OwnerSequenceNumber: next.SequenceNumber);
+        var checkpointBefore = (await coordinator.GetCheckpointAsync(scope, ParentId, ct)).ShouldNotBeNull();
+        checkpointBefore.OwnerSequenceNumber.ShouldBe(3);
+        (await coordinator.JournalAsync(scope, oldLease, delivery, ct)).ShouldBe(SharedProjectionJournalResult.StaleLease);
+        (await ReadCurrentRollUpAsync(store, Tenant, ParentId)).RolledRemaining.ShouldBe(new RolledRemaining(13m, Hour));
+        (await coordinator.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(0);
+        var checkpointAfterRefusal = (await coordinator.GetCheckpointAsync(scope, ParentId, ct)).ShouldNotBeNull();
+        checkpointAfterRefusal.Position.ShouldBe(checkpointBefore.Position);
+        checkpointAfterRefusal.OwnerSequenceNumber.ShouldBe(checkpointBefore.OwnerSequenceNumber);
+        var currentLease = await coordinator.RefreshLeaseAsync(scope, handler.OrdinaryWriterId, ct);
+        (await coordinator.JournalAsync(scope, currentLease, delivery, ct)).ShouldBe(SharedProjectionJournalResult.Journaled);
+        _ = await coordinator.CatchUpAsync(scope,
+            (entry, generation, token) => handler.FoldCatchUpAsync(entry, generation, coordinator, token), ct);
+        (await ReadCurrentRollUpAsync(store, Tenant, ParentId)).RolledRemaining.ShouldBe(new RolledRemaining(18m, Hour));
+        (await QueryWorkItemAsync(store, Tenant, ParentId)).LatestAcceptedSourceSequence.ShouldBe(4);
+        (await coordinator.GetCheckpointAsync(scope, ParentId, ct)).ShouldNotBeNull().OwnerSequenceNumber.ShouldBe(4);
+        await AssertRetainedRollbackDocumentsAsync(store);
+        foreach (string key in rollbackKeys)
+        {
+            var retained = await store.GetAsync<System.Text.Json.Nodes.JsonObject>(WorksReadModelKeys.StateStoreName, key, ct);
+            retained.ETag.ShouldBe(rollbackEtags[key]);
+        }
 
         async Task AssertRetainedRollbackDocumentsAsync(InMemoryReadModelStore retained)
         {
@@ -758,6 +797,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     [InlineData("unknown")]
     [InlineData("duplicate")]
     [InlineData("conflicting-duplicate")]
+    [InlineData("duplicate-spawn")]
     [InlineData("gap")]
     [InlineData("reordered")]
     [InlineData("foreign-type")]
@@ -770,6 +810,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             "unknown" => [valid[0], valid[1] with { EventTypeName = "FutureWorksEvent" }],
             "duplicate" => [valid[0], valid[0]],
             "conflicting-duplicate" => [valid[0], valid[1] with { SequenceNumber = 1 }],
+            "duplicate-spawn" => [.. valid, ParentWithSpawnHistory(Tenant, null)[^1] with { SequenceNumber = 2 }],
             "gap" => [valid[0], valid[1] with { SequenceNumber = 3, GlobalPosition = 3 }],
             "foreign-type" => [valid[0], valid[1] with { EventTypeName = "Foreign.Namespace.WorkItemAssigned" }],
             "missing-estimate" => [.. valid, MissingEstimate()],
@@ -777,7 +818,7 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         };
         await RefuseRebuildAsync(new InMemoryReadModelStore(), Tenant,
             "refused-evidence-" + failure, [(ParentId, history)],
-            invalidEnvelopePositions: failure is "duplicate" or "conflicting-duplicate" or "gap" or "reordered").ConfigureAwait(true);
+            invalidEnvelopePositions: failure is "duplicate" or "conflicting-duplicate" or "duplicate-spawn" or "gap" or "reordered").ConfigureAwait(true);
 
         static ProjectionEventDto MissingEstimate()
         {
@@ -819,6 +860,65 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         (await WorkItemRuntimeHistoryStore.ReadAsync(coordinator, scope, rollUp.Generation, ParentId, ct))
             .Events.ShouldHaveSingleItem().EventTypeName.ShouldBe(rejection.GetType().Name);
         await RefuseRebuildAsync(new InMemoryReadModelStore(), Tenant, "empty-aggregate-lifecycle", [(ParentId, [])]);
+    }
+
+    [Fact]
+    public async Task RejectionOnlyReplacementRetiresPreviouslyServedRollUp()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var tenant = new TenantId(Tenant);
+        var rejection = new WorkItemTransitionRejected(tenant, new WorkItemId(ChildId), WorkItemStatus.Created, "invalid");
+        ProjectionEventDto[] childHistory = [Dto(rejection, 1)];
+        await RebuildAsync(store, Tenant, "spawn-supplies-child-model", [
+            (ParentId, ParentWithSpawnHistory(Tenant, new WorkItemEffort(4m, Hour))), (ChildId, childHistory)]);
+        (await QueryWorkItemAsync(store, Tenant, ChildId)).Estimated.ShouldBe(4m);
+        (await QueryWhatsNextAsync(store, Tenant)).ShouldContain(item => item.WorkItemId.Value == ParentId);
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var scope = new WorkItemSharedProjectionRebuildHandler().CreateScope(Tenant);
+        long originalGeneration = (await coordinator.GetStatusAsync(scope, ct)).ActiveGeneration;
+
+        // The authoritative inventory retires the spawning owner. The retained child's stream is identical.
+        await RebuildAsync(store, Tenant, "retain-rejection-only-child", [(ChildId, childHistory)]);
+
+        var reopened = new SharedProjectionEpochCoordinator(store, store);
+        var rollUp = await reopened.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(ChildId), ct);
+        rollUp.IsAvailable.ShouldBeTrue();
+        rollUp.Generation.ShouldBeGreaterThan(originalGeneration);
+        rollUp.Value.ShouldBeNull();
+        var index = await ReadCurrentIndexAsync(store, Tenant);
+        index.MemberWorkItemIds.ShouldBe([ChildId]);
+        index.LastSequences[ChildId].ShouldBe(0);
+        index.Items.ShouldBeEmpty();
+        (await QueryWhatsNextAsync(store, Tenant)).ShouldBeEmpty();
+        var detail = new GetWorkItemQueryHandler(CoordinatorPolicy(), reopened);
+        QueryResult result = await detail.ExecuteAsync(new QueryEnvelope(Tenant, "work", ChildId,
+            GetWorkItemQueryHandler.GetWorkItemQueryType, [], "corr", "user") { AuthenticatedWorkloadId = "sdk-test" }, ct);
+        result.Success.ShouldBeFalse();
+        result.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Unavailable);
+    }
+
+    [Fact]
+    public async Task RejectedParentChangeCannotIntroduceAnEdgeIntoTheCommittedTopology()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var tenant = new TenantId(Tenant);
+        var proposed = new WorkItemId("other-parent");
+        var rejected = new WorkItemCannotReferenceSecondParent(tenant, new WorkItemId(ChildId),
+            new ParentWorkItemReference(tenant, new WorkItemId(ParentId)), new ParentWorkItemReference(tenant, proposed));
+        var store = new InMemoryReadModelStore();
+        await RebuildAsync(store, Tenant, "rejected-edge", [
+            (ParentId, ParentHistory(Tenant)),
+            (ChildId, [.. ChildHistory(Tenant), Dto(rejected, 4)]),
+            (proposed.Value, [Dto(new WorkItemCreated(proposed.Value, 1, tenant, proposed, new Obligation("Other parent")), 1)])]);
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var scope = new WorkItemSharedProjectionRebuildHandler().CreateScope(Tenant);
+        var topology = (await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeTopologyKey, ct))
+            .Value.ShouldNotBeNull().As<WorksRuntimeTopology>();
+        topology.ChildrenByParent.ShouldHaveSingleItem().Key.ShouldBe(ParentId);
+        topology.ChildrenByParent[ParentId].ShouldBe([ChildId]);
+        (await ReadCurrentRollUpAsync(store, Tenant, proposed.Value)).ChildWorkItemIds.ShouldBeEmpty();
+        (await QueryWorkItemAsync(store, Tenant, ChildId)).LatestAcceptedSourceSequence.ShouldBe(3);
     }
 
     /// <summary>Rejected envelopes advance retained history independently of the accepted projection watermark.</summary>

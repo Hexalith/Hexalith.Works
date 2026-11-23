@@ -811,6 +811,8 @@ archived: 2026-10-23
 - Index durability window + one-shot empty-registry success + retired tenant-wide scan (`src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:41-51`, `ReminderReconciliationService.cs:37-61`). Re-observed; already recorded 2026-09-07 (blind window / no backfill, and the ~5 s give-up).
 - Equal-sequence `PersistRollUpAsync` can overwrite a concurrently merged child set (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:452-454`). Roll-up child-reconciliation / F-PROJ-1 is out of Story 4.8 scope (DW-84 / shared-rebuild).
 - `UseCurrentSchemaAsync` is read once per dispatch and reused across later awaits (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:200`). Documented generation-switch race in the dispatcher rework; not Story 4.8 reminder/index behavior.
+  status: done 2026-11-23
+  resolution: After promotion the SDK refuses a write using the earlier generation's lease. Retrying with the current lease updates the served parent while the retained roll-ups and queue keep their original ETags. [Verification spec](spec-five-deferred-projection-replay-checks.md).
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-3.md`
   summary: Mixed-case reserved tenant `TENANTS` misses the `/project` Ordinal guard, then `TenantId` lowercases to `tenants`.
@@ -828,8 +830,14 @@ archived: 2026-10-23
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-15, Group 1 production/runtime)
 
 - Equal-watermark roll-up replacement can discard concurrently merged child evidence or restore totals from an older clean prefix (`src/Hexalith.Works/Projections/WorkItemProjectionDispatcher.cs:446`). Roll-up convergence is outside Story 4.8 and already belongs to F-PROJ-1/shared-rebuild work.
+  status: done 2026-11-23
+  resolution: After a child reports progress, replaying its parent's accepted prefix preserves the parent watermark, child membership and updated rolled effort in the stored roll-up and served queue. [Verification spec](spec-five-deferred-projection-replay-checks.md).
 - Shared rebuild leaves an old current-schema roll-up readable when a rebuilt manifest member produces no replacement model (`src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs:134`). Introduced by the separately committed shared-rollup reconciliation work, not this reminder story.
+  status: done 2026-11-23
+  resolution: A second committed generation retains the same member with rejection-only history. Its stored roll-up disappears, the accepted watermark resets to zero, the queue is empty and the detail query reports unavailable. [Verification spec](spec-five-deferred-projection-replay-checks.md).
 - Shared rebuild records relationship edges before the projection accepts the event sequence, allowing duplicate/rejected evidence to create ghost edges (`src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs:59`). Introduced by the separately committed shared-rollup reconciliation work, not this reminder story.
+  status: done 2026-11-23
+  resolution: A rejected reparent leaves only the original parent edge in the committed topology. Accumulation refuses a conflicting duplicate spawn and preserves the prior generation. [Verification spec](spec-five-deferred-projection-replay-checks.md).
 - Child-completion and cascade stream readers advance the exclusive cursor by `last + 1` and forward continuation tokens the gateway rejects, skipping one boundary event per page (`src/Hexalith.Works/Recovery/ChildCompletion/StreamReadingChildCompletionAwaitingParentSource.cs:152`). Pre-existing Story 4.7/4.6 readers; already represented by DW-86 and needs both readers plus multi-page tests fixed together.
 - The child-completion reader neither validates page domain nor fails closed on undecodable lifecycle evidence (`src/Hexalith.Works/Recovery/ChildCompletion/StreamReadingChildCompletionAwaitingParentSource.cs:137`). Story 4.7 recovery surface outside Story 4.8.
 - The cascade reader validates neither page/payload identity nor malformed `ChildSpawned` evidence before omitting a descendant (`src/Hexalith.Works/Recovery/Cascade/StreamReadingCascadeDescendantSource.cs:62`). Pre-existing Story 4.6/4.7 recovery surface outside Story 4.8.
@@ -1581,6 +1589,8 @@ These four items were reconfirmed on the current production code. They do not op
 - Env-gated durable tests (`Dapr_Redis_restart_recovers_staged_family_and_concurrent_delivery_when_enabled`, `Complete_isolated_keyspace_restore_removes_sdk_epoch_then_legacy_replay_recovers_queue`) return silently when their Dapr/Redis endpoints are unset; `Assert.Skip` reports `FAIL_SKIP` under the fail-on-skip policy. Needs a lane/trait split or a CI step for `run-sdk-rollback-restore.sh` (medium). **Closed 2026-10-22 (Story 4.9 review round 2, decision (a)):** `run-sdk-rollback-restore.sh` and the restore test were removed by the Story 4.9 cutover; the six `WORKS_SDK_DAPR_GRPC_ENDPOINT` durable branches in `WorksSdkProjectionQueryTests` are retired as superseded by the Platform live recovery, projection and historical restart lanes, which run against the Platform-composed Dapr Redis store. The durable-only fact is deleted, the five deterministic in-memory bodies remain, and each retired branch maps to its named replacement in `evidence/story-4-9/verification/retired-test-replacements.json`.
 - AppHost drops the configured `works-client-username/password` in favour of generated `security-eventstore-client-*` parameters; the topology test lost its value assertion. Confirm intent (medium, unverified).
 - Denial-before-state-access tests do not observe coordinator reads and lack a positive control (medium, unverified).
+  status: done 2026-11-23
+  resolution: Both queue and detail handlers use a coordinator connected to an observed store. Denied queries perform zero reads. An authorized control for each handler reaches that same store, and the permitted coordinator workload reads the seeded queue. [Verification spec](spec-five-deferred-projection-replay-checks.md).
 - Hard-coded `Hexalith.Platform.Identity` catalog exemption and candidate version pins under `#if !DEBUG` (low).
 
 ## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-15, pass 3)

@@ -199,6 +199,76 @@ public sealed class WorksSdkProjectionQueryTests
     }
 
     [Fact]
+    public async Task ParentRedeliveryPreservesChildProgressAtTheSameParentWatermark()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var scope = handler.CreateScope(Tenant);
+        using ServiceProvider provider = NamedProjectionProvider(store, store, coordinator, handler);
+        var identity = new DomainProjectionIdentityOptions { AppId = "works-parent-replay", ServiceVersion = "v1" };
+        string fingerprint = ProjectionRouteCatalogFingerprint.Compute(identity.AppId, identity.ServiceVersion,
+            [new ProjectionDispatchRoute("work", WorksReadModelKeys.RuntimeFamily)]);
+        var tenant = new TenantId(Tenant);
+        var parent = new WorkItemId(Aggregate);
+        var child = new WorkItemId("child");
+        var hour = new Unit("hour");
+        var parentHistory = new ProjectionRequest(Tenant, "work", Aggregate, [
+            Dto(new WorkItemCreated(Aggregate, 1, tenant, parent, new Obligation("Parent"), new WorkItemEffort(10m, hour)), 1),
+            Dto(new WorkItemQueued(Aggregate, 2, tenant, parent), 2)]);
+        var childHistory = new ProjectionRequest(Tenant, "work", child.Value, [
+            Dto(new WorkItemCreated(child.Value, 1, tenant, child, new Obligation("Child"), new WorkItemEffort(4m, hour),
+                Parent: new ParentWorkItemReference(tenant, parent)), 1)]);
+        (await Dispatch(parentHistory, "parent")).ShouldBe(ProjectionDispatchStatus.Completed);
+        (await Dispatch(childHistory, "child")).ShouldBe(ProjectionDispatchStatus.Completed);
+        (await ReadParent()).RolledRemaining.ShouldBe(new RolledRemaining(14m, hour));
+        var committing = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var timeout = TimeSpan.FromSeconds(15);
+        store.BatchFaultHook = (phase, _, token) => phase == ReadModelBatchPhase.BeforeCommit && committing.TrySetResult()
+            ? release.Task.WaitAsync(timeout, token) : Task.CompletedTask;
+        var progressRequest = new ProjectionRequest(Tenant, "work", child.Value, [
+            Dto(new ProgressReported(child.Value, 2, tenant, child, 1m, hour), 2)]);
+        Task<ProjectionDispatchStatus> progress = Dispatch(progressRequest, "progress");
+        try
+        {
+            await committing.Task.WaitAsync(timeout, ct);
+            (await Dispatch(parentHistory, "parent-during-progress").WaitAsync(timeout, ct))
+                .ShouldBe(ProjectionDispatchStatus.AlreadyCompleted);
+        }
+        finally
+        {
+            release.TrySetResult();
+            store.BatchFaultHook = null;
+            (await progress.WaitAsync(timeout, ct)).ShouldBe(ProjectionDispatchStatus.Completed);
+        }
+        var updated = await ReadParent();
+        updated.LatestAcceptedSourceSequence.ShouldBe(2);
+        updated.RolledRemaining.ShouldBe(new RolledRemaining(13m, hour));
+
+        (await Dispatch(parentHistory, "parent-replay")).ShouldBe(ProjectionDispatchStatus.AlreadyCompleted);
+        var replayed = await ReadParent();
+        replayed.LatestAcceptedSourceSequence.ShouldBe(2);
+        replayed.ChildWorkItemIds.ShouldBe([child]);
+        replayed.RolledRemaining.ShouldBe(new RolledRemaining(13m, hour));
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        var queue = await new WhatsNextQueryHandler(policy, coordinator).ExecuteAsync(CoordinatorQuery("scheduler"), ct);
+        queue.Success.ShouldBeTrue();
+        queue.GetPayload().Deserialize<WhatsNextItem[]>(s_web).ShouldNotBeNull()
+            .Single(item => item.WorkItemId == parent).RolledRemaining.ShouldBe(new RolledRemaining(13m, hour));
+
+        async Task<WorkItemRollUp> ReadParent() => (await coordinator.ReadAsync<WorksRuntimeDocument>(
+            scope, WorksReadModelKeys.RuntimeRollUpKey(Aggregate), ct).ConfigureAwait(false)).Value.ShouldNotBeNull().As<WorkItemRollUp>();
+
+        async Task<ProjectionDispatchStatus> Dispatch(ProjectionRequest request, string id) =>
+            (await DomainProjectionDispatcher.DispatchAsync(provider, new ProjectionDispatchRequest(request,
+                [WorksReadModelKeys.RuntimeFamily], id, fingerprint), new ProjectionDispatchOptions(), identity, ct).ConfigureAwait(false))
+                .Outcomes.ShouldHaveSingleItem().Status;
+    }
+
+    [Fact]
     public async Task Ordinary_delivery_and_redelivery_persist_one_complete_runtime_family_and_checkpoint()
     {
         var store = new InMemoryReadModelStore();
@@ -302,7 +372,7 @@ public sealed class WorksSdkProjectionQueryTests
         permitted.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
         permitted.GetPayload().GetArrayLength().ShouldBe(1);
 
-        QueryResult denied = await new WhatsNextQueryHandler(policy)
+        QueryResult denied = await whatsNext
             .ExecuteAsync(CoordinatorQuery("unlisted") with { IsGlobalAdmin = true },
                 TestContext.Current.CancellationToken).ConfigureAwait(true);
         denied.Success.ShouldBeFalse();
@@ -556,7 +626,8 @@ public sealed class WorksSdkProjectionQueryTests
     [Fact]
     public async Task Wrong_actor_tenant_and_origin_are_denied_before_any_Works_read()
     {
-        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var store = new DiagnosticUnavailableReadModelStore(new IOException("Observed query read"));
+        var coordinator = new SharedProjectionEpochCoordinator(store, new InMemoryReadModelStore());
         IPartiesIdentityClient parties = Substitute.For<IPartiesIdentityClient>();
         var observedAt = DateTimeOffset.UtcNow;
         var binding = new HumanActorBindingEvidence(Tenant, "party-mine", "actor-mine", 1, 1,
@@ -569,7 +640,8 @@ public sealed class WorksSdkProjectionQueryTests
                 new PartyIdentityEvidence(1, Tenant, "party-mine", PartyIdentityClassification.Human,
                     true, false, false, 2, observedAt, "observation", binding))));
         var policy = new WorksQueryPolicy(parties, Options.Create(new WorksQueryOptions()));
-        var options = Options.Create(new WorksProjectionOptions { UseSdkDelivery = true });
+        var queueHandler = new WhatsNextQueryHandler(policy, coordinator);
+        var detailHandler = new GetWorkItemQueryHandler(policy, coordinator);
         QueryEnvelope authorizedShape = new(Tenant, "work", Aggregate, WhatsNextQueryHandler.WhatsNextQueryType,
             JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-mine" }), "corr-sdk", "actor-mine",
             null, false, null, "actor-mine", "eventstore", true, null, null);
@@ -582,18 +654,26 @@ public sealed class WorksSdkProjectionQueryTests
         ];
         foreach (QueryEnvelope query in denied)
         {
-            QueryResult list = await new WhatsNextQueryHandler(policy)
+            QueryResult list = await queueHandler
                 .ExecuteAsync(query, TestContext.Current.CancellationToken).ConfigureAwait(true);
             list.Success.ShouldBeFalse();
             list.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
-            QueryResult detail = await new GetWorkItemQueryHandler(policy)
+            QueryResult detail = await detailHandler
                 .ExecuteAsync(query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType },
                     TestContext.Current.CancellationToken).ConfigureAwait(true);
             detail.Success.ShouldBeFalse();
             detail.ErrorMessage.ShouldBe(QueryAdapterFailureReason.Forbidden);
         }
 
-        store.ReceivedCalls().ShouldBeEmpty();
+        store.ReadCount.ShouldBe(0);
+        QueryResult permittedList = await queueHandler.ExecuteAsync(authorizedShape, TestContext.Current.CancellationToken);
+        permittedList.ErrorMessage.ShouldBe("projection-unavailable");
+        int listReads = store.ReadCount;
+        listReads.ShouldBeGreaterThan(0);
+        QueryResult permittedDetail = await detailHandler.ExecuteAsync(
+            authorizedShape with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, TestContext.Current.CancellationToken);
+        permittedDetail.ErrorMessage.ShouldBe("projection-unavailable");
+        store.ReadCount.ShouldBeGreaterThan(listReads);
     }
 
     [Fact]
