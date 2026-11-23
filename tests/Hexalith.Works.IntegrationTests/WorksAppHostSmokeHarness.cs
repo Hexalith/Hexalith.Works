@@ -17,6 +17,7 @@ using Aspire.Hosting.Testing;
 
 using CommunityToolkit.Aspire.Hosting.Dapr;
 
+using Hexalith.Builds.Tooling.Runtime;
 using Hexalith.EventStore.Contracts.Commands;
 using Hexalith.Works.Contracts.Commands;
 using Hexalith.Works.Contracts.Events;
@@ -151,7 +152,21 @@ internal static class WorksAppHostSmokeHarness
             return isolated;
         }
 
-        foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>())
+        ProjectResource[] projects = [.. builder.Resources.OfType<ProjectResource>()];
+        var sidecars = projects.SelectMany(project => project.Annotations.OfType<DaprSidecarAnnotation>()).ToArray();
+        HashSet<int> excludedPorts = [sentryPort, placementPort, schedulerPort];
+        foreach (IResource resource in builder.Resources)
+            foreach (EndpointAnnotation endpoint in resource.Annotations.OfType<EndpointAnnotation>())
+            {
+                if (endpoint.Port is int port) excludedPorts.Add(port);
+                if (resource is not ContainerResource && endpoint.TargetPort is int targetPort) excludedPorts.Add(targetPort);
+            }
+        foreach (DaprSidecarAnnotation sidecar in sidecars)
+            if (sidecar.Sidecar.Annotations.OfType<DaprSidecarOptionsAnnotation>().Single().Options.DaprHttpPort is int httpPort)
+                excludedPorts.Add(httpPort);
+
+        Queue<int> internalGrpcPorts = AllocateInternalGrpcPorts(sidecars.Length, excludedPorts);
+        foreach (ProjectResource project in projects)
         {
             foreach (EndpointAnnotation endpoint in project.Annotations.OfType<EndpointAnnotation>())
                 endpoint.Port = null;
@@ -164,7 +179,7 @@ internal static class WorksAppHostSmokeHarness
                 AppPort = null,
                 DaprHttpPort = (platform || preserveGatewayHttpPort) && project.Name == "eventstore" ? annotation.Options.DaprHttpPort : null,
                 DaprGrpcPort = null,
-                DaprInternalGrpcPort = null,
+                DaprInternalGrpcPort = internalGrpcPorts.Dequeue(),
                 MetricsPort = null,
                 Config = Isolated(annotation.Options.Config),
                 RuntimePath = platform ? runtimePath ?? annotation.Options.RuntimePath : annotation.Options.RuntimePath,
@@ -190,6 +205,24 @@ internal static class WorksAppHostSmokeHarness
         }
         File.WriteAllText(Path.Combine(discovery, "derived-configurations.json"), JsonSerializer.Serialize(configurationProvenance));
     }
+
+    private static Queue<int> AllocateInternalGrpcPorts(int count, HashSet<int> excludedPorts)
+    {
+        if (count == 0) return [];
+        // Native daprd probes localhost, then binds a wildcard listener. An outbound connection
+        // can own its default ephemeral port on another interface during both operations.
+        for (int attempt = 0; attempt < 8; attempt++)
+        {
+            var allocation = CompositionPortAllocator.Allocate(count, includeSecondEventStore: false, excludedPorts);
+            var ports = new Queue<int>(allocation.ModuleDapr.Select(sidecar => sidecar.InternalGrpc));
+            if (ports.All(IsInternalGrpcPortAvailable)) return ports;
+        }
+        throw new InvalidOperationException("No free non-ephemeral internal gRPC ports are available for the Works sidecars.");
+    }
+
+    internal static bool IsInternalGrpcPortAvailable(int port)
+        => IsPortAvailableForExclusiveBind(IPAddress.Any, port)
+            && (!Socket.OSSupportsIPv6 || IsPortAvailableForExclusiveBind(IPAddress.IPv6Any, port));
 
     private static Dictionary<string, string> AssignHostingEvidence(IDistributedApplicationTestingBuilder builder, string directory)
     {

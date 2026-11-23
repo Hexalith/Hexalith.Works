@@ -1,3 +1,6 @@
+using System.Net;
+using System.Net.Sockets;
+
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Eventing;
@@ -104,6 +107,16 @@ public sealed class WorksAppHostDiscoveryIsolationTests
         => Should.Throw<InvalidOperationException>(() => WorksAppHostDiscoveryIsolation.Render(
             Policy.Replace("  mtls:", "  unrelated:", StringComparison.Ordinal), Registry, 61001));
 
+    /// <summary>The sidecar needs the port on every interface accepted by its wildcard listener.</summary>
+    [Fact]
+    public void InternalGrpcPortRefusesAnExistingListenerOnAnotherLoopbackAddress()
+    {
+        IPAddress address = OperatingSystem.IsLinux() ? IPAddress.Parse("127.0.0.2") : IPAddress.Loopback;
+        using var listener = new TcpListener(address, 0);
+        listener.Start();
+        WorksAppHostSmokeHarness.IsInternalGrpcPortAvailable(((IPEndPoint)listener.LocalEndpoint).Port).ShouldBeFalse();
+    }
+
     /// <summary>The actual sidecar rewrite selects one owned registry and the explicit control plane for every application.</summary>
     /// <param name="runtimePath">The selected runtime override, or null to preserve the composed runtime.</param>
     [Theory]
@@ -151,6 +164,7 @@ public sealed class WorksAppHostDiscoveryIsolationTests
             WorksAppHostSmokeHarness.IsolateApplicationPorts(builder, discovery, true, ports, runtimePath);
 
             var configurations = new Dictionary<string, string>(StringComparer.Ordinal);
+            var internalGrpcPorts = new HashSet<int>();
             foreach (ProjectResource project in builder.Resources.OfType<ProjectResource>())
             {
                 project.Annotations.OfType<EndpointAnnotation>().ShouldAllBe(endpoint => endpoint.Port == null);
@@ -161,7 +175,10 @@ public sealed class WorksAppHostDiscoveryIsolationTests
                 options.AppPort.ShouldBeNull();
                 options.DaprHttpPort.ShouldBe(project.Name == "eventstore" ? 42001 : (int?)null);
                 options.DaprGrpcPort.ShouldBeNull();
-                options.DaprInternalGrpcPort.ShouldBeNull();
+                int internalPort = options.DaprInternalGrpcPort.ShouldNotBeNull();
+                internalPort.ShouldBeInRange(1024, 65535);
+                internalGrpcPorts.Add(internalPort).ShouldBeTrue();
+                new[] { ports.Sentry, ports.Placement, ports.Scheduler, 42001 }.ShouldNotContain(internalPort);
                 options.MetricsPort.ShouldBeNull();
                 options.EnableAppHealthCheck.ShouldBe(true);
                 options.AppHealthCheckPath.ShouldBe("/alive");
@@ -184,6 +201,14 @@ public sealed class WorksAppHostDiscoveryIsolationTests
                     .ShouldBe(Path.Combine(discovery, WorksAppHostDiscoveryIsolation.RegistryFileName));
                 var mtls = (YamlMappingNode)spec.Children[new YamlScalarNode("mtls")];
                 ((YamlScalarNode)mtls.Children[new YamlScalarNode("sentryAddress")]).Value.ShouldBe("127.0.0.1:61001");
+            }
+            if (OperatingSystem.IsLinux())
+            {
+                string[] bounds = File.ReadAllText("/proc/sys/net/ipv4/ip_local_port_range")
+                    .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                int lower = int.Parse(bounds[0], System.Globalization.CultureInfo.InvariantCulture);
+                int upper = int.Parse(bounds[1], System.Globalization.CultureInfo.InvariantCulture);
+                internalGrpcPorts.ShouldAllBe(port => port < lower || port > upper);
             }
             configurations.Keys.Order().ShouldBe(applications.Order());
             configurations["eventstore"].ShouldBe(configurations["eventstore-admin"]);
@@ -276,6 +301,9 @@ public sealed class WorksAppHostDiscoveryIsolationTests
             List<string?> rendered = [];
             foreach (object argument in arguments)
                 rendered.Add(argument is IValueProvider provider ? await provider.GetValueAsync(TestContext.Current.CancellationToken) : argument.ToString());
+            rendered.Count(argument => argument == "--dapr-internal-grpc-port").ShouldBe(1);
+            rendered[rendered.IndexOf("--dapr-internal-grpc-port") + 1].ShouldBe(
+                selected.Options.DaprInternalGrpcPort.ShouldNotBeNull().ToString(System.Globalization.CultureInfo.InvariantCulture));
             TestContext.Current.TestOutputHelper!.WriteLine(System.Text.Json.JsonSerializer.Serialize(new
             {
                 changeCapturedListener, sdk = observerType.Assembly.FullName,
