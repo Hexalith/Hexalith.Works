@@ -516,12 +516,13 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 await WorksProcessFailureEvidence.CaptureAsync(store, cascadeSource, token).ConfigureAwait(false), token).ConfigureAwait(false);
             try
             {
+                // The target receipt survives restart. Poll it once per second while the five child reads run.
                 await WaitAsync(async () =>
                 {
                     committedEffect = (await store.GetAsync<WorksSdkProofFaultState>("statestore", "story415:fail-after-commit:" + tenant, token)
                         .ConfigureAwait(false)).Value?.CommittedEffectId;
                     return committedEffect is not null;
-                }, token).ConfigureAwait(false);
+                }, token, pollInterval: TimeSpan.FromSeconds(1)).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (!token.IsCancellationRequested)
             {
@@ -1169,13 +1170,14 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         return observedRevision;
     }
 
-    private static async Task WaitAsync(Func<Task<bool>> condition, CancellationToken token)
+    private static async Task WaitAsync(Func<Task<bool>> condition, CancellationToken token, TimeSpan? pollInterval = null)
     {
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
         // A busy runner can spend longer than two minutes before a sweep records the expected state.
         deadline.CancelAfter(TimeSpan.FromMinutes(4));
+        TimeSpan interval = pollInterval ?? TimeSpan.FromMilliseconds(100);
         while (!await condition().WaitAsync(deadline.Token).ConfigureAwait(false))
-            await Task.Delay(100, deadline.Token).ConfigureAwait(false);
+            await Task.Delay(interval, deadline.Token).ConfigureAwait(false);
     }
 
     /// <summary>

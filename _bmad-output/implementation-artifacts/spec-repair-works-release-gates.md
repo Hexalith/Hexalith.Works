@@ -45,3 +45,9 @@ Restore the Works build and checks identified by the November 23 verifier change
 - Medium, fixed. The live Redis branch checks the original deadline within a 45-second window and waits against server time. The expired-before-restore branch uses eight seconds.
 - Medium, fixed. The live branch now checks the value and absolute expiry of the single field in the fully expiring hash.
 - Medium, fixed. Whole keys use the server’s absolute deadline from `PEXPIRETIME`, restore it using `RESTORE ABSTTL`, and verify it exactly.
+
+## Hosted recovery follow-up
+
+The full parity and rollback suite passed on `48bf7304`. On the two subsequent runs, the five-child recovery case reached checkpoint 6, exhausted ten attempts, and parked before the first target receipt. Both used the same released EventStore and Platform revisions. [Passing run](https://github.com/Hexalith/Hexalith.Works/actions/runs/45167851056) · [First timeout](https://github.com/Hexalith/Hexalith.Works/actions/runs/45169918748) · [Second timeout](https://github.com/Hexalith/Hexalith.Works/actions/runs/45174087316)
+
+The test now polls that durable receipt once per second. A controlled receipt arriving after 3.25 seconds required five reads with this interval and 33 with the prior interval. Both probes read immediately and honored caller cancellation. The hosted gate measures whether the five child reads complete within the SDK’s existing operation deadline.
