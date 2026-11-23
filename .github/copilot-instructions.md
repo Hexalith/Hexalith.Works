@@ -74,6 +74,16 @@ Hexalith.CiCd owns `.github/workflows/**`, `.github/hexalith-ci.json`,
 files or portions from a module. Propose policy changes in Hexalith.CiCd.
 Preserve instructions, settings and submodule sections outside those portions.
 
+At the repository root, the guard forbids release configuration
+(`.releaserc*`, `release.config.*`) and commitlint configuration
+(`commitlint.config.*`, `.commitlintrc*`). In the root `package.json` it forbids the
+top-level `release` and `commitlint` keys and dependency entries for
+`semantic-release`, `@semantic-release/*` and `@commitlint/*` under
+`dependencies`, `devDependencies`, `optionalDependencies` and
+`peerDependencies`. It also forbids commitlint lines in `.husky/commit-msg`
+and files matching `**/Directory.Build.rsp` or `**/bmad-testarch-ci/**`
+throughout the repository.
+
 When CI fails, fix the product code, tests or dependencies. If the pipeline is
 defective, report the failure and run link to Hexalith.CiCd without working
 around it. Before every push, run `python3 references/Hexalith.Builds/check.py`
