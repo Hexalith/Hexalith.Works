@@ -17,6 +17,7 @@
     "platform-parity": {
       "runner": "ubuntu-latest",
       "setup": {
+        "aspire": true,
         "dapr": true
       },
       "timeoutMinutes": 180
