@@ -115,6 +115,7 @@ internal static class WorksRuntimeIndexReader
         IReadOnlyList<string> relatedKeys,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         if (!initial.IsAvailable || initial.Value is null
             || initial.Value[WorksReadModelKeys.RuntimeQueueKey] is not { } queue
             || initial.Value[WorksReadModelKeys.RuntimePendingDateKey] is not { } pending)
@@ -130,6 +131,7 @@ internal static class WorksRuntimeIndexReader
             {
                 selected = await coordinator.ReadManyAsync<WorksRuntimeDocument>(
                     scope, [.. s_roots, .. shards, .. relatedKeys], cancellationToken).ConfigureAwait(false);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!selected.IsAvailable || selected.Value is null)
                     return new(null, selected.Generation, selected.IsStale, false) { IsDegraded = selected.IsDegraded };
 

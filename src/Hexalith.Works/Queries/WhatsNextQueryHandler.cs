@@ -76,6 +76,7 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
 
     private async Task<QueryResult> ExecuteSdkAsync(QueryEnvelope query, CancellationToken cancellationToken)
     {
+        long startedAt = TimeProvider.System.GetTimestamp();
         WorksQueryAuthority authority = _policy is null
             ? new WorksQueryAuthority(false, false, null)
             : await _policy.AuthorizeAsync(query, cancellationToken).ConfigureAwait(false);
@@ -84,95 +85,19 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             return QueryResult.Failure(QueryAdapterFailureReason.Forbidden);
         }
 
-        if (_coordinator is null)
+        if (_coordinator is not { } coordinator)
         {
             return Unavailable(0, false);
         }
 
         try
         {
-            var scope = new SharedProjectionScope(
-                WorksReadModelKeys.StateStoreName,
-                query.TenantId,
-                DomainName,
-                WorksReadModelKeys.RuntimeFamily,
-                ["works-runtime-v3-writer"]);
-            SharedProjectionReadResult<WorksRuntimeIndexView> preliminary = await WorksRuntimeIndexReader
-                .ReadAsync(_coordinator, scope, cancellationToken).ConfigureAwait(false);
-            if (!preliminary.IsAvailable || preliminary.Value is null)
-            {
-                return Unavailable(preliminary.Generation, preliminary.IsStale);
-            }
-
-            IReadOnlyList<string> membersForRead = preliminary.Value.Indexes.Queue.MemberWorkItemIds;
-            SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
-                .ReadRelatedAsync(_coordinator, scope, preliminary,
-                    [.. membersForRead.Select(WorksReadModelKeys.RuntimeParkingKey),
-                        .. membersForRead.Select(WorksReadModelKeys.RuntimeRollUpKey)], cancellationToken)
-                .ConfigureAwait(false);
-            if (!read.IsAvailable || read.Value is null)
-            {
-                return Unavailable(read.Generation, read.IsStale);
-            }
-
-            SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken)
-                .ConfigureAwait(false);
-            if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
-            {
-                return Unavailable(read.Generation, true);
-            }
-
-            bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
-
-            WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
-            var parked = new HashSet<string>(StringComparer.Ordinal);
-            foreach (string member in index.MemberWorkItemIds)
-            {
-                if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(member),
-                        out WorksRuntimeDocument? parkingDocument) || parkingDocument is null)
-                {
-                    return Unavailable(read.Generation, stale);
-                }
-
-                if (parkingDocument.As<WorkItemProjectionParking>().Parked)
-                {
-                    _ = parked.Add(member);
-                }
-            }
-
-            var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
-            IReadOnlyList<WhatsNextItem> items = WhatsNextQueryAuthorization.FilterList(
-                query.TenantId,
-                index.Items.Values
-                    .Where(item => item?.WorkItemId is not null
-                        && members.Contains(item.WorkItemId.Value)
-                        && !parked.Contains(item.WorkItemId.Value))
-                    .OrderBy(static item => item, WhatsNextOrdering.Instance),
-                item => authority.AllWork
-                    || item.Status == WorkItemStatus.Queued
-                    || item.Status == WorkItemStatus.Assigned
-                        && string.Equals(item.ExecutorBinding?.PartyId?.Value, authority.PartyId, StringComparison.Ordinal));
-            var rollUps = new List<WorkItemRollUp>();
-            foreach (WhatsNextItem item in items)
-            {
-                if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(item.WorkItemId.Value), out WorksRuntimeDocument? document)
-                    || document is null) return Unavailable(read.Generation, stale);
-                WorkItemRollUp rollUp = document.As<WorkItemRollUp>();
-                if (rollUp.TenantId?.Value != query.TenantId || rollUp.WorkItemId?.Value != item.WorkItemId.Value
-                    || rollUp.Status != item.Status || rollUp.LatestAcceptedSourceSequence != item.LatestAcceptedSourceSequence)
-                {
-                    WorksFailureDiagnostics.QueryUnavailable(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, "invalid-rollup");
-                    return Unavailable(read.Generation, stale);
-                }
-                rollUps.Add(rollUp);
-            }
-            return QueryResult.FromPayload(
-                JsonSerializer.SerializeToElement(items, s_jsonOptions),
-                WorksReadModelKeys.WhatsNextProjectionType,
-                Metadata(read.Generation, stale, parked.Count > 0, rollUps));
+            return await WorksProjectionReadBudget.ReadAsync(
+                token => ReadSdkAsync(coordinator, query, authority, token), startedAt, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             throw;
         }
         catch (WorksRuntimeIndexReadException exception)
@@ -185,6 +110,93 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             WorksFailureDiagnostics.QueryFailed(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, exception);
             return Unavailable(0, false);
         }
+    }
+
+    private async Task<QueryResult> ReadSdkAsync(SharedProjectionEpochCoordinator coordinator,
+        QueryEnvelope query, WorksQueryAuthority authority, CancellationToken cancellationToken)
+    {
+        var scope = new SharedProjectionScope(
+            WorksReadModelKeys.StateStoreName,
+            query.TenantId,
+            DomainName,
+            WorksReadModelKeys.RuntimeFamily,
+            ["works-runtime-v3-writer"]);
+        SharedProjectionReadResult<WorksRuntimeIndexView> preliminary = await WorksRuntimeIndexReader
+            .ReadAsync(coordinator, scope, cancellationToken).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!preliminary.IsAvailable || preliminary.Value is null)
+        {
+            return Unavailable(preliminary.Generation, preliminary.IsStale);
+        }
+
+        IReadOnlyList<string> membersForRead = preliminary.Value.Indexes.Queue.MemberWorkItemIds;
+        SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
+            .ReadRelatedAsync(coordinator, scope, preliminary,
+                [.. membersForRead.Select(WorksReadModelKeys.RuntimeParkingKey),
+                    .. membersForRead.Select(WorksReadModelKeys.RuntimeRollUpKey)], cancellationToken)
+            .ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!read.IsAvailable || read.Value is null)
+        {
+            return Unavailable(read.Generation, read.IsStale);
+        }
+
+        SharedProjectionEpochStatus status = await coordinator.GetStatusAsync(scope, cancellationToken)
+            .ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
+        {
+            return Unavailable(read.Generation, true);
+        }
+
+        bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
+
+        WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
+        var parked = new HashSet<string>(StringComparer.Ordinal);
+        foreach (string member in index.MemberWorkItemIds)
+        {
+            if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(member),
+                    out WorksRuntimeDocument? parkingDocument) || parkingDocument is null)
+            {
+                return Unavailable(read.Generation, stale);
+            }
+
+            if (parkingDocument.As<WorkItemProjectionParking>().Parked)
+            {
+                _ = parked.Add(member);
+            }
+        }
+
+        var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
+        IReadOnlyList<WhatsNextItem> items = WhatsNextQueryAuthorization.FilterList(
+            query.TenantId,
+            index.Items.Values
+                .Where(item => item?.WorkItemId is not null
+                    && members.Contains(item.WorkItemId.Value)
+                    && !parked.Contains(item.WorkItemId.Value))
+                .OrderBy(static item => item, WhatsNextOrdering.Instance),
+            item => authority.AllWork
+                || item.Status == WorkItemStatus.Queued
+                || item.Status == WorkItemStatus.Assigned
+                    && string.Equals(item.ExecutorBinding?.PartyId?.Value, authority.PartyId, StringComparison.Ordinal));
+        var rollUps = new List<WorkItemRollUp>();
+        foreach (WhatsNextItem item in items)
+        {
+            if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(item.WorkItemId.Value), out WorksRuntimeDocument? document)
+                || document is null) return Unavailable(read.Generation, stale);
+            WorkItemRollUp rollUp = document.As<WorkItemRollUp>();
+            if (rollUp.TenantId?.Value != query.TenantId || rollUp.WorkItemId?.Value != item.WorkItemId.Value
+                || rollUp.Status != item.Status || rollUp.LatestAcceptedSourceSequence != item.LatestAcceptedSourceSequence)
+            {
+                WorksFailureDiagnostics.QueryUnavailable(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, "invalid-rollup");
+                return Unavailable(read.Generation, stale);
+            }
+            rollUps.Add(rollUp);
+        }
+        return QueryResult.FromPayload(
+            JsonSerializer.SerializeToElement(items, s_jsonOptions),
+            WorksReadModelKeys.WhatsNextProjectionType,
+            Metadata(read.Generation, stale, parked.Count > 0, rollUps));
     }
 
     private static QueryResponseMetadata Metadata(long generation, bool stale, bool parked, IReadOnlyList<WorkItemRollUp> rollUps)

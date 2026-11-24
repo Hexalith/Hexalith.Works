@@ -1,6 +1,7 @@
 using System.Text.Json;
 
 using Hexalith.EventStore.Client.Projections;
+using Hexalith.EventStore.Client.Streams;
 
 using Microsoft.Extensions.Logging;
 
@@ -43,6 +44,7 @@ internal static partial class WorksFailureDiagnostics
             or SharedProjectionReadUnavailableException { InnerException: OperationCanceledException or TimeoutException } => "timeout",
         SharedProjectionReadUnavailableException or Dapr.DaprException or HttpRequestException or IOException => "dependency-unavailable",
         JsonException => "invalid-document",
+        AuthoritativeStreamReadAdmissionException => "read-admission-exhausted",
         WorksRuntimeIndexMembershipException => "invalid-membership",
         ArgumentException or InvalidOperationException => "invalid-state",
         _ => "unexpected-failure",

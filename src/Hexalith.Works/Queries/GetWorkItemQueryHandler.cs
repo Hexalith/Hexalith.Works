@@ -85,6 +85,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         WorkItemId workItemId,
         CancellationToken cancellationToken)
     {
+        long startedAt = TimeProvider.System.GetTimestamp();
         WorksQueryAuthority authority = _policy is null
             ? new WorksQueryAuthority(false, false, null)
             : await _policy.AuthorizeAsync(query, cancellationToken).ConfigureAwait(false);
@@ -93,84 +94,19 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             return QueryResult.Failure(QueryAdapterFailureReason.Forbidden);
         }
 
-        if (_coordinator is null)
+        if (_coordinator is not { } coordinator)
         {
             return SdkUnavailable(0, false);
         }
 
         try
         {
-            var scope = new SharedProjectionScope(
-                WorksReadModelKeys.StateStoreName,
-                query.TenantId,
-                DomainName,
-                WorksReadModelKeys.RuntimeFamily,
-                ["works-runtime-v3-writer"]);
-            string rollUpKey = WorksReadModelKeys.RuntimeRollUpKey(query.AggregateId);
-            string parkingKey = WorksReadModelKeys.RuntimeParkingKey(query.AggregateId);
-            SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
-                .ReadAsync(_coordinator, scope, cancellationToken, [rollUpKey, parkingKey]).ConfigureAwait(false);
-            if (!read.IsAvailable || read.Value is null)
-            {
-                return SdkUnavailable(read.Generation, read.IsStale);
-            }
-
-            SharedProjectionEpochStatus status = await _coordinator.GetStatusAsync(scope, cancellationToken)
-                .ConfigureAwait(false);
-            if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
-            {
-                return SdkUnavailable(read.Generation, true);
-            }
-
-            bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
-
-            WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
-            QueryResponseMetadata metadata = SdkMetadata(read.Generation, stale);
-            if (!index.MemberWorkItemIds.Contains(query.AggregateId, StringComparer.Ordinal))
-            {
-                return NotFound(tenantId, workItemId, metadata);
-            }
-
-            WhatsNextItem? authorizedItem = null;
-            if (!authority.AllWork
-                && (!index.Items.TryGetValue(query.AggregateId, out WhatsNextItem? item)
-                    || (authorizedItem = WhatsNextQueryAuthorization.Filter(query.TenantId, item, candidate =>
-                        string.Equals(candidate.WorkItemId?.Value, query.AggregateId, StringComparison.Ordinal)
-                        && (candidate.Status == WorkItemStatus.Queued
-                            || candidate.Status == WorkItemStatus.Assigned
-                                && string.Equals(candidate.ExecutorBinding?.PartyId?.Value, authority.PartyId,
-                                    StringComparison.Ordinal)))) is null))
-            {
-                return NotFound(tenantId, workItemId, metadata);
-            }
-
-            if (!read.Value.Documents.TryGetValue(parkingKey, out WorksRuntimeDocument? parkingDocument)
-                || parkingDocument is null
-                || parkingDocument.As<WorkItemProjectionParking>().Parked)
-            {
-                return SdkUnavailable(read.Generation, stale);
-            }
-
-            if (!read.Value.Documents.TryGetValue(rollUpKey, out WorksRuntimeDocument? rollUpDocument)
-                || rollUpDocument is null)
-            {
-                return SdkUnavailable(read.Generation, stale);
-            }
-
-            WorkItemRollUp rollUp = rollUpDocument.As<WorkItemRollUp>();
-            if (!MatchesIdentity(rollUp, query.TenantId, query.AggregateId)
-                || authorizedItem is not null
-                    && (rollUp.Status != authorizedItem.Status
-                        || rollUp.LatestAcceptedSourceSequence != authorizedItem.LatestAcceptedSourceSequence))
-            {
-                WorksFailureDiagnostics.QueryUnavailable(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, "invalid-rollup");
-                return SdkUnavailable(read.Generation, stale);
-            }
-
-            return Found(rollUp, SdkMetadata(read.Generation, stale, rollUp));
+            return await WorksProjectionReadBudget.ReadAsync(
+                token => ReadSdkAsync(coordinator, query, tenantId, workItemId, authority, token), startedAt, cancellationToken).ConfigureAwait(false);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             throw;
         }
         catch (WorksRuntimeIndexReadException exception)
@@ -183,6 +119,81 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
             WorksFailureDiagnostics.QueryFailed(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, exception);
             return SdkUnavailable(0, false);
         }
+    }
+
+    private async Task<QueryResult> ReadSdkAsync(SharedProjectionEpochCoordinator coordinator,
+        QueryEnvelope query, TenantId tenantId, WorkItemId workItemId, WorksQueryAuthority authority, CancellationToken cancellationToken)
+    {
+        var scope = new SharedProjectionScope(
+            WorksReadModelKeys.StateStoreName,
+            query.TenantId,
+            DomainName,
+            WorksReadModelKeys.RuntimeFamily,
+            ["works-runtime-v3-writer"]);
+        string rollUpKey = WorksReadModelKeys.RuntimeRollUpKey(query.AggregateId);
+        string parkingKey = WorksReadModelKeys.RuntimeParkingKey(query.AggregateId);
+        SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
+            .ReadAsync(coordinator, scope, cancellationToken, [rollUpKey, parkingKey]).ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!read.IsAvailable || read.Value is null)
+        {
+            return SdkUnavailable(read.Generation, read.IsStale);
+        }
+
+        SharedProjectionEpochStatus status = await coordinator.GetStatusAsync(scope, cancellationToken)
+            .ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
+        {
+            return SdkUnavailable(read.Generation, true);
+        }
+
+        bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
+
+        WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
+        QueryResponseMetadata metadata = SdkMetadata(read.Generation, stale);
+        if (!index.MemberWorkItemIds.Contains(query.AggregateId, StringComparer.Ordinal))
+        {
+            return NotFound(tenantId, workItemId, metadata);
+        }
+
+        WhatsNextItem? authorizedItem = null;
+        if (!authority.AllWork
+            && (!index.Items.TryGetValue(query.AggregateId, out WhatsNextItem? item)
+                || (authorizedItem = WhatsNextQueryAuthorization.Filter(query.TenantId, item, candidate =>
+                    string.Equals(candidate.WorkItemId?.Value, query.AggregateId, StringComparison.Ordinal)
+                    && (candidate.Status == WorkItemStatus.Queued
+                        || candidate.Status == WorkItemStatus.Assigned
+                            && string.Equals(candidate.ExecutorBinding?.PartyId?.Value, authority.PartyId,
+                                StringComparison.Ordinal)))) is null))
+        {
+            return NotFound(tenantId, workItemId, metadata);
+        }
+
+        if (!read.Value.Documents.TryGetValue(parkingKey, out WorksRuntimeDocument? parkingDocument)
+            || parkingDocument is null
+            || parkingDocument.As<WorkItemProjectionParking>().Parked)
+        {
+            return SdkUnavailable(read.Generation, stale);
+        }
+
+        if (!read.Value.Documents.TryGetValue(rollUpKey, out WorksRuntimeDocument? rollUpDocument)
+            || rollUpDocument is null)
+        {
+            return SdkUnavailable(read.Generation, stale);
+        }
+
+        WorkItemRollUp rollUp = rollUpDocument.As<WorkItemRollUp>();
+        if (!MatchesIdentity(rollUp, query.TenantId, query.AggregateId)
+            || authorizedItem is not null
+                && (rollUp.Status != authorizedItem.Status
+                    || rollUp.LatestAcceptedSourceSequence != authorizedItem.LatestAcceptedSourceSequence))
+        {
+            WorksFailureDiagnostics.QueryUnavailable(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, "invalid-rollup");
+            return SdkUnavailable(read.Generation, stale);
+        }
+
+        return Found(rollUp, SdkMetadata(read.Generation, stale, rollUp));
     }
 
     private static QueryResponseMetadata SdkMetadata(long generation, bool stale, WorkItemRollUp? rollUp = null)

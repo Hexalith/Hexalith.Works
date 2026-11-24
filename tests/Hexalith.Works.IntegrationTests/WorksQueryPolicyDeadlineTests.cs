@@ -383,7 +383,8 @@ public sealed class WorksQueryPolicyDeadlineTests
         store.ReceivedCalls().ShouldBeEmpty();
     }
 
-    private static async Task DrainProviderSlotsAsync()
+    /// <summary>Waits for every test-owned SDK provider admission slot to return.</summary>
+    internal static async Task DrainProviderSlotsAsync()
     {
         // Acquire every slot after completing test-owned providers, so no abandoned worker leaks into another test.
         using var deadline = new AuthoritativeStreamReadDeadline(TimeSpan.FromSeconds(4), TimeProvider.System,

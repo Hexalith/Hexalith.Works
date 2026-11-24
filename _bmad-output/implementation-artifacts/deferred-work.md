@@ -2087,6 +2087,8 @@ or catalog/specification entries. The historical Story 1.5 review is preserved u
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Establish projection-store cancellation bounds for SDK query reads (unverified medium).
+  status: done 2026-11-24
+  resolution: Both SDK query adapters enforce the existing five-second invocation budget and retain admission through provider completion. The real Dapr client transport observes both cancellation paths, and noncooperative store controls cover the unavailable result and slot cleanup. [Verification spec](spec-bound-works-projection-query-reads.md).
   evidence: Coordinator read/status awaits lack an independent caller-side acquisition deadline, unchanged from the pre-cutover SDK path. The finding does not show the real Dapr store ignoring cancellation; a real-store timeout/cancellation probe plus an admitted non-cooperative control would settle the operational effect.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
