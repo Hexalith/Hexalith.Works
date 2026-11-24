@@ -94,13 +94,14 @@ internal static class WorkItemSharedRebuildManifestBuilder
             }
         }
 
+        IReadOnlySet<string> unavailableRollUps = relationships.FindUnavailableRolledTotals(members, cancellationToken);
         var rollUps = new Dictionary<string, WorkItemRollUp>(StringComparer.Ordinal);
         foreach (string aggregateId in members.OrderBy(static id => id, StringComparer.Ordinal))
         {
             cancellationToken.ThrowIfCancellationRequested();
             WorkItemRollUp? model = WorkItemProjectionBoundarySanitizer.Sanitize(
                 rollUpProjection.Get(tenantId, new WorkItemId(aggregateId)),
-                relationships.IsRolledTotalUnavailable(aggregateId, members));
+                unavailableRollUps.Contains(aggregateId));
             if (model is not null)
             {
                 rollUps.Add(aggregateId, model);

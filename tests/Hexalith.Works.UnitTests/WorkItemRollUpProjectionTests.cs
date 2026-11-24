@@ -24,6 +24,28 @@ public sealed class WorkItemRollUpProjectionTests
     private static readonly WorkItemId Child = new("child-001");
     private static readonly WorkItemId Grandchild = new("grandchild-001");
 
+    /// <summary>Materializes an active roll-up through the full supported relationship depth.</summary>
+    [Fact]
+    public void DeepChainRollsUpThroughTheProjectionEntryPoint()
+    {
+        const int memberCount = 10_000;
+        var projection = new WorkItemRollUpProjection();
+        WorkItemId? parent = null;
+        for (int index = 0; index < memberCount; index++)
+        {
+            var item = new WorkItemId($"item-{index:D5}");
+            Project(projection, new WorkItemCreated(item.Value, 1, Tenant, item,
+                new Obligation("work"), new WorkItemEffort(1m, Hour),
+                Parent: parent is null ? null : new ParentWorkItemReference(Tenant, parent)));
+            parent = item;
+        }
+
+        WorkItemRollUp model = projection.Get(Tenant, new WorkItemId("item-00000")).ShouldNotBeNull();
+        model.RolledRemaining.ShouldBe(new RolledRemaining(memberCount, Hour));
+        model.Degraded.ShouldBeFalse();
+        model.ProjectionDiagnostics.ShouldBeEmpty();
+    }
+
     [Fact]
     public void Read_model_contract_distinguishes_own_and_rolled_remaining()
     {

@@ -68,12 +68,12 @@ public sealed class WorkItemRollUpProjection
 
         NodeKey key = NodeKey.From(tenantId, workItemId);
         return _nodes.TryGetValue(key, out RollUpNode? node)
-            ? ToReadModel(node, [])
+            ? ToReadModel(node)
             : null;
     }
 
     public IReadOnlyList<WorkItemRollUp> Snapshot()
-        => [.. _nodes.Values.Select(node => ToReadModel(node, []))];
+        => [.. _nodes.Values.Select(node => ToReadModel(node))];
 
     private RollUpNode GetOrAdd(NodeKey key, TenantId tenantId, WorkItemId workItemId)
     {
@@ -176,9 +176,9 @@ public sealed class WorkItemRollUpProjection
         }
     }
 
-    private WorkItemRollUp ToReadModel(RollUpNode node, HashSet<NodeKey> traversal)
+    private WorkItemRollUp ToReadModel(RollUpNode node)
     {
-        RemainingBuckets buckets = CalculateRolled(node, traversal);
+        RemainingBuckets buckets = CalculateRolled(node);
         IReadOnlyList<RolledRemaining> byUnit = buckets.ToRolledRemainingByUnit();
         List<RollUpNode> outputChildren = [];
         foreach (NodeKey childKey in node.ChildKeys)
@@ -212,8 +212,8 @@ public sealed class WorkItemRollUpProjection
             [.. outputChildren.Select(child => child.WorkItemId)],
             node.LatestAcceptedSourceSequence)
         {
-            Degraded = IsDegraded(node, []),
-            ProjectionDiagnostics = CollectDiagnostics(node, []),
+            Degraded = Traverse(node, _tenantIsolation.AllowsDegradation).Any(visit => visit.Entering && visit.Node.Degraded),
+            ProjectionDiagnostics = CollectDiagnostics(node),
             OwnEffort = node.OwnEffort,
             ConversationCorrelationId = node.ConversationCorrelationId,
         };
@@ -231,97 +231,80 @@ public sealed class WorkItemRollUpProjection
             : new OwnRemaining(node.OwnEffort.Remaining, node.OwnEffort.Unit);
     }
 
-    private RemainingBuckets CalculateRolled(RollUpNode node, HashSet<NodeKey> traversal)
+    private RemainingBuckets CalculateRolled(RollUpNode node)
     {
-        if (!traversal.Add(node.Key))
+        var totals = new Stack<RemainingBuckets>();
+        totals.Push(new RemainingBuckets());
+        foreach ((RollUpNode visited, bool entering) in Traverse(node, _tenantIsolation.AllowsContribution))
         {
-            return new RemainingBuckets();
-        }
-
-        var buckets = new RemainingBuckets();
-        OwnRemaining? own = ToOwnRemaining(node);
-        if (own is not null && own.Unit is not null)
-        {
-            buckets.Add(own.Unit, own.Value);
-        }
-
-        if (!node.Terminal)
-        {
-            foreach (NodeKey childKey in node.ChildKeys)
+            if (entering)
             {
-                if (!_nodes.TryGetValue(childKey, out RollUpNode? child)
-                    || !_tenantIsolation.AllowsContribution(node.TenantId, child.TenantId))
+                var buckets = new RemainingBuckets();
+                OwnRemaining? own = ToOwnRemaining(visited);
+                if (own?.Unit is { } unit)
                 {
-                    continue;
+                    buckets.Add(unit, own.Value);
                 }
 
-                RemainingBuckets childBuckets = CalculateRolled(child, traversal);
-                buckets.Add(childBuckets);
+                totals.Push(buckets);
+            }
+            else
+            {
+                RemainingBuckets complete = totals.Pop();
+                totals.Peek().Add(complete);
             }
         }
 
-        traversal.Remove(node.Key);
-        return buckets;
+        return totals.Pop();
     }
 
-    private IReadOnlyList<RollUpProjectionDiagnostic> CollectDiagnostics(RollUpNode node, HashSet<NodeKey> traversal)
-    {
-        if (!traversal.Add(node.Key))
-        {
-            return [];
-        }
-
-        List<RollUpProjectionDiagnostic> diagnostics = [.. node.ProjectionDiagnostics];
-        if (!node.Terminal)
-        {
-            foreach (NodeKey childKey in node.ChildKeys)
-            {
-                if (!_nodes.TryGetValue(childKey, out RollUpNode? child)
-                    || !_tenantIsolation.AllowsDiagnostic(node.TenantId, child.TenantId))
-                {
-                    continue;
-                }
-
-                diagnostics.AddRange(CollectDiagnostics(child, traversal));
-            }
-        }
-
-        traversal.Remove(node.Key);
-        return [.. diagnostics
+    private IReadOnlyList<RollUpProjectionDiagnostic> CollectDiagnostics(RollUpNode node)
+        => [.. Traverse(node, _tenantIsolation.AllowsDiagnostic)
+            .Where(visit => visit.Entering)
+            .SelectMany(visit => visit.Node.ProjectionDiagnostics)
             .OrderBy(diagnostic => diagnostic.WorkItemId.Value, StringComparer.Ordinal)
             .ThenBy(diagnostic => diagnostic.Sequence)
             .ThenBy(diagnostic => diagnostic.EventType, StringComparer.Ordinal)];
-    }
 
-    private bool IsDegraded(RollUpNode node, HashSet<NodeKey> traversal)
+    private IEnumerable<(RollUpNode Node, bool Entering)> Traverse(
+        RollUpNode root,
+        Func<TenantId, TenantId, bool> allowsChild)
     {
-        if (!traversal.Add(node.Key))
+        var path = new HashSet<NodeKey>();
+        var pending = new Stack<(RollUpNode Node, bool Entering)>();
+        pending.Push((root, true));
+        while (pending.TryPop(out var visit))
         {
-            return false;
-        }
-
-        if (node.Degraded)
-        {
-            traversal.Remove(node.Key);
-            return true;
-        }
-
-        if (!node.Terminal)
-        {
-            foreach (NodeKey childKey in node.ChildKeys)
+            RollUpNode node = visit.Node;
+            if (!visit.Entering)
             {
-                if (_nodes.TryGetValue(childKey, out RollUpNode? child)
-                    && _tenantIsolation.AllowsDegradation(node.TenantId, child.TenantId)
-                    && IsDegraded(child, traversal))
+                _ = path.Remove(node.Key);
+                yield return visit;
+                continue;
+            }
+
+            // Use the current path to refuse cycles. A shared descendant can contribute through
+            // each distinct branch, as it did in the recursive fold.
+            if (!path.Add(node.Key))
+            {
+                continue;
+            }
+
+            yield return visit;
+            pending.Push((node, false));
+            if (node.Terminal)
+            {
+                continue;
+            }
+
+            foreach (NodeKey key in node.ChildKeys.AsEnumerable().Reverse())
+            {
+                if (_nodes.TryGetValue(key, out RollUpNode? child) && allowsChild(node.TenantId, child.TenantId))
                 {
-                    traversal.Remove(node.Key);
-                    return true;
+                    pending.Push((child, true));
                 }
             }
         }
-
-        traversal.Remove(node.Key);
-        return false;
     }
 
     internal readonly record struct NodeKey(string TenantId, string WorkItemId)

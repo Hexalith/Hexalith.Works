@@ -52,45 +52,61 @@ internal sealed class WorkItemSharedRebuildRelationshipGraph
                 static pair => (IReadOnlyList<string>)[.. pair.Value.Order(StringComparer.Ordinal)],
                 StringComparer.Ordinal);
 
-    /// <summary>
-    /// Returns whether the aggregate or any reachable descendant is incomplete, missing from the sealed
-    /// authoritative membership, or cyclic.
-    /// </summary>
-    public bool IsRolledTotalUnavailable(string aggregateId, IReadOnlySet<string> authoritativeMembers)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(aggregateId);
-        ArgumentNullException.ThrowIfNull(authoritativeMembers);
-        return IsRolledTotalUnavailable(aggregateId, authoritativeMembers, new HashSet<string>(StringComparer.Ordinal));
-    }
-
-    private bool IsRolledTotalUnavailable(
-        string aggregateId,
+    /// <summary>Finds authoritative members whose roll-ups cannot be proven complete.</summary>
+    /// <param name="authoritativeMembers">The sealed set of aggregate identities.</param>
+    /// <param name="cancellationToken">The cancellation token for the fold.</param>
+    /// <returns>Members with incomplete, missing or cyclic descendant evidence.</returns>
+    public IReadOnlySet<string> FindUnavailableRolledTotals(
         IReadOnlySet<string> authoritativeMembers,
-        HashSet<string> traversal)
+        CancellationToken cancellationToken)
     {
-        if (!authoritativeMembers.Contains(aggregateId) || _incomplete.Contains(aggregateId))
-        {
-            return true;
-        }
+        ArgumentNullException.ThrowIfNull(authoritativeMembers);
 
-        if (!traversal.Add(aggregateId))
+        var unavailable = new HashSet<string>(authoritativeMembers, StringComparer.Ordinal);
+        var remainingChildren = new Dictionary<string, int>(StringComparer.Ordinal);
+        var complete = new Queue<string>();
+        foreach (string member in authoritativeMembers)
         {
-            return true;
-        }
-
-        if (_children.TryGetValue(aggregateId, out HashSet<string>? children))
-        {
-            foreach (string childId in children)
+            cancellationToken.ThrowIfCancellationRequested();
+            if (_incomplete.Contains(member))
             {
-                if (IsRolledTotalUnavailable(childId, authoritativeMembers, traversal))
+                continue;
+            }
+
+            if (_children.TryGetValue(member, out HashSet<string>? children))
+            {
+                remainingChildren.Add(member, children.Count);
+            }
+            else
+            {
+                complete.Enqueue(member);
+            }
+        }
+
+        // A member becomes complete only after every child is proven complete. Missing children,
+        // incomplete members and cycles never reach the queue, so their ancestors remain unavailable.
+        while (complete.TryDequeue(out string? child))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _ = unavailable.Remove(child);
+            if (!_parents.TryGetValue(child, out HashSet<string>? parents))
+            {
+                continue;
+            }
+
+            foreach (string parent in parents)
+            {
+                if (remainingChildren.TryGetValue(parent, out int remaining))
                 {
-                    _ = traversal.Remove(aggregateId);
-                    return true;
+                    remainingChildren[parent] = remaining - 1;
+                    if (remaining == 1)
+                    {
+                        complete.Enqueue(parent);
+                    }
                 }
             }
         }
 
-        _ = traversal.Remove(aggregateId);
-        return false;
+        return unavailable;
     }
 }
