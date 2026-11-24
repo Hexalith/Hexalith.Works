@@ -94,10 +94,9 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             artifacts = Path(directory) / "attempt"
             leaked = {"Configuration": "Release", "HEXALITH_DAPR_INITIALIZATION_RECEIPT": "dapr-init"}
             with patch.dict(os.environ, leaked, clear=False):
-                command, environment, record, snapshot = PARITY.bootstrap(works, artifacts)
+                environment, record, snapshot = PARITY.bootstrap(works, artifacts)
             self.assertEqual(record["coordinatorSha256"], PARITY.coordinator_hashes())
             selected = Path(record["platformRoot"])
-            self.assertEqual(Path(command[1]).resolve(), (selected / "eng/verify-works-host.sh").resolve())
             self.assertTrue((selected / ".git").is_dir())
             self.assertNotIn("Configuration", environment)
             self.assertNotIn("HEXALITH_DAPR_INITIALIZATION_RECEIPT", environment)
@@ -112,17 +111,31 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             self.assertEqual(Path(environment["HexalithEventStoreRoot"]).resolve(), Path(record["sdkRoot"]))
             self.assertEqual((Path(record["sdkRoot"]) / "global.json").read_bytes(), (sdk / "global.json").read_bytes())
             self.assertFalse((selected / "references/Not.Root.Declared").exists())
-            self.assertNotIn("--prepare-only", command)
-            self.assertIn("--runtime-sdk-root", command)
-            self.assertEqual(command[command.index("--profile") + 1], "ci")
-            self.assertIn("--platform-source-binding", command)
             binding = snapshot.verify(Path(record["platformSourceBinding"]), selected)
             self.assertEqual(binding["upstreamOrigin"]["root"], str(platform))
-            subprocess.run(command[:2] + ["--help"], env=environment, check=True)
+            PARITY.run_canonical_gate(selected, ["--help"], environment)
             self.assertEqual(snapshot.origin_files(platform), record["platformSourceFiles"])
             self.assertFalse((artifacts / "gate").exists())
             with self.assertRaises(FileExistsError):
                 PARITY.bootstrap(works, artifacts)
+
+    def test_shell_entry_point_selects_its_works_checkout_from_another_directory(self):
+        with tempfile.TemporaryDirectory(prefix="works parity ") as directory:
+            works, _, _ = bootstrap_fixture(directory)
+            scripts = works / "scripts"
+            scripts.mkdir()
+            for name in PARITY.COORDINATORS:
+                shutil.copyfile(ROOT / "scripts" / name, scripts / name)
+            for cwd, script in ((Path(directory), "works/scripts/verify-platform-parity-ci.sh"),
+                                (scripts, "verify-platform-parity-ci.sh")):
+                with self.subTest(cwd=cwd):
+                    artifacts = works / (cwd.name + "-attempt")
+                    subprocess.run(["bash", script, "--artifacts-path", str(artifacts), "--bootstrap-only"],
+                                   cwd=cwd, check=True, capture_output=True)
+                    record = json.loads((artifacts / "bootstrap.json").read_text())
+                    self.assertEqual(record["worksRoot"], str(works.resolve()))
+                    self.assertEqual(record["status"], "bootstrap-validated; parity-incomplete")
+                    self.assertFalse((artifacts / "gate").exists())
 
     def test_explicit_sdk_export_needs_no_local_tag_and_retains_unqualified_origin(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -132,7 +145,7 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             (export / "src").mkdir()
             (export / "src/producer.cs").write_text("// exact official bytes are qualified by the owning verifier\n")
             subprocess.run(["git", "-C", str(sdk), "tag", "-d", "v3.126.0"], check=True, capture_output=True)
-            command, environment, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
+            environment, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
             self.assertIsNone(record["sdkCommit"])
             self.assertEqual(record["sdkOriginRoot"], str(export))
             selected = Path(record["sdkRoot"])
@@ -140,7 +153,6 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             self.assertFalse((selected / ".git").exists())
             self.assertEqual((selected / "references/Hexalith.Builds").resolve(), works / "references/Hexalith.Builds")
             self.assertEqual(environment["HexalithEventStoreRoot"], str(selected))
-            self.assertIn("--runtime-sdk-root", command)
             self.assertEqual(record["status"], "bootstrap-validated; parity-incomplete")
             self.assertFalse((export / "references").exists())
 
@@ -174,7 +186,7 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             (export / "references/Hexalith.Builds").mkdir(parents=True)
             (export / "references/Hexalith.Builds/foreign.txt").write_text("preserve original dependency\n")
 
-            _, _, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
+            _, record, _ = PARITY.bootstrap(works, Path(directory) / "attempt", export)
 
             selected = Path(record["sdkRoot"])
             self.assertEqual((selected / canonical).read_bytes(), source.read_bytes())
@@ -242,13 +254,15 @@ class PlatformParityBootstrapTests(unittest.TestCase):
             record = {
                 "platformOrigin": str(root),
                 "platformRoot": str(root),
+                "sdkRoot": str(root / "sdk"),
+                "platformSourceBinding": str(artifacts / "platform-source-binding.json"),
                 "platformSourceFiles": {"source.cs": "original"},
             }
             snapshot = Mock()
             snapshot.origin_files.return_value = {"source.cs": "changed"}
             with (
                 patch("sys.argv", ["parity", "--artifacts-path", str(artifacts)]),
-                patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+                patch.object(PARITY, "bootstrap", return_value=({}, record, snapshot)),
                 patch.object(PARITY.subprocess, "run"),
                 patch.object(PARITY, "toolchain_runtime_sha256", return_value=RUNTIME),
                 patch.object(PARITY, "require_complete_gate"),
@@ -277,6 +291,8 @@ class PlatformParityBootstrapTests(unittest.TestCase):
                         "coordinatorSha256": expected,
                         "platformOrigin": str(root),
                         "platformRoot": str(root),
+                        "sdkRoot": str(root / "sdk"),
+                        "platformSourceBinding": str(artifacts / "platform-source-binding.json"),
                         "platformSourceFiles": {"source.cs": "original"},
                     }
                     snapshot = Mock()
@@ -287,7 +303,7 @@ class PlatformParityBootstrapTests(unittest.TestCase):
 
                     with (
                         patch("sys.argv", ["parity", "--artifacts-path", str(root / "attempt")]),
-                        patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+                        patch.object(PARITY, "bootstrap", return_value=({}, record, snapshot)),
                         patch.object(PARITY.subprocess, "run", side_effect=mutate),
                         patch.object(PARITY, "toolchain_runtime_sha256", return_value=RUNTIME),
                         patch.object(PARITY, "require_complete_gate"),
@@ -413,6 +429,8 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
             "coordinatorSha256": PARITY.coordinator_hashes(),
             "platformOrigin": str(origin),
             "platformRoot": str(selected),
+            "sdkRoot": str(self.artifacts / "sdk"),
+            "platformSourceBinding": str(self.artifacts / "platform-source-binding.json"),
             "platformSourceFiles": {"source.cs": "original"},
         }
         snapshot = Mock()
@@ -436,7 +454,7 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
                 (self.gate / "ledger.json").write_text(json.dumps(ledger))
                 with (
                     patch("sys.argv", ["parity", "--artifacts-path", str(self.artifacts)]),
-                    patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+                    patch.object(PARITY, "bootstrap", return_value=({}, record, snapshot)),
                     patch.object(PARITY.subprocess, "run"),
                     self.assertRaisesRegex(ValueError, message),
                 ):
@@ -448,11 +466,16 @@ class PlatformParityAcceptanceTests(unittest.TestCase):
         (self.gate / "ledger.json").write_text(json.dumps(self.ledger))
         with (
             patch("sys.argv", ["parity", "--artifacts-path", str(self.artifacts)]),
-            patch.object(PARITY, "bootstrap", return_value=(["canonical-gate"], {}, record, snapshot)),
+            patch.object(PARITY, "bootstrap", return_value=({}, record, snapshot)),
             patch.object(PARITY.subprocess, "run") as run,
         ):
             PARITY.main()
-        run.assert_called_once_with(["canonical-gate"], env={}, check=True)
+        run.assert_called_once_with(
+            ["bash", str(Path(record["platformRoot"]) / "eng/verify-works-host.sh"),
+             "--profile", "ci", "--works-root", str(ROOT), "--runtime-sdk-root", record["sdkRoot"],
+             "--platform-source-binding", record["platformSourceBinding"], "--artifacts-path", str(self.gate)],
+            env={}, check=True,
+        )
         self.assertEqual(json.loads(bootstrap.read_text())["status"],
                          "passed-disposable-synthetic-parity-and-rollback")
         snapshot.origin_files.assert_called_once_with(Path(record["platformOrigin"]))

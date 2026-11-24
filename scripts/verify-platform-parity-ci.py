@@ -193,21 +193,13 @@ def bootstrap(works, artifacts, runtime_sdk_root=None):
         "HexalithPolymorphicSerializationsRoot": str(sources["Hexalith.PolymorphicSerializations"]),
         "DOTNET_USE_POLLING_FILE_WATCHER": "1",
     })
-    command = [
-        "bash",
-        str(execution_root / "eng/verify-works-host.sh"),
-        "--profile",
-        "ci",
-        "--works-root",
-        str(works),
-        "--runtime-sdk-root",
-        str(sdk),
-        "--platform-source-binding",
-        str(binding),
-        "--artifacts-path",
-        str(artifacts / "gate"),
-    ]
-    return command, environment, record, snapshot
+    return environment, record, snapshot
+
+
+def run_canonical_gate(platform, arguments, environment):
+    """Run the fixed verifier from the sealed Platform export."""
+    subprocess.run(["bash", str(platform / "eng/verify-works-host.sh"), *arguments],
+                   env=environment, check=True)
 
 
 def toolchain_runtime_sha256(platform, builds=None):
@@ -330,16 +322,24 @@ def main():
     )
     args = parser.parse_args()
     artifacts = args.artifacts_path.resolve()
+    works = args.works_root.resolve()
     if args.runtime_sdk_root is None:
-        command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts)
+        environment, record, snapshot = bootstrap(works, artifacts)
     else:
-        command, environment, record, snapshot = bootstrap(args.works_root.resolve(), artifacts, args.runtime_sdk_root)
+        environment, record, snapshot = bootstrap(works, artifacts, args.runtime_sdk_root)
+    platform = Path(record["platformRoot"])
+    arguments = ["--help"] if args.bootstrap_only else [
+        "--profile", "ci",
+        "--works-root", str(works),
+        "--runtime-sdk-root", record["sdkRoot"],
+        "--platform-source-binding", record["platformSourceBinding"],
+        "--artifacts-path", str(artifacts / "gate"),
+    ]
+    run_canonical_gate(platform, arguments, environment)
     if args.bootstrap_only:
-        subprocess.run(command[:2] + ["--help"], env=environment, check=True)
         print("Bootstrap validated; parity remains incomplete.")
         return
-    subprocess.run(command, env=environment, check=True)
-    runtime_digest = toolchain_runtime_sha256(record["platformRoot"], environment.get("HexalithBuildsRoot"))
+    runtime_digest = toolchain_runtime_sha256(platform, environment.get("HexalithBuildsRoot"))
     require_complete_gate(artifacts, runtime_digest)
     if snapshot.origin_files(Path(record["platformOrigin"])) != record["platformSourceFiles"]:
         raise ValueError("Canonical Platform inputs changed after bootstrap")
