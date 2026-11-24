@@ -190,6 +190,7 @@ public sealed class BuildConfigurationTests
         start.ArgumentList.Add(project);
         start.ArgumentList.Add("-nologo");
         start.ArgumentList.Add("-t:ValidateHexalithDependencyMode");
+        start.ArgumentList.Add("-nodeReuse:false");
         start.ArgumentList.Add("-p:Configuration=Release");
         start.ArgumentList.Add($"-p:UseHexalithProjectReferences={useProjectReferences}");
         start.ArgumentList.Add($"-p:UseNuGetDeps={useNuGetDependencies}");
@@ -342,6 +343,34 @@ public sealed class BuildConfigurationTests
         constraints.ShouldContain("not a shadow-projection plus atomic-swap model");
     }
 
+    /// <summary>Canceling an owned probe reaps its running process and surfaces the original token.</summary>
+    [Fact]
+    public async Task CanceledProbeReapsItsRunningProcess()
+    {
+        bool windows = OperatingSystem.IsWindows();
+        var start = new ProcessStartInfo(windows ? "cmd.exe" : "/bin/sh")
+        {
+            RedirectStandardInput = true,
+        };
+        if (windows)
+        {
+            start.ArgumentList.Add("/d");
+        }
+
+        start.ArgumentList.Add(windows ? "/c" : "-c");
+        start.ArgumentList.Add(windows ? "set /p input=" : "read -r input");
+
+        using Process process = Process.Start(start).ShouldNotBeNull();
+        process.HasExited.ShouldBeFalse();
+        using var cancellation = new CancellationTokenSource();
+        await cancellation.CancelAsync().ConfigureAwait(true);
+
+        OperationCanceledException exception = await Should.ThrowAsync<OperationCanceledException>(
+            () => WaitForExitOrKillAsync(process, cancellation.Token)).ConfigureAwait(true);
+        exception.CancellationToken.ShouldBe(cancellation.Token);
+        process.HasExited.ShouldBeTrue();
+    }
+
     private static string? PropertyValue(XDocument document, string name)
         => document.Descendants()
             .SingleOrDefault(element => element.Name.LocalName == name)
@@ -368,6 +397,7 @@ public sealed class BuildConfigurationTests
         start.ArgumentList.Add(project);
         start.ArgumentList.Add("-nologo");
         start.ArgumentList.Add("-t:ValidateHexalithDependencyMode");
+        start.ArgumentList.Add("-nodeReuse:false");
         foreach (string argument in arguments)
         {
             start.ArgumentList.Add(argument);
@@ -387,6 +417,7 @@ public sealed class BuildConfigurationTests
     {
         try
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await process.WaitForExitAsync(cancellationToken).ConfigureAwait(true);
         }
         catch (OperationCanceledException)
@@ -403,7 +434,16 @@ public sealed class BuildConfigurationTests
                 // The child exited between the state check and the kill request; it still must be reaped below.
             }
 
-            await process.WaitForExitAsync(CancellationToken.None).ConfigureAwait(true);
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            try
+            {
+                await process.WaitForExitAsync(cleanup.Token).ConfigureAwait(true);
+            }
+            catch (OperationCanceledException ex) when (cleanup.IsCancellationRequested)
+            {
+                throw new TimeoutException("The MSBuild test process did not exit within five seconds after termination.", ex);
+            }
+
             throw;
         }
     }

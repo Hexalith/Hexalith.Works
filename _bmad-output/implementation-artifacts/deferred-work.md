@@ -1054,6 +1054,8 @@ archived: 2026-10-23
   status: done 2026-11-24
   resolution: Restored the five original dispositions under Original review dispositions with a revision-bound link. The subsequent decisions retain their original wording and position.
 - Killed MSBuild child uses unbounded `WaitForExitAsync(CancellationToken.None)`. maybe-false: settle by showing `Kill(entireProcessTree: true)` can leave a live child on this runner. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:333]
+  status: done 2026-11-24
+  resolution: The fitness runner disables MSBuild node reuse and bounds its post-termination wait to five seconds. A cancellation fact verifies child exit and the original token on successful cleanup.
 - EventStore and Admin nested hosts omit `DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER`. maybe-false: settle with a DCP command line showing those hosts still `dotnet run` after `SuppressBuild => false`. [src/Hexalith.Works.AppHost/Program.cs:92]
 - spec-9 Code Map still cites `deferred-work.md:967`, which the 2026-09-20 File List close-out ledger append retargeted onto the new unpark `source_spec`. Deferred: fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md:43]
 
