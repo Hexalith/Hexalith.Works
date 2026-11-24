@@ -25,7 +25,9 @@ def commit(root, message):
 
 def fixture(root):
     (root / "scripts").mkdir()
-    shutil.copyfile(ROOT / "scripts/prepare-platform-builds.sh", root / "scripts/prepare-platform-builds.sh")
+    for suffix in ("sh", "py"):
+        name = f"prepare-platform-builds.{suffix}"
+        shutil.copyfile(ROOT / "scripts" / name, root / "scripts" / name)
     builds = root / "references/Hexalith.Builds"
     (builds / "Props").mkdir(parents=True)
     git(builds, "init", "--quiet")
@@ -78,6 +80,7 @@ def fixture(root):
         "    subprocess.run(['git', '-C', str(path.parent.parent), 'update-index',\n"
         "                    os.environ['FIXTURE_INDEX_FLAG'], '--', 'eng/binding.json'], check=True)\n"
         "    path.write_text('hidden during verification')\n"
+        "if os.environ.get('FIXTURE_EMPTY_OUTPUT') == 'true': raise SystemExit(0)\n"
         "print(tool)\n"
     )
     git(owner, "update-index", "--add", "--cacheinfo", "160000", recorded, "references/Hexalith.Builds")
@@ -86,15 +89,34 @@ def fixture(root):
 
 
 class PlatformBuildsPreparationTests(unittest.TestCase):
-    def run_hook(self, root, overrides=None):
+    def run_hook(self, root, overrides=None, *, legacy_shell=False, cwd=None):
         exported = root / "github.env"
         exported.write_text("existing=preserved\n")
         environment = os.environ.copy() | {
             "RUNNER_TEMP": str(root), "GITHUB_ENV": str(exported), "PYTHONDONTWRITEBYTECODE": "1",
         } | (overrides or {})
-        result = subprocess.run(["bash", str(root / "scripts/prepare-platform-builds.sh")],
-                                env=environment, text=True, capture_output=True, check=False)
+        command = (["bash", str(root / "scripts/prepare-platform-builds.sh")] if legacy_shell else
+                   ["python3", str(root / "scripts/prepare-platform-builds.py")])
+        result = subprocess.run(command, cwd=cwd, env=environment, text=True, capture_output=True, check=False)
         return result, exported.read_text()
+
+    def test_shell_entry_point_preserves_verified_export(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fixture(root)
+            result, exported = self.run_hook(root, legacy_shell=True)
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertEqual("existing=preserved\nHexalithBuildsPublishedToolRoot=" + result.stdout, exported)
+
+    def test_empty_tool_output_cannot_select_the_working_directory(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            fixture(root)
+            (root / "Hexalith.Builds.Tooling.dll").write_bytes(b"unverified file")
+            result, exported = self.run_hook(root, {"FIXTURE_EMPTY_OUTPUT": "true"}, cwd=root)
+            self.assertEqual(1, result.returncode, result.stderr)
+            self.assertIn("did not return a verified published Builds tool directory", result.stderr)
+            self.assertEqual("existing=preserved\n", exported)
 
     def test_only_successful_owner_verification_exports_the_recorded_producer(self):
         with tempfile.TemporaryDirectory(prefix="works published builds ") as temporary:
