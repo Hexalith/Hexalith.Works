@@ -61,6 +61,7 @@ public sealed class WorksAppHostSelectionTests
             (typeof(WorksRecoveryCatalogMeasurementTests), nameof(WorksRecoveryCatalogMeasurementTests.CatalogSweepMeasuresRealStoreCost)),
             (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost)),
             (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines)),
+            (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.WhatsNextMeasuresUnpagedEligibleResponses)),
         ];
         var explicitTests = typeof(WorksAppHostSelectionTests).Assembly.GetTypes()
             .SelectMany(type => type.GetMethods()

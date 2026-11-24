@@ -51,4 +51,5 @@ Measure whether the unpaged authorized what's-next response still works at the a
 - **Low, patched.** The setup did not check item count or populated fields. Both are now asserted.
 - **Low, patched.** Only the coordinator caller was measured; the notes now say so.
 - **Low, patched.** The threshold was not located. A 2,048 row was added, and timed-out rows now read ≥5 s.
+- **Medium, patched (found by the next review).** `WorksAppHostSelectionTests.LiveFactsRequireExplicitSelection` requires every explicit test to be registered; the new theory is now listed under standalone measurements.
 - **Low, patched.** The run was not reproducible. The record now includes the command, commit, image digests and measured duration, and timeouts live in a per-scenario table.
