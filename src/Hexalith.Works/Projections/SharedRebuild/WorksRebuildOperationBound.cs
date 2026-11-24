@@ -5,11 +5,14 @@ namespace Hexalith.Works.Projections.SharedRebuild;
 /// <summary>Sizes the read-model batch operation ceiling for the largest sealed epoch rebuild Works can plan.</summary>
 internal static class WorksRebuildOperationBound
 {
-    /// <summary>Documents every epoch plan carries once: the queue, pending-date and topology indexes.</summary>
+    /// <summary>Documents every epoch plan carries once: both runtime index inventories and topology.</summary>
     internal const int FixedDocuments = 3;
 
     /// <summary>Documents per aggregate besides history pages: the history manifest, parking marker and roll-up.</summary>
     internal const int DocumentsPerAggregate = 3;
+
+    /// <summary>Each owner can require one shard for each runtime index.</summary>
+    internal const int MaxIndexShardsPerAggregate = 2;
 
     /// <summary>
     /// Gets the worst-case operation count of one epoch plan. Each admitted aggregate holds at least one history
@@ -18,6 +21,6 @@ internal static class WorksRebuildOperationBound
     /// </summary>
     internal static int MaxOperations { get; } = FixedDocuments
         + (ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount
-            * (DocumentsPerAggregate + 1))
+            * (DocumentsPerAggregate + 1 + MaxIndexShardsPerAggregate))
         + (WorkItemRuntimeHistoryStore.MaxTenantBytes / WorkItemRuntimeHistoryStore.PageBytes);
 }

@@ -220,13 +220,11 @@ public sealed class WorksSdkProtectedHttpTests
 
         var handler = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         SharedProjectionScope scope = handler.CreateScope(Tenant);
-        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey("mine"),
-            WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+        string[] keys = [WorksReadModelKeys.RuntimeRollUpKey("mine"), WorksReadModelKeys.RuntimeTopologyKey,
             WorksReadModelKeys.RuntimeHistoryKey("mine"), WorksReadModelKeys.RuntimeParkingKey("mine")];
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> before = await coordinator
-            .ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken, keys).ConfigureAwait(true);
         before.IsAvailable.ShouldBeTrue();
-        before.Value.ShouldNotBeNull().Values.ShouldAllBe(value => value != null);
+        before.Value.ShouldNotBeNull().Documents.Values.ShouldAllBe(value => value != null);
         (await coordinator.GetCheckpointAsync(scope, "mine", TestContext.Current.CancellationToken)
             .ConfigureAwait(true))!.Position.ShouldBe(1);
 
@@ -244,15 +242,10 @@ public sealed class WorksSdkProtectedHttpTests
             denied.StatusCode.ShouldBe(expected);
             (await coordinator.GetCheckpointAsync(scope, "mine", TestContext.Current.CancellationToken)
                 .ConfigureAwait(true))!.Position.ShouldBe(1);
-            SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await coordinator
-                .ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken).ConfigureAwait(true);
+            var after = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken, keys).ConfigureAwait(true);
             after.IsAvailable.ShouldBeTrue();
             after.Generation.ShouldBe(before.Generation);
-            foreach (string key in keys)
-            {
-                after.Value![key]!.Kind.ShouldBe(before.Value[key]!.Kind);
-                after.Value[key]!.Value.GetRawText().ShouldBe(before.Value[key]!.Value.GetRawText());
-            }
+            AssertSameRuntimeDocuments(before.Value.ShouldNotBeNull(), after.Value.ShouldNotBeNull());
 
             (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)
                 .ConfigureAwait(true)).PendingDeliveryCount.ShouldBe(0);
@@ -361,9 +354,8 @@ public sealed class WorksSdkProtectedHttpTests
         SharedProjectionScope scope = projection.CreateScope(Tenant);
         (await coordinator.GetCheckpointAsync(scope, "mine", TestContext.Current.CancellationToken)
             .ConfigureAwait(true))!.Position.ShouldBe(2);
-        (await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey,
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
-            .As<WorksWhatsNextTenantIndex>().MemberWorkItemIds.ShouldBe(["foreign", "mine", "queue"]);
+        (await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).Value.ShouldNotBeNull().Indexes.Queue.MemberWorkItemIds.ShouldBe(["foreign", "mine", "queue"]);
     }
 
     [Theory]
@@ -386,14 +378,14 @@ public sealed class WorksSdkProtectedHttpTests
         var options = Options.Create(new WorksProjectionOptions { UseSdkDelivery = true });
         var projection = new WorkItemSharedProjectionRebuildHandler(options);
         SharedProjectionScope scope = projection.CreateScope(Tenant);
-        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimePendingDateKey,
-            WorksReadModelKeys.RuntimeTopologyKey, .. new[] { "mine", "foreign", "queue" }.SelectMany(aggregate => new[] {
+        string[] keys = [WorksReadModelKeys.RuntimeTopologyKey, .. new[] { "mine", "foreign", "queue" }.SelectMany(aggregate => new[] {
                 WorksReadModelKeys.RuntimeRollUpKey(aggregate), WorksReadModelKeys.RuntimeParkingKey(aggregate),
                 WorksReadModelKeys.RuntimeHistoryKey(aggregate) })];
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> family = await coordinator
-            .ReadManyAsync<WorksRuntimeDocument>(scope, keys, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var family = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken, keys)
+            .ConfigureAwait(true);
         family.IsAvailable.ShouldBeTrue();
-        WorkItemRollUp rollUp = family.Value![WorksReadModelKeys.RuntimeRollUpKey("mine")]!.As<WorkItemRollUp>();
+        var documents = family.Value.ShouldNotBeNull().Documents;
+        WorkItemRollUp rollUp = documents[WorksReadModelKeys.RuntimeRollUpKey("mine")].ShouldNotBeNull().As<WorkItemRollUp>();
         rollUp = contamination switch
         {
             "status" => rollUp with { Status = WorkItemStatus.Completed },
@@ -407,7 +399,7 @@ public sealed class WorksSdkProtectedHttpTests
             ["foreign"] = 2,
             ["queue"] = 2,
         }, TestContext.Current.CancellationToken).ConfigureAwait(true);
-        ReadModelBatchOperation[] operations = [.. family.Value.Select(pair => ReadModelBatchOperation.Write(
+        ReadModelBatchOperation[] operations = [.. documents.Select(pair => ReadModelBatchOperation.Write(
             pair.Key, pair.Key == WorksReadModelKeys.RuntimeRollUpKey("mine")
                 ? WorksRuntimeDocument.From(rollUp) : pair.Value!, ReadModelBatchConcurrency.LastWrite))];
         _ = await coordinator.StageAsync(scope, "contaminated", operations,
@@ -610,9 +602,8 @@ public sealed class WorksSdkProtectedHttpTests
                 .ConfigureAwait(true))!.Position.ShouldBe(2);
         }
 
-        (await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey,
-            TestContext.Current.CancellationToken).ConfigureAwait(true)).Value.ShouldNotBeNull()
-            .As<WorksWhatsNextTenantIndex>().MemberWorkItemIds.ShouldBe(["foreign", "mine", "queue"]);
+        (await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken)
+            .ConfigureAwait(true)).Value.ShouldNotBeNull().Indexes.Queue.MemberWorkItemIds.ShouldBe(["foreign", "mine", "queue"]);
     }
 
     [Theory]
@@ -675,8 +666,7 @@ public sealed class WorksSdkProtectedHttpTests
         store.Observe = true;
         var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         SharedProjectionScope scope = projection.CreateScope(Tenant);
-        SharedProjectionReadResult<WorksRuntimeDocument> before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope,
-            WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken).ConfigureAwait(true);
         before.IsAvailable.ShouldBeTrue();
 
         await using (WebApplication originalHost = BuildProtectedHost(store, Address(parties), coordinator,
@@ -705,11 +695,10 @@ public sealed class WorksSdkProtectedHttpTests
         }
 
         identityRequests.ShouldBe(4);
-        SharedProjectionReadResult<WorksRuntimeDocument> after = await coordinator.ReadAsync<WorksRuntimeDocument>(scope,
-            WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken).ConfigureAwait(true);
+        var after = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken).ConfigureAwait(true);
         after.IsAvailable.ShouldBeTrue();
         after.Generation.ShouldBe(before.Generation);
-        after.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before.Value.ShouldNotBeNull().Value.GetRawText());
+        AssertSameRuntimeDocuments(before.Value.ShouldNotBeNull(), after.Value.ShouldNotBeNull());
         foreach (string aggregate in new[] { "mine", "queue", "foreign" })
         {
             (await coordinator.GetCheckpointAsync(scope, aggregate, TestContext.Current.CancellationToken)
@@ -799,12 +788,12 @@ public sealed class WorksSdkProtectedHttpTests
     [InlineData("/QUERY")]
     public async Task GatewayOnlyIngressAppliesToEveryQueryRouteSpelling(string route)
     {
-        IReadModelStore store = Substitute.For<IReadModelStore>();
+        var store = new QueryWindowStore(new InMemoryReadModelStore());
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", settings:
             ["--Works:Query:GatewayWorkloadId=designated-gateway", "--Authentication:QueryAuthority:GatewayWorkloadId=designated-gateway",
                 "--Works:Query:PermittedCoordinatorWorkloads:0=scheduler"]);
         await app.StartAsync(TestContext.Current.CancellationToken).ConfigureAwait(true);
-        store.ClearReceivedCalls();
+        store.Observe = true;
         using var client = WorksHttpCatalogFixture.Client(app, Address(app));
         QueryEnvelope query = ExecutorQuery() with
         {
@@ -816,7 +805,7 @@ public sealed class WorksSdkProtectedHttpTests
             channel: true, assertion: Assertion("domain-service:query")),
             TestContext.Current.CancellationToken).ConfigureAwait(true);
         response.StatusCode.ShouldBe(HttpStatusCode.Forbidden);
-        store.ReceivedCalls().ShouldBeEmpty();
+        store.Operations.ShouldBe(0);
     }
 
     [Fact]
@@ -1165,6 +1154,18 @@ public sealed class WorksSdkProtectedHttpTests
         });
     }
 
+    private static void AssertSameRuntimeDocuments(WorksRuntimeIndexView before, WorksRuntimeIndexView after)
+    {
+        after.Documents.Keys.Order(StringComparer.Ordinal).ShouldBe(before.Documents.Keys.Order(StringComparer.Ordinal));
+        foreach ((string key, WorksRuntimeDocument? prior) in before.Documents)
+        {
+            WorksRuntimeDocument current = after.Documents[key].ShouldNotBeNull();
+            WorksRuntimeDocument expected = prior.ShouldNotBeNull();
+            current.Kind.ShouldBe(expected.Kind);
+            current.Value.GetRawText().ShouldBe(expected.Value.GetRawText());
+        }
+    }
+
     private static HttpRequestMessage Request(string route, object query, bool channel = false, string? assertion = null, string? bearer = null)
     {
         var request = new HttpRequestMessage(HttpMethod.Post, route)
@@ -1352,9 +1353,7 @@ public sealed class WorksSdkProtectedHttpTests
         await PopulateRuntimeAsync(coordinator);
         var projection = new WorkItemSharedProjectionRebuildHandler(Options.Create(new WorksProjectionOptions { UseSdkDelivery = true }));
         SharedProjectionScope scope = projection.CreateScope(Tenant);
-        SharedProjectionReadResult<WorksRuntimeDocument> before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope,
-            WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken);
-        string beforeBytes = before.Value.ShouldNotBeNull().Value.GetRawText();
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken);
         int beforeCount = store.Count;
         await using WebApplication app = BuildProtectedHost(store, "http://127.0.0.1:8999", coordinator,
             ["--EventStore:Processes:ReconciliationEnabled=false", "--EventStore:Reminders:ReconciliationEnabled=false"]);
@@ -1370,9 +1369,8 @@ public sealed class WorksSdkProtectedHttpTests
 
         response.StatusCode.ShouldBe(HttpStatusCode.InternalServerError);
         store.Count.ShouldBe(beforeCount);
-        SharedProjectionReadResult<WorksRuntimeDocument> after = await coordinator.ReadAsync<WorksRuntimeDocument>(scope,
-            WorksReadModelKeys.RuntimeQueueKey, TestContext.Current.CancellationToken);
-        after.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(beforeBytes);
+        var after = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken);
+        AssertSameRuntimeDocuments(before.Value.ShouldNotBeNull(), after.Value.ShouldNotBeNull());
         after.Generation.ShouldBe(before.Generation);
         (await coordinator.GetCheckpointAsync(scope, "mine", TestContext.Current.CancellationToken)).ShouldNotBeNull().Position.ShouldBe(2);
         store.Snapshot<object>("statestore", WorksReadModelKeys.PendingDateAwaitRegistryKey).ShouldBeNull();

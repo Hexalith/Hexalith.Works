@@ -549,9 +549,9 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         await RebuildAsync(store, Tenant, "seed-pending-members", [(ParentId, retained), (orphanId, orphan)]).ConfigureAwait(true);
         var coordinator = new SharedProjectionEpochCoordinator(store, store);
         SharedProjectionScope scope = new WorkItemSharedProjectionRebuildHandler().CreateScope(Tenant);
-        var before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct)
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct)
             .ConfigureAwait(true);
-        PendingDateAwaitTenantIndex seeded = before.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        PendingDateAwaitTenantIndex seeded = before.Value.ShouldNotBeNull().Indexes.PendingDate;
         seeded.Entries.Keys.Order(StringComparer.Ordinal).ShouldBe([orphanId, ParentId]);
         seeded.LastSequences.Count.ShouldBe(2);
         var previousDiscovery = await new WorksProcessSourceCatalog(coordinator).ListAsync(null, 256, ct).ConfigureAwait(true);
@@ -562,11 +562,11 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
 
         // Reconstruct readers so pruning is proved against the committed generation, not a retained object.
         var restarted = new SharedProjectionEpochCoordinator(store, store);
-        var after = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct)
+        var after = await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct)
             .ConfigureAwait(true);
         after.IsAvailable.ShouldBeTrue();
         after.Generation.ShouldBeGreaterThan(before.Generation);
-        PendingDateAwaitTenantIndex selected = after.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        PendingDateAwaitTenantIndex selected = after.Value.ShouldNotBeNull().Indexes.PendingDate;
         selected.Entries.Keys.ShouldBe([ParentId]);
         selected.Entries[ParentId].ShouldHaveSingleItem().ShouldBe(new PendingDateAwait(Tenant, ParentId, due, dateAwait.CorrelationKey));
         selected.LastSequences.Keys.ShouldBe([ParentId]);
@@ -583,12 +583,12 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
             new WorkItemId(neutralId), new Obligation("No date await")), 1)];
         await RebuildAsync(store, Tenant, "prune-last-pending-await", [(neutralId, neutralHistory)]).ConfigureAwait(true);
         var emptyReader = new SharedProjectionEpochCoordinator(store, store);
-        var emptyRead = await emptyReader.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct)
+        var emptyRead = await WorksRuntimeIndexReader.ReadAsync(emptyReader, scope, ct)
             .ConfigureAwait(true);
         emptyRead.IsAvailable.ShouldBeTrue();
         emptyRead.IsStale.ShouldBeFalse();
         emptyRead.Generation.ShouldBeGreaterThan(after.Generation);
-        PendingDateAwaitTenantIndex emptyPending = emptyRead.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        PendingDateAwaitTenantIndex emptyPending = emptyRead.Value.ShouldNotBeNull().Indexes.PendingDate;
         emptyPending.Entries.ShouldBeEmpty();
         emptyPending.LastSequences.ShouldBeEmpty();
         (await ReadCurrentIndexAsync(store, Tenant).ConfigureAwait(true)).MemberWorkItemIds.ShouldBe([neutralId]);
@@ -1124,9 +1124,9 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
     private static async Task<WorksWhatsNextTenantIndex> ReadCurrentIndexAsync(
         IReadModelStore store,
         string tenantId)
-        => (await new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store).ReadAsync<WorksRuntimeDocument>(
-            new WorkItemSharedProjectionRebuildHandler().CreateScope(tenantId), WorksReadModelKeys.RuntimeQueueKey,
-            TestContext.Current.CancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>();
+        => (await WorksRuntimeIndexReader.ReadAsync(new SharedProjectionEpochCoordinator(store, (IReadModelBatchStore)store),
+            new WorkItemSharedProjectionRebuildHandler().CreateScope(tenantId),
+            TestContext.Current.CancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull().Indexes.Queue;
 
     private static async Task<WorkItemRollUp> ReadCurrentRollUpAsync(
         IReadModelStore store,
@@ -1183,11 +1183,9 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         using ServiceProvider provider = BuildProvider(store, handler);
         SharedProjectionEpochCoordinator coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
         SharedProjectionScope scope = handler.CreateScope(tenant);
-        string[] served = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimeRollUpKey(seededId),
-            WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+        string[] served = [WorksReadModelKeys.RuntimeRollUpKey(seededId), WorksReadModelKeys.RuntimeTopologyKey,
             WorksReadModelKeys.RuntimeHistoryKey(seededId), WorksReadModelKeys.RuntimeParkingKey(seededId)];
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> before = await coordinator
-            .ReadManyAsync<WorksRuntimeDocument>(scope, served, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, TestContext.Current.CancellationToken, served).ConfigureAwait(false);
         before.IsAvailable.ShouldBeTrue();
         byte[] historyBefore = WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(
             coordinator, scope, before.Generation, seededId, TestContext.Current.CancellationToken).ConfigureAwait(false));
@@ -1231,16 +1229,18 @@ public sealed class WorkItemSharedProjectionRebuildHandlerTests
         (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken).ConfigureAwait(false))
             .ActiveGeneration.ShouldBe(committedGeneration);
         var restarted = new SharedProjectionEpochCoordinator(store, store);
-        SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> after = await restarted
-            .ReadManyAsync<WorksRuntimeDocument>(scope, served, TestContext.Current.CancellationToken).ConfigureAwait(false);
+        var after = await WorksRuntimeIndexReader.ReadAsync(restarted, scope, TestContext.Current.CancellationToken, served).ConfigureAwait(false);
         after.IsAvailable.ShouldBeTrue();
         after.Generation.ShouldBe(before.Generation);
         WorkItemRuntimeHistoryStore.Serialize(await WorkItemRuntimeHistoryStore.ReadAsync(restarted, scope,
             after.Generation, seededId, TestContext.Current.CancellationToken).ConfigureAwait(false)).ShouldBe(historyBefore);
-        foreach (string key in served)
+        var priorDocuments = before.Value.ShouldNotBeNull().Documents;
+        var currentDocuments = after.Value.ShouldNotBeNull().Documents;
+        currentDocuments.Keys.Order(StringComparer.Ordinal).ShouldBe(priorDocuments.Keys.Order(StringComparer.Ordinal));
+        foreach ((string key, WorksRuntimeDocument? expected) in priorDocuments)
         {
-            after.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText()
-                .ShouldBe(before.Value.ShouldNotBeNull()[key].ShouldNotBeNull().Value.GetRawText());
+            currentDocuments[key].ShouldNotBeNull().Value.GetRawText()
+                .ShouldBe(expected.ShouldNotBeNull().Value.GetRawText());
         }
 
         WorkItemView view = await QueryWorkItemAsync(store, tenant, seededId).ConfigureAwait(false);

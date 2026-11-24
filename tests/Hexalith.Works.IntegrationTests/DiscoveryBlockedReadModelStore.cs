@@ -7,10 +7,15 @@ using Hexalith.EventStore.Testing.Fakes;
 namespace Hexalith.Works.IntegrationTests;
 
 /// <summary>Retains a genuinely noncooperative tenant-local read, including its original stale result.</summary>
-internal sealed class DiscoveryBlockedReadModelStore(InMemoryReadModelStore inner, string tenant, string scopeHash, string mode) : IReadModelStore
+internal sealed class DiscoveryBlockedReadModelStore(InMemoryReadModelStore inner, string tenant, string scopeHash, string mode, int blockOnRead = 1) : IReadModelStore
 {
     private readonly TaskCompletionSource _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource _started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private int _matchingReads;
     private int _invocations;
+
+    /// <summary>Observes the first outstanding read without releasing it.</summary>
+    internal Task Started => _started.Task;
 
     /// <summary>Counts actual blocked provider invocations rather than abandoned caller attempts.</summary>
     internal int Invocations => Volatile.Read(ref _invocations);
@@ -25,13 +30,15 @@ internal sealed class DiscoveryBlockedReadModelStore(InMemoryReadModelStore inne
         {
             "epoch" => key == "shared-epoch:" + scopeHash,
             "generation" => key.StartsWith("shared-generation:" + scopeHash + ":", StringComparison.Ordinal),
+            _ when mode.StartsWith("shared-generation:", StringComparison.Ordinal) => key == mode,
             _ => key.StartsWith("shared-control-index-tombstone:", StringComparison.Ordinal)
                 && key.EndsWith(Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(tenant))), StringComparison.Ordinal),
         };
         ReadModelEntry<T> captured = await inner.GetAsync<T>(storeName, key, cancellationToken).ConfigureAwait(false);
-        if (matches && !_release.Task.IsCompleted)
+        if (matches && !_release.Task.IsCompleted && Interlocked.Increment(ref _matchingReads) >= blockOnRead)
         {
             Interlocked.Increment(ref _invocations);
+            _started.TrySetResult();
             await _release.Task.ConfigureAwait(false); // Deliberately ignores cancellation and returns its old captured evidence.
         }
         return captured;

@@ -108,14 +108,9 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
                 ["works-runtime-v3-writer"]);
             string rollUpKey = WorksReadModelKeys.RuntimeRollUpKey(query.AggregateId);
             string parkingKey = WorksReadModelKeys.RuntimeParkingKey(query.AggregateId);
-            SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await _coordinator
-                .ReadManyAsync<WorksRuntimeDocument>(
-                    scope,
-                    [WorksReadModelKeys.RuntimeQueueKey, rollUpKey, parkingKey],
-                    cancellationToken).ConfigureAwait(false);
-            if (!read.IsAvailable || read.Value is null
-                || !read.Value.TryGetValue(WorksReadModelKeys.RuntimeQueueKey, out WorksRuntimeDocument? queueDocument)
-                || queueDocument is null)
+            SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
+                .ReadAsync(_coordinator, scope, cancellationToken, [rollUpKey, parkingKey]).ConfigureAwait(false);
+            if (!read.IsAvailable || read.Value is null)
             {
                 return SdkUnavailable(read.Generation, read.IsStale);
             }
@@ -129,13 +124,7 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
 
             bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
 
-            WorksWhatsNextTenantIndex index = queueDocument.As<WorksWhatsNextTenantIndex>();
-            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
-            {
-                WorksFailureDiagnostics.QueryUnavailable(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, "invalid-membership");
-                return SdkUnavailable(read.Generation, stale);
-            }
-
+            WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
             QueryResponseMetadata metadata = SdkMetadata(read.Generation, stale);
             if (!index.MemberWorkItemIds.Contains(query.AggregateId, StringComparer.Ordinal))
             {
@@ -155,14 +144,14 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
                 return NotFound(tenantId, workItemId, metadata);
             }
 
-            if (!read.Value.TryGetValue(parkingKey, out WorksRuntimeDocument? parkingDocument)
+            if (!read.Value.Documents.TryGetValue(parkingKey, out WorksRuntimeDocument? parkingDocument)
                 || parkingDocument is null
                 || parkingDocument.As<WorkItemProjectionParking>().Parked)
             {
                 return SdkUnavailable(read.Generation, stale);
             }
 
-            if (!read.Value.TryGetValue(rollUpKey, out WorksRuntimeDocument? rollUpDocument)
+            if (!read.Value.Documents.TryGetValue(rollUpKey, out WorksRuntimeDocument? rollUpDocument)
                 || rollUpDocument is null)
             {
                 return SdkUnavailable(read.Generation, stale);
@@ -183,6 +172,11 @@ public sealed class GetWorkItemQueryHandler : IDomainQueryHandler
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
+        }
+        catch (WorksRuntimeIndexReadException exception)
+        {
+            WorksFailureDiagnostics.QueryFailed(_logger, GetWorkItemQueryType, query.TenantId, query.CorrelationId, exception.InnerException!);
+            return SdkUnavailable(exception.Generation, exception.IsStale);
         }
         catch (Exception exception)
         {

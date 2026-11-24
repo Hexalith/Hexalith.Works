@@ -45,21 +45,15 @@ internal sealed class WorksProcessSourceCatalog(SharedProjectionEpochCoordinator
                     WorksReadModelKeys.ThrowIfReservedTenantId(tenant);
                     var scope = new SharedProjectionScope(WorksReadModelKeys.StateStoreName, tenant, "work",
                         WorksReadModelKeys.RuntimeFamily, ["works-runtime-v3-writer"]);
-                    SharedProjectionReadResult<WorksRuntimeDocument> read = await _coordinator.ReadDiscoveryAsync<WorksRuntimeDocument>(
-                        scope, WorksReadModelKeys.RuntimeQueueKey, cancellationToken).ConfigureAwait(false);
-                    if (!read.IsAvailable || read.IsDegraded || read.IsStale || read.Value is null)
+                    WorksRuntimeIndexes? indexes = await WorksRuntimeIndexReader.ReadDiscoveryAsync(
+                        _coordinator, scope, cancellationToken).ConfigureAwait(false);
+                    if (indexes is null)
                     {
                         WorksFailureDiagnostics.DiscoveryIncomplete(_logger, tenant, "projection-unavailable");
                         return (Members: Array.Empty<ProcessSource>(), Incomplete: true);
                     }
-                    WorksWhatsNextTenantIndex membership = read.Value.As<WorksWhatsNextTenantIndex>();
-                    if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(membership))
-                        throw new InvalidOperationException("Works process source membership is invalid.");
-                    var memberIds = new HashSet<string>(membership.MemberWorkItemIds, StringComparer.Ordinal);
-                    if (membership.Items.Keys.Any(id => !memberIds.Contains(id))
-                        || membership.LastSequences.Keys.Any(id => !memberIds.Contains(id)))
-                        throw new InvalidOperationException("Works process source membership omits retained evidence.");
-                    ProcessSource[] members = [.. membership.MemberWorkItemIds.Select(aggregate => new ProcessSource(tenant, "work", aggregate))];
+
+                    ProcessSource[] members = [.. indexes.Queue.MemberWorkItemIds.Select(aggregate => new ProcessSource(tenant, "work", aggregate))];
                     foreach (ProcessSource source in members) source.Validate();
                     if (members.Select(source => source.CatalogKey).Distinct(StringComparer.Ordinal).Count() != members.Length)
                         throw new InvalidOperationException("Works process source membership is duplicated.");

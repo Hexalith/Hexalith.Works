@@ -333,7 +333,12 @@ internal static class WorksPlatformProjectionChecks
         // family value and complete source history after transport, promotion and automatic SDK catch-up.
         DomainProjectionRebuildPlan expected = WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity,
             new WorkItemSharedRebuildCandidateState([.. updated.Select(pair => new WorkItemSharedRebuildAggregateHistory(pair.Key, pair.Value))]), cancellationToken);
+        WorksRuntimeDocument ReadPlannedDocument(string key)
+            => JsonSerializer.Deserialize<WorksRuntimeDocument>(expected.Operations.Single(operation => operation.Key == key).CanonicalValue.Span, _json)
+                .ShouldNotBeNull();
+
         string[] selected = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+            .. WorksRuntimeIndexShards.ShardKeys(ReadPlannedDocument(WorksReadModelKeys.RuntimeQueueKey), ReadPlannedDocument(WorksReadModelKeys.RuntimePendingDateKey)),
             .. updated.Keys.SelectMany(source => new[] { WorksReadModelKeys.RuntimeRollUpKey(source), WorksReadModelKeys.RuntimeHistoryKey(source), WorksReadModelKeys.RuntimeParkingKey(source) })];
         Dictionary<string, object> complete = expected.Operations.Where(operation => selected.Contains(operation.Key, StringComparer.Ordinal))
             .ToDictionary(operation => operation.Key, operation => (object)JsonSerializer.Deserialize<WorksRuntimeDocument>(operation.CanonicalValue.Span, _json)!, StringComparer.Ordinal);
@@ -758,13 +763,13 @@ internal static class WorksPlatformProjectionChecks
         SharedProjectionEpochCoordinator coordinator, SharedProjectionScope scope, IReadOnlyDictionary<string, ProjectionEventDto[]> histories,
         CancellationToken cancellationToken, bool expectStale = false, bool expectDegraded = false)
     {
-        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+        string[] keys = [WorksReadModelKeys.RuntimeTopologyKey,
             .. histories.Keys.SelectMany(owner => new[] { WorksReadModelKeys.RuntimeRollUpKey(owner), WorksReadModelKeys.RuntimeHistoryKey(owner), WorksReadModelKeys.RuntimeParkingKey(owner) })];
-        var family = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, cancellationToken).ConfigureAwait(false);
+        var family = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, cancellationToken, keys).ConfigureAwait(false);
         family.IsAvailable.ShouldBeTrue();
         family.IsStale.ShouldBe(expectStale);
         family.IsDegraded.ShouldBe(expectDegraded);
-        IReadOnlyDictionary<string, WorksRuntimeDocument?> documents = family.Value.ShouldNotBeNull();
+        IReadOnlyDictionary<string, WorksRuntimeDocument?> documents = family.Value.ShouldNotBeNull().Documents;
         documents.Values.ShouldAllBe(value => value != null);
         Dictionary<string, object> complete = documents.ToDictionary(pair => pair.Key, pair => (object)pair.Value!, StringComparer.Ordinal);
         Dictionary<string, long> checkpoints = new(StringComparer.Ordinal);

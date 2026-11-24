@@ -197,8 +197,8 @@ public sealed class WorksSdkReminderDeliveryTests
                 .ShouldBe(SharedProjectionJournalResult.Journaled);
             (await coordinator.CatchUpAsync(scope, (delivery, generation, token) =>
                 handler.FoldCatchUpAsync(delivery, generation, coordinator, token), ct)).ShouldBe(1);
-            var pending = (await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct))
-                .Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+            var pending = (await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct))
+                .Value.ShouldNotBeNull().Indexes.PendingDate;
             if (index > 0) pending.LastSequences[Item].ShouldBe(index + 1);
             pending.Entries.ContainsKey(Item).ShouldBe(index == 1);
             IReadOnlyList<ReminderIntent> current = await intents.GetCurrentIntentsAsync(target, ct);
@@ -213,12 +213,13 @@ public sealed class WorksSdkReminderDeliveryTests
             .ShouldBe(SharedProjectionJournalResult.AlreadyJournaled);
         (await restarted.CatchUpAsync(scope, (delivery, generation, token) =>
             restartedHandler.FoldCatchUpAsync(delivery, generation, restarted, token), ct)).ShouldBe(0);
-        var active = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct);
+        var active = await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct);
+        active.Value.ShouldNotBeNull().Indexes.IsSharded.ShouldBeTrue();
         // Bypass journal deduplication and exercise the domain fold's retained-history comparison too.
         (await restartedHandler.FoldCatchUpAsync(Delivery(facts[1], 2), active.Generation, restarted, ct)).ShouldBeEmpty();
         (await intents.GetCurrentIntentsAsync(target, ct)).ShouldBeEmpty();
-        var retained = (await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct))
-            .Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        var retained = (await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct))
+            .Value.ShouldNotBeNull().Indexes.PendingDate;
         retained.Entries.ShouldBeEmpty();
         retained.LastSequences[Item].ShouldBe(3);
         (await restarted.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(3);
@@ -283,22 +284,26 @@ public sealed class WorksSdkReminderDeliveryTests
             (await coordinator.CatchUpAsync(scope, (delivery, generation, token) =>
                 handler.FoldCatchUpAsync(delivery, generation, coordinator, token), ct)).ShouldBe(1);
         }
-        var accepted = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct);
-        var loaded = accepted.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
-        string before = accepted.Value.Value.GetRawText();
+        var accepted = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        var loaded = accepted.Value.ShouldNotBeNull().Indexes.PendingDate;
+        WorksRuntimeDocument pendingRoot = accepted.Value.Documents[WorksReadModelKeys.RuntimePendingDateKey].ShouldNotBeNull();
+        string pendingShardKey = WorksRuntimeIndexShards.ShardKeys(
+            accepted.Value.Documents[WorksReadModelKeys.RuntimeQueueKey].ShouldNotBeNull(), pendingRoot)
+            .Single(key => key.StartsWith(WorksReadModelKeys.RuntimePendingDateKey + ":shards:", StringComparison.Ordinal));
+        string before = accepted.Value.Documents[pendingShardKey].ShouldNotBeNull().Value.GetRawText();
         SharedProjectionDelivery resumed = Delivery(new WorkItemResumed(Item, 3, tenant, item, s_date), 3);
 
         IReadOnlyList<ReadModelBatchOperation> proposed = await handler.FoldCatchUpAsync(resumed, accepted.Generation, coordinator, ct);
 
         var proposedPending = JsonSerializer.Deserialize<WorksRuntimeDocument>(proposed.Single(operation =>
-                operation.Key == WorksReadModelKeys.RuntimePendingDateKey).CanonicalValue.Span,
+                operation.Key == pendingShardKey).CanonicalValue.Span,
             new JsonSerializerOptions(JsonSerializerDefaults.Web)).ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
         proposedPending.Entries.ShouldBeEmpty();
         proposedPending.LastSequences[Item].ShouldBe(3);
         loaded.Entries[Item].ShouldHaveSingleItem().Instant.ShouldBe(s_date.Instant!.Value);
         loaded.LastSequences[Item].ShouldBe(2);
         var unchanged = await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope, accepted.Generation,
-            WorksReadModelKeys.RuntimePendingDateKey, ct);
+            pendingShardKey, ct);
         unchanged.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before);
         (await coordinator.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(2);
 
@@ -325,13 +330,13 @@ public sealed class WorksSdkReminderDeliveryTests
         store.BatchFaultHook = null;
         var afterRejection = new SharedProjectionEpochCoordinator(store, store);
         (await afterRejection.ReadGenerationAsync<WorksRuntimeDocument>(scope, accepted.Generation,
-            WorksReadModelKeys.RuntimePendingDateKey, ct)).Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before);
+            pendingShardKey, ct)).Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before);
         (await afterRejection.GetCheckpointAsync(scope, Item, ct)).ShouldNotBeNull().Position.ShouldBe(3);
         (await afterRejection.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(1);
         (await afterRejection.CatchUpAsync(scope, (delivery, generation, token) =>
             handler.FoldCatchUpAsync(delivery, generation, afterRejection, token), ct)).ShouldBe(1);
-        var committed = (await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct))
-            .Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        var committed = (await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct))
+            .Value.ShouldNotBeNull().Indexes.PendingDate;
         committed.Entries.ShouldBeEmpty();
         committed.LastSequences[Item].ShouldBe(3);
         (await afterRejection.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(0);

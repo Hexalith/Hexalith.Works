@@ -73,16 +73,16 @@ public sealed class WorksMtlsAuthorizationSmokeTests
                     await Task.Delay(200, projectionDeadline.Token).ConfigureAwait(false);
                 checkpoint.ShouldNotBeNull().OwnerSequenceNumber.ShouldBe(1);
             }
-            string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+            string[] keys = [WorksReadModelKeys.RuntimeTopologyKey,
                 WorksReadModelKeys.RuntimeRollUpKey(authorizedItem), WorksReadModelKeys.RuntimeHistoryKey(authorizedItem), WorksReadModelKeys.RuntimeParkingKey(authorizedItem)];
             async Task<string> FamilyDigestAsync()
             {
-                var family = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, token).ConfigureAwait(false);
+                var family = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, token, keys).ConfigureAwait(false);
                 family.IsAvailable.ShouldBeTrue();
                 family.IsStale.ShouldBeFalse();
                 family.IsDegraded.ShouldBeFalse();
-                family.Value.ShouldNotBeNull().Values.ShouldAllBe(value => value != null);
-                return Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(family.Value.OrderBy(pair => pair.Key, StringComparer.Ordinal))));
+                family.Value.ShouldNotBeNull().Documents.Values.ShouldAllBe(value => value != null);
+                return Convert.ToHexStringLower(SHA256.HashData(JsonSerializer.SerializeToUtf8Bytes(family.Value.Documents.OrderBy(pair => pair.Key, StringComparer.Ordinal))));
             }
             string familyBefore = await FamilyDigestAsync().ConfigureAwait(false);
             string checkpointBefore = JsonSerializer.Serialize(await coordinator.GetCheckpointAsync(scope, authorizedItem, token).ConfigureAwait(false));

@@ -110,8 +110,8 @@ public sealed class WorksDateReminderCorrectnessTests
         }
 
         var restarted = new SharedProjectionEpochCoordinator(store, store);
-        var accepted = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct);
-        PendingDateAwaitTenantIndex pending = accepted.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        var accepted = await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct);
+        PendingDateAwaitTenantIndex pending = accepted.Value.ShouldNotBeNull().Indexes.PendingDate;
         pending.Entries[Item].ShouldBe([
             new PendingDateAwait(Tenant, Item, later.Instant!.Value, later.CorrelationKey),
             new PendingDateAwait(Tenant, Item, s_date.Instant.Value, s_date.CorrelationKey)]);
@@ -129,12 +129,15 @@ public sealed class WorksDateReminderCorrectnessTests
             JsonSerializer.Deserialize<ResumeWorkItem>(intent.Payload).ShouldBe(new ResumeWorkItem(new TenantId(Tenant),
                 new WorkItemId(Item), AwaitCondition.DateReached(intent.DueUtc)));
 
-        string before = accepted.Value.Value.GetRawText();
+        var before = accepted.Value.Documents;
         IReadOnlyList<ReadModelBatchOperation> repeated = await handler.FoldCatchUpAsync(Delivery(facts[1], 2),
             accepted.Generation, restarted, ct);
         repeated.ShouldBeEmpty();
-        (await new SharedProjectionEpochCoordinator(store, store).ReadAsync<WorksRuntimeDocument>(scope,
-            WorksReadModelKeys.RuntimePendingDateKey, ct)).Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before);
+        var after = (await WorksRuntimeIndexReader.ReadAsync(new SharedProjectionEpochCoordinator(store, store), scope, ct))
+            .Value.ShouldNotBeNull().Documents;
+        after.Keys.Order(StringComparer.Ordinal).ShouldBe(before.Keys.Order(StringComparer.Ordinal));
+        foreach ((string key, WorksRuntimeDocument? prior) in before)
+            after[key].ShouldNotBeNull().Value.GetRawText().ShouldBe(prior.ShouldNotBeNull().Value.GetRawText());
     }
 
     /// <summary>A full rebuild repairs a legacy skipped-event watermark without changing the authoritative evidence.</summary>
@@ -150,7 +153,7 @@ public sealed class WorksDateReminderCorrectnessTests
         var handler = Handler();
         SharedProjectionScope scope = handler.CreateScope(Tenant);
         var coordinator = new SharedProjectionEpochCoordinator(store, store);
-        DomainProjectionRebuildPlan plan = await PlanAsync(handler, "legacy", facts, ct);
+        DomainProjectionRebuildPlan plan = LegacyPlan("legacy", facts, ct);
         // Model the historical decoder's persisted outcome; this does not execute an older decoder.
         // The exact same captured envelopes below are understood by the current decoder.
         var legacy = new PendingDateAwaitTenantIndex { LastSequences = new(StringComparer.Ordinal) { [Item] = 2 } };
@@ -177,11 +180,12 @@ public sealed class WorksDateReminderCorrectnessTests
             staged.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before.Value.Value.GetRawText());
         });
         var afterRestart = new SharedProjectionEpochCoordinator(store, store);
-        var repaired = await afterRestart.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimePendingDateKey, ct);
+        var repaired = await WorksRuntimeIndexReader.ReadAsync(afterRestart, scope, ct);
         repaired.IsAvailable.ShouldBeTrue();
         repaired.IsStale.ShouldBeFalse();
         repaired.Generation.ShouldBeGreaterThan(before.Generation);
-        var pending = repaired.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+        repaired.Value.ShouldNotBeNull().Indexes.IsSharded.ShouldBeTrue();
+        var pending = repaired.Value.Indexes.PendingDate;
         pending.LastSequences[Item].ShouldBe(2);
         pending.Entries[Item].ShouldHaveSingleItem().ShouldBe(new PendingDateAwait(Tenant, Item,
             s_date.Instant!.Value, s_date.CorrelationKey));
@@ -264,15 +268,13 @@ public sealed class WorksDateReminderCorrectnessTests
             [Dto(fact, sequence)]), s_web), JsonSerializer.SerializeToUtf8Bytes(sequence),
             new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
 
-    private static async Task<DomainProjectionRebuildPlan> PlanAsync(WorkItemSharedProjectionRebuildHandler handler,
-        string operation, IEventPayload[] facts, CancellationToken cancellationToken)
+    private static DomainProjectionRebuildPlan LegacyPlan(string operation, IEventPayload[] facts, CancellationToken cancellationToken)
     {
         var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", WorksReadModelKeys.RuntimeFamily,
             operation, "capture-" + operation);
-        var candidate = await handler.CreateEmptyCandidateAsync(identity, cancellationToken).ConfigureAwait(false);
-        candidate = await handler.AccumulateAsync(identity, candidate, new ProjectionRequest(Tenant, "work", Item,
-            [.. facts.Select((fact, index) => Dto(fact, index + 1))]), cancellationToken).ConfigureAwait(false);
-        return await handler.FinalizeAsync(identity, candidate, cancellationToken).ConfigureAwait(false);
+        var history = new WorkItemSharedRebuildAggregateHistory(Item, [.. facts.Select((fact, index) => Dto(fact, index + 1))]);
+        return WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity, new WorkItemSharedRebuildCandidateState([history]),
+            cancellationToken, useShardedIndexes: false);
     }
 
     private static async Task CommitAsync(SharedProjectionEpochCoordinator coordinator, SharedProjectionScope scope,

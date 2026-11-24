@@ -36,6 +36,20 @@ The configured Parties bearer is captured through `IOptions<WorksQueryOptions>.V
 
 The deterministic HTTP rotation rehearsal covers initial success, revocation, configuration reload without credential refresh, and a replacement host successfully querying the same persisted projection family. It supplies synthetic authority and does not provision production credentials.
 
+## Runtime index shard migration
+
+A newly initialized `works-runtime-v3` generation uses version 1 of the queue and pending-date shard layout. The two index roots describe the inventory and carry a digest of the canonical shard contents. Queue shards retain membership and accepted source sequences, including terminal items. Pending-date shards retain both the current entries and the sequence of cleared awaits. List, detail, process discovery and reminder discovery validate both inventories in the SDK-selected generation.
+
+Migrate a serving flat generation with the existing protected EventStore shared-rebuild workflow for tenant/domain/family `<tenant>/work/works-runtime-v3`:
+
+1. Pause first projection deliveries for tenants without an initialized generation. Drain flat-format SDK deliveries already admitted, including any prepared first delivery. Verify that the SDK reports no pending deliveries before replacing the fleet.
+2. Replace all Works readers and writers with shard-capable hosts before resuming tenant initialization. Ordinary delivery to initialized flat generations retains the flat format until SDK promotion.
+3. Begin the shared rebuild with the sealed complete tenant owner inventory and exact source heads. Accumulate each owner's authoritative history and finalize the candidate. Retain histories for terminal owners and owners with cleared date awaits.
+4. Stage through the SDK and check that the previous generation remains available where the SDK allows stale reads. If capture or staging fails, use the SDK Abort operation and verify the prior generation and pending deliveries.
+5. Commit the prepared rebuild and complete the SDK owner-sequence handoff. Retry delivery through the SDK fence, then verify promoted membership, retained sequences, queue order and filtering, accepted source checkpoints, and recovery discovery from a fresh host.
+
+The SDK owns staging, promotion, abort and physical keys. A missing or invalid shard makes that tenant unavailable to queries and incomplete for discovery. Healthy tenants can still be discovered. Repair with a complete authoritative rebuild or the established complete-fleet restore when needed. The ordinary mutation limit and existing history byte budgets still apply.
+
 ## Historical Story 4.14 migration qualification
 
 The sections below preserve the earlier opt-in, candidate and legacy-host qualification record. Their mode defaults, candidate pins, commands and remaining gates describe those historical inputs; they are not current deployment instructions. The current public SDK pin is EventStore 3.128.3, selected by the Builds catalog, and Story 4.9 removed the transitional hosting projects after complete Platform qualification.

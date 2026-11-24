@@ -108,3 +108,20 @@ src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedProjectionRebuildHand
 src/Hexalith.Works/Runtime/WorksDomainAdapters.cs whitespace=cr-at-eol
 src/Hexalith.Works/WorkItemEventStoreAggregate.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksIngressIdentityTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in runtime index sharding and its regressions.
+src/Hexalith.Works/Projections/WorksReadModelKeys.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksDateReminderCorrectnessTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkProtectedHttpTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in the runtime index migration.
+docs/sdk-projection-query-adoption.md whitespace=cr-at-eol
+src/Hexalith.Works/Projections/WorksRuntimeIndex*.cs whitespace=cr-at-eol
+src/Hexalith.Works/Projections/SharedRebuild/WorkItemSharedRebuildManifestBuilder.cs whitespace=cr-at-eol
+src/Hexalith.Works/Projections/SharedRebuild/WorksRebuildOperationBound.cs whitespace=cr-at-eol
+src/Hexalith.Works/Queries/GetWorkItemQueryHandler.cs whitespace=cr-at-eol
+src/Hexalith.Works/Queries/WhatsNextQueryHandler.cs whitespace=cr-at-eol
+src/Hexalith.Works/Runtime/WorksFailureDiagnostics.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkRebuildAdmissionTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkRecoverySourceTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkReminderDeliveryTests.cs whitespace=cr-at-eol

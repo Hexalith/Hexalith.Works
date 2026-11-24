@@ -25,6 +25,10 @@ internal static class WorksReadModelKeys
     /// <summary>The logical pending-date index key inside a runtime generation.</summary>
     public const string RuntimePendingDateKey = "works-runtime-v3:pending-date";
 
+    /// <summary>Builds one logical runtime index shard key inside the selected tenant generation.</summary>
+    public static string RuntimeIndexShardKey(string rootKey, int version, int bucket, int page)
+        => FormattableString.Invariant($"{rootKey}:shards:v{version}:{bucket}:{page}");
+
     /// <summary>The logical topology key inside a runtime generation.</summary>
     public const string RuntimeTopologyKey = "works-runtime-v3:topology";
 

@@ -18,7 +18,8 @@ internal static class WorkItemSharedRebuildManifestBuilder
     public static DomainProjectionRebuildPlan BuildEpoch(
         DomainSharedProjectionRebuildIdentity identity,
         WorkItemSharedRebuildCandidateState candidate,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool useShardedIndexes = true)
     {
         ArgumentNullException.ThrowIfNull(identity);
         ArgumentNullException.ThrowIfNull(candidate);
@@ -35,7 +36,8 @@ internal static class WorkItemSharedRebuildManifestBuilder
         foreach (WorkItemSharedRebuildAggregateHistory history in candidate.Histories)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            _ = members.Add(history.AggregateId);
+            if (string.IsNullOrWhiteSpace(history.AggregateId) || !members.Add(history.AggregateId))
+                throw new InvalidOperationException("The Works runtime history inventory contains missing or duplicate members.");
         }
 
         var relationships = new WorkItemSharedRebuildRelationshipGraph();
@@ -135,20 +137,14 @@ internal static class WorkItemSharedRebuildManifestBuilder
             MemberWorkItemIds = [.. members.OrderBy(static id => id, StringComparer.Ordinal)],
         };
 
+        var pendingDate = new PendingDateAwaitTenantIndex
+        {
+            Entries = pendingEntries,
+            LastSequences = pendingLastSequences,
+        };
         List<ReadModelBatchOperation> generationOperations =
         [
-            ReadModelBatchOperation.Write(
-                WorksReadModelKeys.RuntimeQueueKey,
-                WorksRuntimeDocument.From(index),
-                ReadModelBatchConcurrency.LastWrite),
-            ReadModelBatchOperation.Write(
-                WorksReadModelKeys.RuntimePendingDateKey,
-                WorksRuntimeDocument.From(new PendingDateAwaitTenantIndex
-                {
-                    Entries = pendingEntries,
-                    LastSequences = pendingLastSequences,
-                }),
-                ReadModelBatchConcurrency.LastWrite),
+            .. WorksRuntimeIndexShards.CreateOperations(index, pendingDate, useShardedIndexes, cancellationToken),
             ReadModelBatchOperation.Write(
                 WorksReadModelKeys.RuntimeTopologyKey,
                 WorksRuntimeDocument.From(new WorksRuntimeTopology(relationships.ChildrenByParent())),

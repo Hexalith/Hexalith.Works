@@ -1,7 +1,10 @@
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 
 using Hexalith.EventStore.Client.Discovery;
 using Hexalith.EventStore.Client.Projections;
+using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.DomainService;
 using Hexalith.EventStore.Testing.Fakes;
@@ -39,9 +42,9 @@ public sealed class WorksSdkRebuildAdmissionTests
 
         var cold = new SharedProjectionEpochCoordinator(store, store);
         SharedProjectionScope scope = handler.CreateScope(Tenant);
-        var queue = await cold.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, ct);
+        var queue = await WorksRuntimeIndexReader.ReadAsync(cold, scope, ct);
         queue.IsAvailable.ShouldBeTrue();
-        queue.Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>().MemberWorkItemIds.ShouldBe(["owner-b"]);
+        queue.Value.ShouldNotBeNull().Indexes.Queue.MemberWorkItemIds.ShouldBe(["owner-b"]);
         (await cold.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey("owner-a"), ct)).Value.ShouldBeNull();
         (await cold.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey("owner-b"), ct))
             .Value.ShouldNotBeNull().As<WorkItemRollUp>().Status.ShouldBe(WorkItemStatus.Created);
@@ -154,17 +157,29 @@ public sealed class WorksSdkRebuildAdmissionTests
         var handler = new WorkItemSharedProjectionRebuildHandler();
         var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", handler.ProjectionType, "operation-count", Catalog(handler));
         var partitions = new List<DomainSharedProjectionRebuildPartition>();
+        var histories = new List<ProjectionRequest>();
         var heads = new Dictionary<string, long>(StringComparer.Ordinal);
         for (int owner = 0; owner < owners; owner++)
         {
             ProjectionRequest history = History($"owner-{owner:D5}".PadRight(64, 'x'), owners == 10000 && owner >= 16 ? 0 : historyBytes);
-            heads.Add(history.AggregateId, 10);
+            if (owner < 2)
+                history = WithDateLifecycle(history, clear: owner == 0);
+            histories.Add(history);
+            heads.Add(history.AggregateId, history.Events[^1].GlobalPosition);
             IReadOnlyList<ReadOnlyMemory<byte>> chunks = await handler.PreparePartitionChunksAsync(identity, history, ct);
             partitions.AddRange(chunks.Select((chunk, index) => new DomainSharedProjectionRebuildPartition(owner, history.AggregateId, chunk, index)));
         }
         DomainProjectionRebuildPlan plan = await handler.FinalizePartitionsAsync(identity, partitions, ct);
-        // Count the actual history pages plus history manifests, parking and roll-ups, and the three family indexes.
-        plan.Operations.Count.ShouldBe(3 + (owners * 3) + partitions.Count);
+        List<ReadModelBatchOperation> shardOperations = [.. plan.Operations.Where(operation =>
+            operation.Key.StartsWith(WorksReadModelKeys.RuntimeQueueKey + ":shards:", StringComparison.Ordinal)
+            || operation.Key.StartsWith(WorksReadModelKeys.RuntimePendingDateKey + ":shards:", StringComparison.Ordinal))];
+        // The plan includes three fixed documents, a manifest/parking/roll-up per owner, history pages and index shards.
+        plan.Operations.Count.ShouldBe(3 + (owners * 3) + partitions.Count + shardOperations.Count);
+        shardOperations.Count.ShouldBeGreaterThan(0);
+        plan.Operations.Where(operation => shardOperations.Contains(operation)
+            || operation.Key is WorksReadModelKeys.RuntimeQueueKey or WorksReadModelKeys.RuntimePendingDateKey)
+            .ShouldAllBe(operation => operation.CanonicalValue.Length + Encoding.UTF8.GetByteCount(operation.Key)
+                + Encoding.UTF8.GetByteCount(operation.ValueTypeName) + 1024 <= 256 * 1024);
         plan.Operations.Select(item => item.Key).Distinct(StringComparer.Ordinal).Count().ShouldBe(plan.Operations.Count);
         ReadModelBatchOptions configured = ProductionBatchOptions();
         plan.Operations.Count.ShouldBeLessThanOrEqualTo(configured.MaxOperations);
@@ -176,26 +191,114 @@ public sealed class WorksSdkRebuildAdmissionTests
         if (owners == 10000)
         {
             plan.Operations.Count.ShouldBeGreaterThan(40003);
-            // Operation-count admission does not override the SDK's independent per-document bound.
             var store = new InMemoryReadModelStore();
             store.BatchOptions.MaxOperations = configured.MaxOperations;
             store.BatchOptions.MaxCanonicalManifestBytes = configured.MaxCanonicalManifestBytes;
             using ServiceProvider provider = Provider(store, handler, store);
-            await RebuildAsync(provider, handler, "seed-large-queue", [History("seeded-owner")]);
+            await RebuildAsync(provider, handler, "seed-large-queue", [histories[0]]);
             var coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
             SharedProjectionScope scope = handler.CreateScope(Tenant);
-            var before = await coordinator.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey("seeded-owner"), ct);
+            long priorGeneration = (await coordinator.GetStatusAsync(scope, ct)).ActiveGeneration;
+            SharedProjectionCheckpoint priorCheckpoint = (await coordinator.GetCheckpointAsync(scope, histories[0].AggregateId, ct))
+                .ShouldNotBeNull();
+            priorCheckpoint.Position.ShouldBe(heads[histories[0].AggregateId]);
             _ = await coordinator.BeginAsync(scope, "large-queue", "counted-inventory", heads, ct);
-            int keysBeforeStage = store.Count;
-            (await Should.ThrowAsync<InvalidOperationException>(() => coordinator.StageAsync(scope, "large-queue", plan.Operations, ct)))
-                .Message.ShouldContain("mutation exceeds the bounded batch limit");
-            store.Count.ShouldBe(keysBeforeStage);
+            _ = await coordinator.StageAsync(scope, "large-queue", plan.Operations, ct,
+                new SharedProjectionControlIndexIntent(WorksReadModelKeys.RuntimeControlIndex));
+            var staged = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+            staged.IsAvailable.ShouldBeTrue();
+            staged.IsStale.ShouldBeTrue();
+            staged.Generation.ShouldBe(priorGeneration);
+            staged.Value.ShouldNotBeNull().Indexes.Queue.MemberWorkItemIds.ShouldBe([histories[0].AggregateId]);
+            await coordinator.CommitAsync(scope, "large-queue", ct);
+
             var cold = new SharedProjectionEpochCoordinator(store, store);
-            (await cold.GetStatusAsync(scope, ct)).ActiveGeneration.ShouldBe(before.Generation);
-            var after = await cold.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey("seeded-owner"), ct);
-            after.IsAvailable.ShouldBeTrue();
-            after.Value.ShouldNotBeNull().Value.GetRawText().ShouldBe(before.Value.ShouldNotBeNull().Value.GetRawText());
-            TestContext.Current.TestOutputHelper!.WriteLine($"largeQueueCanonicalValueBytes={plan.Operations.Single(operation => operation.Key == WorksReadModelKeys.RuntimeQueueKey).CanonicalValue.Length}; stage=refused-before-writes; priorGeneration={before.Generation}");
+            var promoted = await WorksRuntimeIndexReader.ReadAsync(cold, scope, ct);
+            promoted.Generation.ShouldBeGreaterThan(priorGeneration);
+            promoted.IsAvailable.ShouldBeTrue();
+            promoted.IsStale.ShouldBeFalse();
+            WorksRuntimeIndexes indexes = promoted.Value.ShouldNotBeNull().Indexes;
+            indexes.IsSharded.ShouldBeTrue();
+            indexes.Queue.MemberWorkItemIds.ShouldBe(histories.Select(history => history.AggregateId));
+            indexes.Queue.LastSequences.Count.ShouldBe(owners);
+            indexes.PendingDate.LastSequences[histories[0].AggregateId].ShouldBe(5);
+            indexes.PendingDate.Entries.ShouldNotContainKey(histories[0].AggregateId);
+            indexes.PendingDate.LastSequences[histories[1].AggregateId].ShouldBe(4);
+            indexes.PendingDate.Entries[histories[1].AggregateId].ShouldHaveSingleItem().Instant.ShouldBe(DateTimeOffset.UnixEpoch.AddDays(1));
+            SharedProjectionCheckpoint survivingCheckpoint = (await cold.GetCheckpointAsync(scope, histories[0].AggregateId, ct))
+                .ShouldNotBeNull();
+            survivingCheckpoint.Position.ShouldBe(priorCheckpoint.Position);
+            survivingCheckpoint.OwnerSequenceNumber.ShouldBe(priorCheckpoint.OwnerSequenceNumber);
+            survivingCheckpoint.Token.ShouldBe(priorCheckpoint.Token);
+            foreach (ProjectionRequest history in histories)
+            {
+                indexes.Queue.LastSequences[history.AggregateId].ShouldBe(history.Events[^1].SequenceNumber);
+                WorkItemSharedRebuildAggregateHistory restored = await WorkItemRuntimeHistoryStore.ReadAsync(
+                    cold, scope, promoted.Generation, history.AggregateId, ct);
+                JsonSerializer.SerializeToUtf8Bytes(restored, s_json).ShouldBe(JsonSerializer.SerializeToUtf8Bytes(
+                    new WorkItemSharedRebuildAggregateHistory(history.AggregateId, history.Events), s_json));
+            }
+            TestContext.Current.TestOutputHelper!.WriteLine($"shards={shardOperations.Count}; largestShardBytes={shardOperations.Max(operation => operation.CanonicalValue.Length)}; generation={promoted.Generation}");
+        }
+    }
+
+    /// <summary>Staging splits a single skewed pending-date bucket at its real mutation byte limit.</summary>
+    [Fact]
+    public async Task SkewedPendingDateBucketSplitsAndReopensEveryPage()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        ProjectionRequest[] histories = [.. Enumerable.Range(0, 5000)
+            .Select(id => $"skewed-{id:D4}".PadRight(64, 'x'))
+            .Where(id => SHA256.HashData(Encoding.UTF8.GetBytes(id))[0] % 64 == 0)
+            .Take(5)
+            .Select((id, ordinal) => WithDateLifecycle(History(id, 140000), clear: ordinal == 0, dateCount: 512))];
+        histories.Length.ShouldBe(5);
+        var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", handler.ProjectionType, "skewed-bucket", Catalog(handler));
+        var candidate = new WorkItemSharedRebuildCandidateState(
+            [.. histories.Select(history => new WorkItemSharedRebuildAggregateHistory(history.AggregateId, history.Events))]);
+        DomainProjectionRebuildPlan unsplit = WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity, candidate, ct, useShardedIndexes: false);
+        unsplit.Operations.Single(operation => operation.Key == WorksReadModelKeys.RuntimePendingDateKey)
+            .CanonicalValue.Length.ShouldBeGreaterThan(256 * 1024);
+
+        using ServiceProvider provider = Provider(store, handler, store);
+        await RebuildAsync(provider, handler, "skewed-bucket", histories);
+        var cold = new SharedProjectionEpochCoordinator(store, store);
+        SharedProjectionScope scope = handler.CreateScope(Tenant);
+        var read = await WorksRuntimeIndexReader.ReadAsync(cold, scope, ct);
+        read.IsAvailable.ShouldBeTrue();
+        WorksRuntimeIndexView view = read.Value.ShouldNotBeNull();
+        WorksRuntimeIndexManifest pendingRoot = view.Documents[WorksReadModelKeys.RuntimePendingDateKey]
+            .ShouldNotBeNull().As<WorksRuntimeIndexManifest>();
+        int shardCount = pendingRoot.PageCounts.Where(count => count > 0).ShouldHaveSingleItem();
+        shardCount.ShouldBeGreaterThan(1);
+        for (int page = 0; page < shardCount; page++)
+        {
+            string key = WorksReadModelKeys.RuntimeIndexShardKey(WorksReadModelKeys.RuntimePendingDateKey, pendingRoot.Version, 0, page);
+            var mutation = ReadModelBatchOperation.Write(key, view.Documents[key].ShouldNotBeNull(), ReadModelBatchConcurrency.LastWrite);
+            (mutation.CanonicalValue.Length + Encoding.UTF8.GetByteCount(mutation.Key)
+                + Encoding.UTF8.GetByteCount(mutation.ValueTypeName) + 1024).ShouldBeLessThanOrEqualTo(256 * 1024);
+        }
+
+        view.Indexes.Queue.MemberWorkItemIds.ShouldBe(histories.Select(history => history.AggregateId));
+        view.Indexes.PendingDate.Entries.ShouldNotContainKey(histories[0].AggregateId);
+        foreach (ProjectionRequest history in histories)
+        {
+            string owner = history.AggregateId;
+            long lastSequence = history.Events[^1].SequenceNumber;
+            view.Indexes.Queue.LastSequences[owner].ShouldBe(lastSequence);
+            view.Indexes.PendingDate.LastSequences[owner].ShouldBe(lastSequence);
+            if (lastSequence == 4)
+                view.Indexes.PendingDate.Entries[owner].Select(entry => entry.Instant).ShouldBe(
+                    Enumerable.Range(0, 512).Select(day => DateTimeOffset.UnixEpoch.AddDays(day + 1)));
+
+            WorkItemSharedRebuildAggregateHistory restored = await WorkItemRuntimeHistoryStore.ReadAsync(cold, scope, read.Generation, owner, ct);
+            JsonSerializer.SerializeToUtf8Bytes(restored, s_json).ShouldBe(
+                JsonSerializer.SerializeToUtf8Bytes(new WorkItemSharedRebuildAggregateHistory(owner, history.Events), s_json));
+            SharedProjectionCheckpoint checkpoint = (await cold.GetCheckpointAsync(scope, owner, ct)).ShouldNotBeNull();
+            checkpoint.OwnerSequenceNumber.ShouldBe(lastSequence);
+            checkpoint.Position.ShouldBe(history.Events[^1].GlobalPosition);
         }
     }
 
@@ -231,10 +334,10 @@ public sealed class WorksSdkRebuildAdmissionTests
         observed.Batches.ShouldAllBe(batch => batch.Operations <= configured.MaxOperations && batch.CanonicalBytes <= configured.MaxCanonicalManifestBytes);
         var cold = new SharedProjectionEpochCoordinator(store, store);
         SharedProjectionScope scope = handler.CreateScope(Tenant);
-        var queue = await cold.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, ct);
+        var queue = await WorksRuntimeIndexReader.ReadAsync(cold, scope, ct);
         queue.IsAvailable.ShouldBeTrue();
         queue.IsStale.ShouldBeFalse();
-        queue.Value.ShouldNotBeNull().As<WorksWhatsNextTenantIndex>().MemberWorkItemIds.ShouldBe(histories.Select(history => history.AggregateId));
+        queue.Value.ShouldNotBeNull().Indexes.Queue.MemberWorkItemIds.ShouldBe(histories.Select(history => history.AggregateId));
         foreach (ReadModelBatchOperation operation in logicalPlan.Operations)
         {
             operation.Kind.ShouldBe(ReadModelBatchOperationKind.Write);
@@ -275,6 +378,28 @@ public sealed class WorksSdkRebuildAdmissionTests
             Size(dto).ShouldBe(targetBytes);
         }
         return new ProjectionRequest(Tenant, "work", aggregate, [dto]);
+    }
+
+    private static ProjectionRequest WithDateLifecycle(ProjectionRequest history, bool clear, int dateCount = 1)
+    {
+        string aggregate = history.AggregateId;
+        var tenantId = new TenantId(Tenant);
+        var workItemId = new WorkItemId(aggregate);
+        var queued = new WorkItemQueued(aggregate, 2, tenantId, workItemId);
+        var claimed = new WorkItemClaimed(aggregate, 3, tenantId, workItemId,
+            new ExecutorBinding(new PartyId("rebuild-executor"), Channel.Mcp, AuthorityLevel.Coordinate));
+        var suspended = new WorkItemSuspended(aggregate, 4, tenantId, workItemId,
+            [.. Enumerable.Range(0, dateCount).Select(day => AwaitCondition.DateReached(DateTimeOffset.UnixEpoch.AddDays(day + 1)))]);
+        ProjectionEventDto[] pending = [.. history.Events, Envelope(queued, 2), Envelope(claimed, 3), Envelope(suspended, 4)];
+        if (!clear)
+            return history with { Events = pending };
+
+        var cancelled = new WorkItemCancelled(aggregate, 5, tenantId, workItemId);
+        return history with { Events = [.. pending, Envelope(cancelled, 5)] };
+
+        static ProjectionEventDto Envelope(IEventPayload payload, long sequence)
+            => new(payload.GetType().Name, JsonSerializer.SerializeToUtf8Bytes(payload, payload.GetType()),
+                "json", sequence, DateTimeOffset.UnixEpoch, "", GlobalPosition: 9 + sequence);
     }
 
     private static string Catalog(WorkItemSharedProjectionRebuildHandler handler)

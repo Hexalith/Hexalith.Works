@@ -5,6 +5,8 @@ using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.Client.Effects;
 using Hexalith.EventStore.Contracts.Reminders;
+using Hexalith.EventStore.Contracts.Queries;
+using Hexalith.Parties.Client.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -19,6 +21,7 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.SharedRebuild;
+using Hexalith.Works.Queries;
 using Hexalith.Works.Reactor;
 using Hexalith.Works.Recovery;
 using Hexalith.Works.Reminders;
@@ -148,6 +151,7 @@ public sealed class WorksSdkRecoverySourceTests
     [InlineData("tombstone")]
     [InlineData("epoch")]
     [InlineData("generation")]
+    [InlineData("shard")]
     public async Task TombstoneOutageAllowsHealthyMembershipAndDurableRecoveryAcrossRestart(string mode)
     {
         var store = new InMemoryReadModelStore();
@@ -156,7 +160,16 @@ public sealed class WorksSdkRecoverySourceTests
         await SeedAsync(normal, TenantB, "healthy", Suspended(TenantB, "healthy"));
         var unavailable = new TombstoneUnavailableReadModelStore(store, TenantA);
         var family = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
-        var blocked = new DiscoveryBlockedReadModelStore(store, TenantA, family.ComputeHash(), mode);
+        string blockedRead = mode;
+        if (mode == "shard")
+        {
+            CancellationToken ct = TestContext.Current.CancellationToken;
+            var served = await WorksRuntimeIndexReader.ReadAsync(normal, family, ct);
+            string key = served.Value.ShouldNotBeNull().Documents.Keys
+                .Single(key => key.StartsWith(WorksReadModelKeys.RuntimePendingDateKey + ":shards:", StringComparison.Ordinal));
+            blockedRead = PhysicalKey(family, served.Generation, key);
+        }
+        var blocked = new DiscoveryBlockedReadModelStore(store, TenantA, family.ComputeHash(), blockedRead);
         IReadModelStore fault = mode == "outage" ? unavailable : blocked;
         var gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
@@ -288,8 +301,10 @@ public sealed class WorksSdkRecoverySourceTests
         await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
         var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
         long generation = (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)).ActiveGeneration;
-        string queueHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(WorksReadModelKeys.RuntimeQueueKey)));
-        string key = "shared-generation:" + scope.ComputeHash() + ":" + generation + ":" + queueHash;
+        string key = PhysicalKey(scope, generation, WorksReadModelKeys.RuntimeQueueKey);
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName,
+            PhysicalKey(scope, generation, WorksReadModelKeys.RuntimePendingDateKey),
+            WorksRuntimeDocument.From(new PendingDateAwaitTenantIndex()), TestContext.Current.CancellationToken);
         await store.SaveAsync(WorksReadModelKeys.StateStoreName, key, WorksRuntimeDocument.From(new WorksWhatsNextTenantIndex
         { SchemaVersion = WorksReadModelKeys.CurrentSchemaVersion, MemberWorkItemIds = ["invalid", "invalid"] }), TestContext.Current.CancellationToken);
         var page = await new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(store, store)).ListAsync(null, 256, TestContext.Current.CancellationToken);
@@ -309,8 +324,10 @@ public sealed class WorksSdkRecoverySourceTests
         await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
         var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
         long generation = (await coordinator.GetStatusAsync(scope, TestContext.Current.CancellationToken)).ActiveGeneration;
-        string queueHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(WorksReadModelKeys.RuntimeQueueKey)));
-        string key = "shared-generation:" + scope.ComputeHash() + ":" + generation + ":" + queueHash;
+        string key = PhysicalKey(scope, generation, WorksReadModelKeys.RuntimeQueueKey);
+        await store.SaveAsync(WorksReadModelKeys.StateStoreName,
+            PhysicalKey(scope, generation, WorksReadModelKeys.RuntimePendingDateKey),
+            WorksRuntimeDocument.From(new PendingDateAwaitTenantIndex()), TestContext.Current.CancellationToken);
         var missing = new WhatsNextItem(new TenantId(TenantA), new WorkItemId("missing"), WorkItemStatus.Queued,
             null, null, null, null, null, [], [], 1);
         await store.SaveAsync(WorksReadModelKeys.StateStoreName, key, WorksRuntimeDocument.From(new WorksWhatsNextTenantIndex
@@ -327,6 +344,147 @@ public sealed class WorksSdkRecoverySourceTests
         page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
     }
 
+    /// <summary>A missing or altered shard invalidates only its own tenant after coordinator reconstruction.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task DamagedShardRefusesQueriesAndLeavesHealthyRecoveryMembership(bool altered)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, "retained", Suspended(TenantA, "retained"));
+        await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
+        var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
+        var served = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        string shard = served.Value.ShouldNotBeNull().Documents.Keys
+            .Single(key => key.StartsWith(WorksReadModelKeys.RuntimePendingDateKey + ":shards:", StringComparison.Ordinal));
+        string physical = PhysicalKey(scope, served.Generation, shard);
+        ReadModelEntry<WorksRuntimeDocument> original = await store.GetAsync<WorksRuntimeDocument>(scope.StoreName, physical, ct);
+        if (altered)
+        {
+            PendingDateAwaitTenantIndex replacement = original.Value.ShouldNotBeNull().As<PendingDateAwaitTenantIndex>();
+            replacement.LastSequences["retained"]++;
+            await store.SaveAsync(scope.StoreName, physical, WorksRuntimeDocument.From(replacement), ct);
+        }
+        else
+        {
+            (await store.TryEraseAsync(scope.StoreName, physical, original.ETag!, ct)).ShouldBeTrue();
+        }
+
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var catalog = new WorksProcessSourceCatalog(restarted);
+        ProcessSourcePage page = await catalog.ListAsync(null, 256, ct);
+        page.IsIncomplete.ShouldBeTrue();
+        page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        var query = new QueryEnvelope(TenantA, "work", "retained", WhatsNextQueryHandler.WhatsNextQueryType,
+            [], "correlation", "scheduler", null, false, null, null, "scheduler", false, null, null);
+        (await new WhatsNextQueryHandler(policy, restarted).ExecuteAsync(query, ct))
+            .ErrorMessage.ShouldBe("projection-unavailable");
+        (await new GetWorkItemQueryHandler(policy, restarted).ExecuteAsync(
+            query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, ct))
+            .ErrorMessage.ShouldBe("projection-unavailable");
+        (await new WhatsNextQueryHandler(policy, restarted).ExecuteAsync(query with { TenantId = TenantB }, ct))
+            .Success.ShouldBeTrue();
+
+        await store.SaveAsync(scope.StoreName, physical, original.Value.ShouldNotBeNull(), ct);
+        ProcessSourcePage repaired = await catalog.ListAsync(null, 256, ct);
+        repaired.IsIncomplete.ShouldBeFalse();
+        repaired.Sources.Select(source => source.Tenant).ShouldBe([TenantA, TenantB]);
+    }
+
+    /// <summary>An empty date inventory cannot stand in for the initialized queue inventory.</summary>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EmptyPendingRootCannotReplaceAnInitializedQueue(bool relabelAsQueue)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        const string owner = "populated-queue";
+        await SeedAsync(coordinator, TenantA, owner,
+            new WorkItemQueued(owner, 2, new TenantId(TenantA), new WorkItemId(owner)));
+        await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
+        var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
+        var served = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        WorksRuntimeIndexView view = served.Value.ShouldNotBeNull();
+        view.Indexes.Queue.Items.Keys.ShouldBe([owner]);
+        WorksRuntimeDocument emptyPending = view.Documents[WorksReadModelKeys.RuntimePendingDateKey].ShouldNotBeNull();
+        WorksRuntimeIndexManifest dateInventory = emptyPending.As<WorksRuntimeIndexManifest>();
+        dateInventory.MemberCount.ShouldBe(0);
+        var replacement = relabelAsQueue
+            ? WorksRuntimeDocument.From(dateInventory with { RootKey = WorksReadModelKeys.RuntimeQueueKey })
+            : emptyPending;
+        string queueKey = PhysicalKey(scope, served.Generation, WorksReadModelKeys.RuntimeQueueKey);
+        await store.SaveAsync(scope.StoreName, queueKey, replacement, ct);
+
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var catalog = new WorksProcessSourceCatalog(restarted);
+        ProcessSourcePage page = await catalog.ListAsync(null, 256, ct);
+        page.IsIncomplete.ShouldBeTrue();
+        page.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = ["scheduler"] }));
+        var query = new QueryEnvelope(TenantA, "work", owner, WhatsNextQueryHandler.WhatsNextQueryType,
+            [], "correlation", "scheduler", null, false, null, null, "scheduler", false, null, null);
+        (await new WhatsNextQueryHandler(policy, restarted).ExecuteAsync(query, ct)).ErrorMessage.ShouldBe("projection-unavailable");
+        (await new GetWorkItemQueryHandler(policy, restarted).ExecuteAsync(
+            query with { QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, ct))
+            .ErrorMessage.ShouldBe("projection-unavailable");
+
+        await store.SaveAsync(scope.StoreName, queueKey, view.Documents[WorksReadModelKeys.RuntimeQueueKey].ShouldNotBeNull(), ct);
+        ProcessSourcePage repaired = await catalog.ListAsync(null, 256, ct);
+        repaired.IsIncomplete.ShouldBeFalse();
+        repaired.Sources.Select(source => source.Tenant).ShouldBe([TenantA, TenantB]);
+    }
+
+    /// <summary>An admitted discovery scan must revalidate roots after a same-generation ordinary write.</summary>
+    [Fact]
+    public async Task DiscoveryOverlappingOrdinaryDeliveryKeepsHealthyTenantAndRetriesChangedInventory()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await SeedAsync(coordinator, TenantA, "retained", Suspended(TenantA, "retained"));
+        await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
+        var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        string shard = before.Value.ShouldNotBeNull().Documents.Keys
+            .Single(key => key.StartsWith(WorksReadModelKeys.RuntimeQueueKey + ":shards:", StringComparison.Ordinal));
+        var blocked = new DiscoveryBlockedReadModelStore(store, TenantA, scope.ComputeHash(), PhysicalKey(scope, before.Generation, shard));
+        var logger = new Story48RecordingLogger<WorksProcessSourceCatalog>();
+        var catalog = new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(blocked, store), logger);
+        Task<ProcessSourcePage> reading = catalog.ListAsync(null, 256, ct);
+        const string added = "new-after-discovery-start";
+        try
+        {
+            await blocked.Started.WaitAsync(TimeSpan.FromSeconds(10), ct);
+            await SeedAsync(coordinator, TenantA, added, new WorkItemQueued(added, 2, new TenantId(TenantA), new WorkItemId(added)));
+        }
+        finally
+        {
+            blocked.Release();
+        }
+
+        ProcessSourcePage observed = await reading.ConfigureAwait(true);
+        observed.IsIncomplete.ShouldBeTrue();
+        observed.Sources.ShouldHaveSingleItem().Tenant.ShouldBe(TenantB);
+        logger.Entries.ShouldHaveSingleItem().Properties["FailureCategory"].ShouldBe("projection-unavailable");
+        var current = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        current.Generation.ShouldBe(before.Generation);
+        current.Value.ShouldNotBeNull().Documents[shard].ShouldNotBeNull().Value.GetRawText()
+            .ShouldBe(before.Value.Documents[shard].ShouldNotBeNull().Value.GetRawText());
+
+        ProcessSourcePage retried = await catalog.ListAsync(null, 256, ct);
+        retried.IsIncomplete.ShouldBeFalse();
+        retried.Sources.Select(source => source.Tenant).ShouldBe([TenantA, TenantA, TenantB]);
+        retried.Sources.Where(source => source.Tenant == TenantA).Select(source => source.Aggregate)
+            .Order(StringComparer.Ordinal).ShouldBe([added, "retained"]);
+    }
+
     /// <summary>Invalid documents and store outages remain retryable, preserve healthy tenants, and emit safe diagnostics.</summary>
     [Theory]
     [InlineData(false)]
@@ -340,14 +498,13 @@ public sealed class WorksSdkRecoverySourceTests
         await SeedAsync(coordinator, TenantB, "healthy", Suspended(TenantB, "healthy"));
         var scope = new WorkItemSharedProjectionRebuildHandler(s_sdkOptions).CreateScope(TenantA);
         long generation = (await coordinator.GetStatusAsync(scope, ct)).ActiveGeneration;
-        string queueHash = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(WorksReadModelKeys.RuntimeQueueKey)));
-        string key = "shared-generation:" + scope.ComputeHash() + ":" + generation + ":" + queueHash;
+        string key = PhysicalKey(scope, generation, WorksReadModelKeys.RuntimeQueueKey);
         WorksRuntimeDocument original = (await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(
             scope, generation, WorksReadModelKeys.RuntimeQueueKey, ct)).Value!;
         const string secret = "private-tenant-membership-secret";
         if (corruptDocument)
             await store.SaveAsync(WorksReadModelKeys.StateStoreName, key,
-                new WorksRuntimeDocument(typeof(WorksWhatsNextTenantIndex).FullName!, JsonSerializer.SerializeToElement(secret)), ct);
+                new WorksRuntimeDocument(original.Kind, JsonSerializer.SerializeToElement(secret)), ct);
         var fault = new TombstoneUnavailableReadModelStore(store, TenantA) { Unavailable = !corruptDocument };
         var logger = new Story48RecordingLogger<WorksProcessSourceCatalog>();
         var catalog = new WorksProcessSourceCatalog(new SharedProjectionEpochCoordinator(fault, store), logger);
@@ -461,6 +618,10 @@ public sealed class WorksSdkRecoverySourceTests
                 TestContext.Current.CancellationToken).ConfigureAwait(false);
         }
     }
+
+    private static string PhysicalKey(SharedProjectionScope scope, long generation, string logicalKey)
+        => FormattableString.Invariant($"shared-generation:{scope.ComputeHash()}:{generation}:")
+            + Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(logicalKey)));
 
     private static WorkItemCreated Created(string tenantId, string workItemId)
         => new(workItemId, 1, new TenantId(tenantId), new WorkItemId(workItemId), new Obligation("Recovery proof"));

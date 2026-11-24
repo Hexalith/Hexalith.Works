@@ -377,14 +377,14 @@ public sealed class WorksPlatformHistoricalPipelineSmokeTests
 
     private static async Task<string> FamilyDigestAsync(SharedProjectionEpochCoordinator coordinator, SharedProjectionScope scope, string[] owners, CancellationToken token)
     {
-        string[] keys = [WorksReadModelKeys.RuntimeQueueKey, WorksReadModelKeys.RuntimePendingDateKey, WorksReadModelKeys.RuntimeTopologyKey,
+        string[] keys = [WorksReadModelKeys.RuntimeTopologyKey,
             .. owners.SelectMany(owner => new[] { WorksReadModelKeys.RuntimeRollUpKey(owner), WorksReadModelKeys.RuntimeHistoryKey(owner), WorksReadModelKeys.RuntimeParkingKey(owner) })];
-        var family = await coordinator.ReadManyAsync<WorksRuntimeDocument>(scope, keys, token).ConfigureAwait(false);
+        var family = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, token, keys).ConfigureAwait(false);
         family.IsAvailable.ShouldBeTrue();
         family.IsStale.ShouldBeFalse();
         family.IsDegraded.ShouldBeFalse();
-        family.Value.ShouldNotBeNull().Values.ShouldAllBe(value => value != null);
-        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(family.Value.OrderBy(pair => pair.Key, StringComparer.Ordinal));
+        family.Value.ShouldNotBeNull().Documents.Values.ShouldAllBe(value => value != null);
+        byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(family.Value.Documents.OrderBy(pair => pair.Key, StringComparer.Ordinal));
         return Convert.ToHexStringLower(SHA256.HashData(bytes));
     }
 

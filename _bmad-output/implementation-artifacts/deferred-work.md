@@ -567,7 +567,8 @@ location: src/Hexalith.Works/Projections/WorksWhatsNextReadModel.cs:57
 source_spec: `spec-projection-write-ordering-guard.md`
 severity: medium
 reason: WorksWhatsNextTenantIndex.LastSequences keeps an entry after the item leaves the eligible set and nothing removes it. Before this bundle the document was bounded by the currently eligible item count. It is read, copied, and rewritten on every dispatch for the tenant and read on every what's-next query, so a long-lived tenant eventually meets the state-store value-size limit. The sibling PendingDateAwaitTenantIndex has the same unbounded shape, so a retention policy (cap, TTL, or compaction) is a cross-index design decision rather than a local fix.
-status: open
+status: done 2026-11-24
+resolution: [DW-68 runtime index watermarks](spec-dw-68-shard-runtime-index-watermarks.md). Works stages versioned queue and pending-date shard inventories through EventStore and retains the old flat format before promotion.
 decision: 2026-09-01 Shard retained watermarks — Partition both index families into bounded tenant-scoped shards while retaining every ordering tombstone; add migration, routing, size-bound, and stale-replay tests.
 decision: 2026-09-01 Shard retained watermarks — Partition both index families into bounded tenant-scoped shards while retaining every ordering tombstone; add migration, routing, size-bound, and stale-replay tests.
 
@@ -2380,3 +2381,17 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
   evidence: Before and after the Redis test repair, full capture reads configuration files before writing the new `scheduler.tar`. On the second capture the previous archive is one of those files. Full restore writes that copy back before extracting it. A regression fixture should take two complete snapshots with distinct Scheduler contents and restore the second.
   status: done 2026-11-24
   resolution: The root Scheduler tar is captured and restored only as the Scheduler archive. The two-snapshot regression restores the second Scheduler contents, reproduces the fleet inventory, and verifies normal cleanup and restore of nested same-name configuration files.
+
+## Deferred from: review of DW-68 runtime index watermarks (2026-11-24)
+
+- source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
+  summary: Measure sharded-index reads against the protected Works query and recovery deadlines.
+  evidence: The 10,000-owner coordinator fixture qualifies staging and retained metadata. Discovery reads the new shard keys through SDK admission, and detail verifies the selected index before reading its related data. Measure these paths against the real Dapr provider with representative admitted tenants before tuning concurrency or changing the index.
+
+- source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
+  summary: Distinguish a fresh generation-zero tenant from lost projection roots with surviving owner state.
+  evidence: The flat writer also loaded an empty membership when its queue root was absent. The new writer checks both roots and topology, but simultaneous loss with surviving histories and checkpoints still needs an independent SDK-backed initialization witness. Exercise loss and recovery using an authoritative rebuild.
+
+- source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
+  summary: Qualify the pending-date document limit for a single owner with many active awaits.
+  evidence: Partitioning by owner preserves sequence tombstones across many owners. A single owner with enough valid date conditions can still exceed the same per-document SDK limit that applied to the flat index. Measure the admitted event and projected bytes before deciding how to page an individual owner's active awaits.

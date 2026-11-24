@@ -161,14 +161,9 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
         }
 
         SharedProjectionScope scope = CreateScope(request.TenantId);
-        ReadModelEntry<WorksRuntimeDocument> indexEntry = await coordinator
-            .ReadGenerationAsync<WorksRuntimeDocument>(scope, generation, WorksReadModelKeys.RuntimeQueueKey, cancellationToken)
-            .ConfigureAwait(false);
-        WorksWhatsNextTenantIndex? index = indexEntry.Value?.As<WorksWhatsNextTenantIndex>();
-        if (index is not null && !WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
-        {
-            throw new InvalidOperationException("The selected Works runtime queue is invalid.");
-        }
+        WorksRuntimeIndexes? indexes = await WorksRuntimeIndexReader
+            .ReadPinnedAsync(coordinator, scope, generation, cancellationToken).ConfigureAwait(false);
+        WorksWhatsNextTenantIndex? index = indexes?.Queue;
 
         if (index?.MemberWorkItemIds.Count > ProjectionDispatchOptions.DefaultMaxSharedRebuildAggregateCount)
         {
@@ -231,11 +226,13 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
             IReadOnlyList<ReadModelBatchOperation> operations = WorkItemSharedRebuildManifestBuilder.BuildEpoch(
                 identity,
                 new WorkItemSharedRebuildCandidateState(histories),
-                cancellationToken).Operations;
+                cancellationToken,
+                useShardedIndexes: indexes?.IsSharded ?? true).Operations;
 
             // A complete authoritative rebuild may clear parking. Ordinary delivery only has one
             // envelope, so refolding the family must retain every aggregate's durable recovery disposition.
             var retainedParking = new HashSet<string>(StringComparer.Ordinal);
+            var retainedMembers = new HashSet<string>(index?.MemberWorkItemIds ?? [], StringComparer.Ordinal);
             foreach (WorkItemSharedRebuildAggregateHistory history in histories)
             {
                 string key = WorksReadModelKeys.RuntimeParkingKey(history.AggregateId);
@@ -247,7 +244,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
                     _ = parking.Value.As<WorkItemProjectionParking>();
                     retainedParking.Add(key);
                 }
-                else if (index?.MemberWorkItemIds.Contains(history.AggregateId, StringComparer.Ordinal) == true)
+                else if (retainedMembers.Contains(history.AggregateId))
                 {
                     throw new InvalidOperationException("The selected Works runtime generation is missing parking context.");
                 }
@@ -266,8 +263,7 @@ public sealed partial class WorkItemSharedProjectionRebuildHandler : IAsyncDomai
                     changed.Add(operation);
             }
             s_changedDocuments.Record(changed.Count);
-            if (changed.Count > 128 || changed.Any(operation => operation.CanonicalValue.Length
-                + System.Text.Encoding.UTF8.GetByteCount(operation.Key) + 2048 > 256 * 1024))
+            if (changed.Count > 128 || changed.Any(operation => !WorksRuntimeIndexShards.FitsMutation(operation)))
                 throw new SharedProjectionCapacityExceededException();
             s_duration.Record(Stopwatch.GetElapsedTime(started).TotalSeconds);
             return changed;

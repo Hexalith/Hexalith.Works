@@ -4,6 +4,8 @@ using Hexalith.EventStore.Client.Projections;
 
 using Microsoft.Extensions.Logging;
 
+using Hexalith.Works.Projections;
+
 namespace Hexalith.Works.Runtime;
 
 /// <summary>Reports bounded failure context without exception text, credentials or domain payloads.</summary>
@@ -41,6 +43,7 @@ internal static partial class WorksFailureDiagnostics
             or SharedProjectionReadUnavailableException { InnerException: OperationCanceledException or TimeoutException } => "timeout",
         SharedProjectionReadUnavailableException or Dapr.DaprException or HttpRequestException or IOException => "dependency-unavailable",
         JsonException => "invalid-document",
+        WorksRuntimeIndexMembershipException => "invalid-membership",
         ArgumentException or InvalidOperationException => "invalid-state",
         _ => "unexpected-failure",
     };

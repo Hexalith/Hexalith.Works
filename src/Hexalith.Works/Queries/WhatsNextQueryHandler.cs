@@ -97,30 +97,20 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
                 DomainName,
                 WorksReadModelKeys.RuntimeFamily,
                 ["works-runtime-v3-writer"]);
-            SharedProjectionReadResult<WorksRuntimeDocument> preliminary = await _coordinator
-                .ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeQueueKey, cancellationToken)
-                .ConfigureAwait(false);
+            SharedProjectionReadResult<WorksRuntimeIndexView> preliminary = await WorksRuntimeIndexReader
+                .ReadAsync(_coordinator, scope, cancellationToken).ConfigureAwait(false);
             if (!preliminary.IsAvailable || preliminary.Value is null)
             {
                 return Unavailable(preliminary.Generation, preliminary.IsStale);
             }
 
-            WorksWhatsNextTenantIndex initialIndex = preliminary.Value.As<WorksWhatsNextTenantIndex>();
-            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(initialIndex))
-            {
-                WorksFailureDiagnostics.QueryUnavailable(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, "invalid-membership");
-                return Unavailable(preliminary.Generation, preliminary.IsStale);
-            }
-
-            string[] parkingKeys = [.. initialIndex.MemberWorkItemIds.Select(WorksReadModelKeys.RuntimeParkingKey)];
-            SharedProjectionReadResult<IReadOnlyDictionary<string, WorksRuntimeDocument?>> read = await _coordinator
-                .ReadManyAsync<WorksRuntimeDocument>(scope,
-                    [WorksReadModelKeys.RuntimeQueueKey, .. parkingKeys,
-                        .. initialIndex.MemberWorkItemIds.Select(WorksReadModelKeys.RuntimeRollUpKey)], cancellationToken)
+            IReadOnlyList<string> membersForRead = preliminary.Value.Indexes.Queue.MemberWorkItemIds;
+            SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
+                .ReadRelatedAsync(_coordinator, scope, preliminary,
+                    [.. membersForRead.Select(WorksReadModelKeys.RuntimeParkingKey),
+                        .. membersForRead.Select(WorksReadModelKeys.RuntimeRollUpKey)], cancellationToken)
                 .ConfigureAwait(false);
-            if (!read.IsAvailable || read.Value is null
-                || !read.Value.TryGetValue(WorksReadModelKeys.RuntimeQueueKey, out WorksRuntimeDocument? queueDocument)
-                || queueDocument is null)
+            if (!read.IsAvailable || read.Value is null)
             {
                 return Unavailable(read.Generation, read.IsStale);
             }
@@ -134,22 +124,11 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
 
             bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
 
-            WorksWhatsNextTenantIndex index = queueDocument.As<WorksWhatsNextTenantIndex>();
-            if (!WorksWhatsNextTenantIndexValidation.IsValidCurrent(index))
-            {
-                WorksFailureDiagnostics.QueryUnavailable(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, "invalid-membership");
-                return Unavailable(read.Generation, stale);
-            }
-
-            if (index.MemberWorkItemIds.Except(initialIndex.MemberWorkItemIds, StringComparer.Ordinal).Any())
-            {
-                return Unavailable(read.Generation, stale);
-            }
-
+            WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
             var parked = new HashSet<string>(StringComparer.Ordinal);
             foreach (string member in index.MemberWorkItemIds)
             {
-                if (!read.Value.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(member),
+                if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(member),
                         out WorksRuntimeDocument? parkingDocument) || parkingDocument is null)
                 {
                     return Unavailable(read.Generation, stale);
@@ -176,7 +155,7 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             var rollUps = new List<WorkItemRollUp>();
             foreach (WhatsNextItem item in items)
             {
-                if (!read.Value.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(item.WorkItemId.Value), out WorksRuntimeDocument? document)
+                if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeRollUpKey(item.WorkItemId.Value), out WorksRuntimeDocument? document)
                     || document is null) return Unavailable(read.Generation, stale);
                 WorkItemRollUp rollUp = document.As<WorkItemRollUp>();
                 if (rollUp.TenantId?.Value != query.TenantId || rollUp.WorkItemId?.Value != item.WorkItemId.Value
@@ -195,6 +174,11 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
             throw;
+        }
+        catch (WorksRuntimeIndexReadException exception)
+        {
+            WorksFailureDiagnostics.QueryFailed(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, exception.InnerException!);
+            return Unavailable(exception.Generation, exception.IsStale);
         }
         catch (Exception exception)
         {
