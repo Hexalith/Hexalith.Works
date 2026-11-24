@@ -2412,6 +2412,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
   summary: Qualify the pending-date document limit for a single owner with many active awaits.
+  status: done 2026-11-24
+  resolution: Works promoted 1,537 awaits for one captured owner at 261,998 charged bytes. The next await exceeded the separate Works mutation guard at 262,167 bytes while still fitting the event and history byte ceilings. The partitioned SDK rebuild refused finalization and retained the served generation and shard across abort. [Verification spec](spec-qualify-single-owner-date-await-capacity.md).
   evidence: Partitioning by owner preserves sequence tombstones across many owners. A single owner with enough valid date conditions can still exceed the same per-document SDK limit that applied to the flat index. Measure the admitted event and projected bytes before deciding how to page an individual owner's active awaits.
 
 - source_spec: `spec-measure-terminal-queue-membership.md`

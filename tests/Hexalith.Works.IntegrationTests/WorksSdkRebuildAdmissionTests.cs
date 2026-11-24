@@ -7,6 +7,7 @@ using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Contracts.Events;
 using Hexalith.EventStore.Contracts.Projections;
 using Hexalith.EventStore.DomainService;
+using Hexalith.EventStore.Server.DomainServices;
 using Hexalith.EventStore.Testing.Fakes;
 using Hexalith.Works.Contracts.Events;
 using Hexalith.Works.Contracts.Models;
@@ -300,6 +301,92 @@ public sealed class WorksSdkRebuildAdmissionTests
             checkpoint.OwnerSequenceNumber.ShouldBe(lastSequence);
             checkpoint.Position.ShouldBe(history.Events[^1].GlobalPosition);
         }
+    }
+
+    /// <summary>Qualifies Works' mutation guard for an owner with a large pending-date set.</summary>
+    [Fact]
+    public async Task SingleOwnerDateAwaitsReachTheWorksMutationGuardBeforeHistoryCapacity()
+    {
+        const string owner = "owner-date-capacity";
+        const string first = "max-fitting-date-owner";
+        const string second = "first-overflow-date-owner";
+        var due = new DateTimeOffset(2035, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var handler = new WorkItemSharedProjectionRebuildHandler();
+        var identity = new DomainSharedProjectionRebuildIdentity(Tenant, "work", handler.ProjectionType, first, Catalog(handler));
+        string shardPrefix = WorksReadModelKeys.RuntimePendingDateKey + ":shards:";
+        int fitting = 1;
+        int overflowing = 4_096;
+        ProjectionRequest HistoryWithDates(int count)
+        {
+            ProjectionRequest history = WithDateLifecycle(History(owner), clear: false, dateCount: count);
+            var pending = new WorkItemSuspended(owner, history.Events[^1].SequenceNumber, new TenantId(Tenant), new WorkItemId(owner),
+                [.. Enumerable.Range(0, count).Select(offset => AwaitCondition.DateReached(due.AddMinutes(offset)))]);
+            return history with { Events = [.. history.Events[..^1], history.Events[^1] with { Payload = JsonSerializer.SerializeToUtf8Bytes(pending) }] };
+        }
+        DomainProjectionRebuildPlan Build(ProjectionRequest request, bool sharded)
+            => WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity,
+                new WorkItemSharedRebuildCandidateState([new WorkItemSharedRebuildAggregateHistory(owner, request.Events)]), ct, sharded);
+
+        string shardKey = Build(HistoryWithDates(fitting), sharded: true).Operations.Single(operation =>
+            operation.Key.StartsWith(shardPrefix, StringComparison.Ordinal)).Key;
+        ReadModelBatchOperation MeasureDateShard(ProjectionRequest request)
+        {
+            ReadModelBatchOperation flat = Build(request, sharded: false).Operations.Single(operation => operation.Key == WorksReadModelKeys.RuntimePendingDateKey);
+            WorksRuntimeDocument document = JsonSerializer.Deserialize<WorksRuntimeDocument>(flat.CanonicalValue.Span, s_json).ShouldNotBeNull();
+            return ReadModelBatchOperation.Write(shardKey, document, ReadModelBatchConcurrency.LastWrite);
+        }
+        WorksRuntimeIndexShards.FitsMutation(MeasureDateShard(HistoryWithDates(overflowing))).ShouldBeFalse();
+        while (overflowing - fitting > 1)
+        {
+            int trial = fitting + (overflowing - fitting) / 2;
+            if (WorksRuntimeIndexShards.FitsMutation(MeasureDateShard(HistoryWithDates(trial))))
+                fitting = trial;
+            else
+                overflowing = trial;
+        }
+
+        ProjectionRequest fittingHistory = HistoryWithDates(fitting);
+        ProjectionRequest overflowingHistory = HistoryWithDates(overflowing);
+        ReadModelBatchOperation fittingShard = Build(fittingHistory, sharded: true).Operations.Single(operation => operation.Key == shardKey);
+        ReadModelBatchOperation overflowingShard = MeasureDateShard(overflowingHistory);
+        WorksRuntimeIndexShards.FitsMutation(fittingShard).ShouldBeTrue();
+        WorksRuntimeIndexShards.FitsMutation(overflowingShard).ShouldBeFalse();
+        _ = Should.Throw<SharedProjectionCapacityExceededException>(() => Build(overflowingHistory, sharded: true));
+        int historyBytes = WorkItemRuntimeHistoryStore.Serialize(new WorkItemSharedRebuildAggregateHistory(owner, overflowingHistory.Events)).Length;
+        historyBytes.ShouldBeLessThan(WorkItemRuntimeHistoryStore.MaxItemBytes);
+        overflowingHistory.Events[^1].Payload.Length.ShouldBeLessThan(new DomainServiceOptions().MaxEventSizeBytes);
+
+        var store = new InMemoryReadModelStore();
+        using ServiceProvider provider = Provider(store, handler, store);
+        await RebuildAsync(provider, handler, first, [fittingHistory]);
+        SharedProjectionScope scope = handler.CreateScope(Tenant);
+        var coordinator = provider.GetRequiredService<SharedProjectionEpochCoordinator>();
+        var before = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        var beforeShard = await coordinator.ReadGenerationAsync<WorksRuntimeDocument>(scope, before.Generation, shardKey, ct);
+        await RebuildAsync(provider, handler, second, [overflowingHistory], expectRefusal: true);
+        var stale = await WorksRuntimeIndexReader.ReadAsync(coordinator, scope, ct);
+        stale.IsAvailable.ShouldBeTrue();
+        stale.IsStale.ShouldBeTrue();
+        stale.Generation.ShouldBe(before.Generation);
+        stale.Value.ShouldNotBeNull().Documents[shardKey].ShouldNotBeNull().Value.GetRawText()
+            .ShouldBe(beforeShard.Value.ShouldNotBeNull().Value.GetRawText());
+
+        var abort = new DomainSharedProjectionRebuildRequest(DomainSharedProjectionRebuildProtocol.Version,
+            DomainSharedProjectionRebuildAction.Abort, identity with { OperationId = second });
+        (await DomainSharedProjectionRebuildDispatcher.DispatchAsync(provider, abort, new ProjectionDispatchOptions(),
+            new DomainProjectionIdentityOptions { AppId = "works-test", ServiceVersion = "v1" }, ct)).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Aborted);
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var served = await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct);
+        served.Generation.ShouldBe(before.Generation);
+        served.IsStale.ShouldBeFalse();
+        var pendingDates = served.Value.ShouldNotBeNull().Indexes.PendingDate;
+        pendingDates.LastSequences[owner].ShouldBe(fittingHistory.Events[^1].SequenceNumber);
+        pendingDates.Entries[owner].Select(awaiting => awaiting.Instant).ShouldBe(Enumerable.Range(0, fitting).Select(offset => due.AddMinutes(offset)));
+        (await restarted.ReadGenerationAsync<WorksRuntimeDocument>(scope, served.Generation, shardKey, ct)).ETag.ShouldBe(beforeShard.ETag);
+        int Charge(ReadModelBatchOperation operation) => operation.CanonicalValue.Length + Encoding.UTF8.GetByteCount(operation.Key) + 2048;
+        TestContext.Current.TestOutputHelper!.WriteLine(FormattableString.Invariant(
+            $"Fitting awaits={fitting}, event={fittingHistory.Events[^1].Payload.Length} bytes, Works mutation charge={Charge(fittingShard)} bytes. First overflow awaits={overflowing}, event={overflowingHistory.Events[^1].Payload.Length} bytes, history={historyBytes} bytes, Works mutation charge={Charge(overflowingShard)} bytes."));
     }
 
     /// <summary>The full tenant-byte ceiling commits through bounded batches with exact persisted context.</summary>
