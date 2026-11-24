@@ -49,6 +49,14 @@ Six parity topology facts and one archived-host readiness preflight are explicit
 
 The Platform verifier selects `WorksSdkRecoveryPipelineSmokeTests` with `-explicit on` and requires passing results for `SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery` and `SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart`. Both passed for the source recorded in the [archived recovery results](../_bmad-output/implementation-artifacts/evidence/story-4-9/post-cutover-review-2-2026-10-21/ci/platform-recovery.xml.gz).
 
+The AD-20 **R10** proofs retained for Story 4.9 AC3 cover transport trust, caller-scope refusal across
+restarts and restoration of trust and policy bytes. The separate historical lane rejects a sequence-zero
+projection request and preserves the Development behavior where an ordinary authenticated user can submit
+SpawnChild. AD-24 production qualification additionally requires wrong-trust-domain and
+forged-high-sequence refusals. AD-21 and AD-23 require registry-authorized child creation and refusal of
+ordinary-user SpawnChild in that target profile. Those production conditions require their own proof
+after the target path is implemented.
+
 AD-20 **R4** binds the durable projection proofs. Its persisted proof, `platform-focused-projection-rebuild`, stages and commits a rebuild on Dapr/Redis while delivery is fenced. It checks that the old generation remains readable during capture and that automatic catch-up after Commit matches an independent fold. Its restart proof, `platform-initial-projection-convergence`, checks convergence of all twelve named projection heads after host restarts. The retired Dapr/Redis fact reconstructed its coordinator after Commit while delivery was still pending, using the same running sidecar. Reconstructing a coordinator at that exact durable boundary and shutting down a host between Stage and Commit are separate scenarios from the two live R4 proofs. [Retired Dapr/Redis test](https://github.com/Hexalith/Hexalith.Works/blob/7611f4d7c8e9a68f385980706740691f8bcd51f0/tests/Hexalith.Works.IntegrationTests/WorksSdkProjectionQueryTests.cs#L1139)
 
 | Retired projection scenario | Current verification |

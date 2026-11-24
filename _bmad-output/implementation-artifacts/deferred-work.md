@@ -2167,6 +2167,8 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R27A-A1 — R10 lacks AD-24's wrong-trust-domain, forged-high-sequence and ordinary-user SpawnChild negatives (medium; pre-existing; AD-21/AD-23 target).
   evidence: The historical lane (`WorksPlatformHistoricalPipelineSmokeTests.cs:92`) submits SpawnChild with the ordinary dev JWT and requires Completed. The trust probes use only the `public` trust domain, and the projection forgery injects sequence 0. Platform `PROOFS["R10"]` (`verify_works_host.py:744`) requires none of these negatives. Either record R10's narrowing to historical-lane equivalence (AC3), or add the negatives and their Platform proof entries once registry-authorized child creation (AD-21/AD-23) is storied.
+  status: done 2026-11-24
+  resolution: The cutover guide records R10 as AC3 historical-lane equivalence and retains the wrong-trust-domain, forged-high-sequence and registry-authorized SpawnChild requirements in the production qualification scope.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R27A-A3 — AC2's shared-rebuild failure branch has only an in-memory proof (medium; pre-existing).
