@@ -96,9 +96,15 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "pending-date index",
             "state-store",
             "restore",
-            "host remains running",
-            "shutdown",
-            "restart");
+            "shutdown");
+        Assert.Contains(
+            "If the host remains running and the retry budget remains,",
+            tenantScan,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Restart Works after remediation if shutdown ended the pass or startup retries were exhausted.",
+            tenantScan,
+            StringComparison.Ordinal);
 
         string incompleteScan = WarningRow(section, "4605");
         AssertContainsAll(
@@ -128,9 +134,15 @@ public sealed class SubscriberDeadLetterOperatorDocumentationTests
             "EventStore",
             "stream",
             "restore",
-            "host remains running",
-            "shutdown",
-            "restart");
+            "shutdown");
+        Assert.Contains(
+            "If the host remains running and the retry budget remains,",
+            candidateScan,
+            StringComparison.Ordinal);
+        Assert.Contains(
+            "Restart Works after remediation if shutdown ended the pass or startup retries were exhausted.",
+            candidateScan,
+            StringComparison.Ordinal);
 
         string parkedCandidate = WarningRow(section, "4607");
         AssertContainsAll(

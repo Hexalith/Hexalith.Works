@@ -976,6 +976,8 @@ archived: 2026-10-23
 - `Clean_shutdown_between_tenants_preserves_the_exact_caller_cancellation` still stubs and verifies with `Arg.Any<CancellationToken>()`. Pre-existing sibling fact; spec-9 only hardened the new final-index regression. [tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582]
 - Story 4.8 still treats DW-56 as an open marker-store patch after the ledger archived it as `done 2026-09-05`. Pre-existing tracking contradiction already recorded under the `DW-56` heading. [_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md:125]
 - 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts. Pre-existing; spec-9 required mirroring 4604/4606 wording into 4608, not tightening those older pins. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92]
+  status: done 2026-11-24
+  resolution: The historical operator rows for 4604 and 4606 must each document a remaining retry budget and the exhausted-startup restart condition.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-implement-works-ci-cd.md`
   summary: Repair the Story 4.7 cascade startup checkpoint replay that fails to terminate the outstanding child after a mid-cascade restart.
@@ -1045,6 +1047,8 @@ archived: 2026-10-23
 - Compacted ledger stubs and archive still have no title, policy, backlink, or archive path. Reconfirmed; already recorded at the spec-9 navigation `source_spec`. [_bmad-output/implementation-artifacts/deferred-work-archive.md:1]
 - EventId 4608 still tells operators to restore a named parking key that the log does not emit. Reconfirmed; already recorded at `deferred-work.md:944`. [docs/operations/subscriber-dead-letter-operator.md:135]
 - 4604/4606 architecture pins still omit the retry-budget and exhaustion phrases that 4608 now asserts. Reconfirmed; already recorded at `deferred-work.md:898`. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92]
+  status: done 2026-11-24
+  resolution: Duplicate observation of the 2026-09-18 operator warning regression, closed by the same row-level checks.
 - DW-20/53/54/55 live-ledger headings remain truncated mid-word. Reconfirmed; already recorded at `deferred-work.md:940`. [_bmad-output/implementation-artifacts/deferred-work.md:144]
 - spec-8 triage rewrote original `false | reject` rows to `superseded | patch`, so the spec-8-era record is no longer recoverable from that table. Fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md:104]
 - Killed MSBuild child uses unbounded `WaitForExitAsync(CancellationToken.None)`. maybe-false: settle by showing `Kill(entireProcessTree: true)` can leave a live child on this runner. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:333]
