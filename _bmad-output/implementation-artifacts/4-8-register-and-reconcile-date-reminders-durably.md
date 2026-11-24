@@ -9,6 +9,8 @@ Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
+**DW-56 status update (2026-11-24).** The historical deferral and reopening are recorded in the [DW-56 archive](deferred-work-archive.md#dw-56-2026-10-23). The [current ledger](deferred-work.md#dw-56-completed-marker-failure-can-still-be-acknowledged-as-processed) closed it on 2026-10-23 after [SDK replacement verification](spec-five-deferred-sdk-recovery-replacements.md) proved that a failed completion marker produces a retryable outcome. The older open references describe their review rounds.
+
 ## Story
 
 As a Hexalith builder,

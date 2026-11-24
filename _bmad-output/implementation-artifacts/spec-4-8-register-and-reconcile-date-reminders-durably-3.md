@@ -83,6 +83,8 @@ Do not change kernel, Reactor, AppHost, SharedRebuild, or `references/`.
 
 ## Implementation Notes
 
+**DW-56 status update (2026-11-24).** The historical deferral and reopening are recorded in the [DW-56 archive](deferred-work-archive.md#dw-56-2026-10-23). The [current ledger](deferred-work.md#dw-56-completed-marker-failure-can-still-be-acknowledged-as-processed) closed it on 2026-10-23 after [SDK replacement verification](spec-five-deferred-sdk-recovery-replacements.md) proved that a failed completion marker produces a retryable outcome. The older open references describe their review rounds.
+
 - Parked-candidate skip (EventId 4607) landed in `0527d12` after spec baseline `6e2fb4da`; kept, not rewritten.
 - Web STJ does not throw `NotSupportedException` for `WorkItemSuspended` poison bytes; `A_not_supported_decode_failure_is_malformed_and_parks` pins `IsHandledDecodeFailure` and parks via the same malformed `/project` path.
 - Reserved-tenant `/process` is proven by `ProcessAsync` throwing `InvalidOperationException` before a `DomainResult` (no store write).
