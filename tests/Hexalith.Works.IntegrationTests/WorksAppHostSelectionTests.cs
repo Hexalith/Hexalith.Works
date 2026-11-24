@@ -39,18 +39,36 @@ public sealed class WorksAppHostSelectionTests
     public void UnselectedLaneRequiresPlatformHost()
         => Should.Throw<InvalidOperationException>(() => WorksAppHostSelection.ResolveEntryPoint(null, null, null));
 
-    /// <summary>Only real topology facts need explicit selection; the Platform gate executes each of them.</summary>
+    /// <summary>Platform parity and standalone measurements are the only opt-in integration tests.</summary>
     [Fact]
     public void LiveFactsRequireExplicitSelection()
     {
-        string[] live = ["SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery", "SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart",
-            "PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart", "TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect",
-            "ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily", "Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process", "ArchivedTopologyReachesHealthyReadiness", "ActualSelectedRuntimeBinariesCaptureWithoutMutation", "ActualPreviewComposesExporterKeysAndRefusesForeignFixtureTelemetry"];
-        var facts = typeof(WorksAppHostSelectionTests).Assembly.GetTypes().SelectMany(type => type.GetMethods()).Select(method => (method.Name,
-            Fact: method.GetCustomAttributes(typeof(FactAttribute), inherit: false).Cast<FactAttribute>().SingleOrDefault()))
-            .Where(item => item.Fact is not null).ToArray();
-        facts.Where(item => item.Fact!.Explicit).Select(item => item.Name).Order().ShouldBe(live.Order());
-        facts.Where(item => !live.Contains(item.Name)).ShouldAllBe(item => !item.Fact!.Explicit);
+        (Type TestClass, string Method)[] platformParity =
+        [
+            (typeof(WorksSdkRecoveryPipelineSmokeTests), nameof(WorksSdkRecoveryPipelineSmokeTests.SuccessfulCallbacksRegisterSdkReminderAndProcessWithoutPeriodicRecovery)),
+            (typeof(WorksSdkRecoveryPipelineSmokeTests), nameof(WorksSdkRecoveryPipelineSmokeTests.SdkRemindersAndCascadeConvergeThroughPersistedReceiptsAcrossRestart)),
+            (typeof(WorksPlatformHistoricalPipelineSmokeTests), nameof(WorksPlatformHistoricalPipelineSmokeTests.PlatformLifecycleTreeClaimFilteringAndSecuritySurviveRestart)),
+            (typeof(WorksPlatformHaPipelineSmokeTests), nameof(WorksPlatformHaPipelineSmokeTests.TwoWorksHostsRecoverLostFiringAfterPrimaryStopsWithoutDuplicateEffect)),
+            (typeof(WorksPlatformProjectionPipelineSmokeTests), nameof(WorksPlatformProjectionPipelineSmokeTests.ActualPlatformSharedRebuildAndConcurrentCatchUpPreserveCompleteFamily)),
+            (typeof(WorksMtlsAuthorizationSmokeTests), nameof(WorksMtlsAuthorizationSmokeTests.Mtls_allows_event_store_and_denies_an_unauthorized_caller_at_works_process)),
+            (typeof(WorksPlatformRetainedHostPreflightTests), nameof(WorksPlatformRetainedHostPreflightTests.ArchivedTopologyReachesHealthyReadiness)),
+            (typeof(WorksPlatformRollbackBinaryTests), nameof(WorksPlatformRollbackBinaryTests.ActualSelectedRuntimeBinariesCaptureWithoutMutation)),
+            (typeof(WorksPlatformTelemetryAdmissionTests), nameof(WorksPlatformTelemetryAdmissionTests.ActualPreviewComposesExporterKeysAndRefusesForeignFixtureTelemetry)),
+        ];
+        (Type TestClass, string Method)[] standaloneMeasurements =
+        [
+            (typeof(WorksSdkProjectionQueryTests), nameof(WorksSdkProjectionQueryTests.OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits)),
+            (typeof(WorksRecoveryCatalogMeasurementTests), nameof(WorksRecoveryCatalogMeasurementTests.CatalogSweepMeasuresRealStoreCost)),
+            (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost)),
+            (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines)),
+        ];
+        var explicitTests = typeof(WorksAppHostSelectionTests).Assembly.GetTypes()
+            .SelectMany(type => type.GetMethods()
+                .Where(method => method.DeclaringType == type)
+                .Where(method => method.GetCustomAttributes(typeof(FactAttribute), inherit: false)
+                    .Cast<FactAttribute>().Any(attribute => attribute.Explicit))
+                .Select(method => (type, method.Name)));
+        explicitTests.ShouldBe(platformParity.Concat(standaloneMeasurements), ignoreOrder: true);
     }
 
     /// <summary>A selected proof cannot reach the shared default providers without its owned SDK scope.</summary>
