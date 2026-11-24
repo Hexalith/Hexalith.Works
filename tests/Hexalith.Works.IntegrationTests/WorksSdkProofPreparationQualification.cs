@@ -130,7 +130,7 @@ public static class WorksSdkProofPreparationQualification
         { WorkingDirectory = works, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
         foreach (string argument in new[] { "build", Path.Combine(works, "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj"),
             "-c", "Release", "-p:MSBuildWarningsAsErrors=MSB3277", "-p:TreatWarningsAsErrors=true",
-            "-p:NuGetAudit=true", "-p:NuGetAuditMode=all", "-p:NuGetAuditLevel=low", "--artifacts-path", output, "--disable-build-servers", "-m:1", "-nr:false",
+            "-p:NuGetAudit=true", "-p:NuGetAuditMode=all", "-p:NuGetAuditLevel=low", "--artifacts-path", output, "--disable-build-servers", "-m:2", "-nr:false",
             "-p:PathMap=" + output + "=/_/hexalith-works-platform-build", "-p:CustomAfterMicrosoftCommonTargets=", "-p:HexalithWorksProofAssembly=",
             "-p:UseHexalithProjectReferences=false", "-p:UseNuGetDeps=true", "-p:HexalithEventStoreFromSource=false",
             "-p:HexalithPolymorphicSerializationsFromSource=false", "-p:WorksAllowLocalEventStoreCandidate=false" }) start.ArgumentList.Add(argument);
