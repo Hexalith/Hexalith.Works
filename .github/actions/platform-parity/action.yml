@@ -7,7 +7,7 @@ runs:
       shell: bash
       run: |
         set -euo pipefail
-        if [ "$(git rev-parse --is-shallow-repository)" = true ]; then
+        if git rev-parse --is-shallow-repository | grep -Fx true > /dev/null; then
           git fetch --unshallow --no-recurse-submodules
         fi
     - name: Initialize required root dependencies
@@ -28,7 +28,7 @@ runs:
       shell: bash
       env:
         GITHUB_TOKEN: ${{ github.token }}
-      run: bash scripts/verify-platform-parity-ci.sh --artifacts-path "$RUNNER_TEMP/works-platform-parity"
+      run: python3 scripts/verify-platform-parity-ci.py --artifacts-path "$RUNNER_TEMP/works-platform-parity"
     - name: Preserve parity results
       if: always()
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

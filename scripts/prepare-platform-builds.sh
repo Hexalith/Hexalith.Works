@@ -13,7 +13,8 @@ owner_revision="$(git -C "$owner" rev-parse --verify HEAD)"
 owner_index_is_visible() {
     local entries
     entries="$(git -C "$owner" ls-files -v)" || return 1
-    [[ ! "$entries" =~ (^|$'\n')([a-z]|S)' ' ]]
+    local hidden_entry_pattern=$'(^|\n)[a-zS] '
+    [[ ! "$entries" =~ $hidden_entry_pattern ]]
 }
 if [[ -n "$(git -C "$owner" status --porcelain --untracked-files=all)" ]] || ! owner_index_is_visible; then
     echo "Published Builds preparation requires clean recorded Platform source." >&2
@@ -31,7 +32,7 @@ python3 "$workspace/Hexalith.Platform/eng/bound_builds.py" \
     --platform-root "$workspace/Hexalith.Platform" --source-root "$builds" \
     --output "$workspace/Hexalith.Builds" > /dev/null
 tool_root="$(python3 "$workspace/Hexalith.Platform/eng/prepare_builds_artifacts.py" --require-recorded --output "$artifacts/verified")"
-if [[ "$tool_root" = *$'\n'* || "$tool_root" = *$'\r'* || ! -f "$tool_root/Hexalith.Builds.Tooling.dll" ]]; then
+if [[ "$tool_root" = *$'\n'* ]] || [[ "$tool_root" = *$'\r'* ]] || [[ ! -f "$tool_root/Hexalith.Builds.Tooling.dll" ]]; then
     echo "Platform did not return a verified published Builds tool directory." >&2
     exit 1
 fi

@@ -17,7 +17,7 @@ from xml.etree import ElementTree
 
 WORKSPACE = Path(__file__).resolve().parents[1]
 METHODS = {
-    "ordinary-delivery": "WorksSdkProjectionQueryTests.OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits",
+    "ordinary-delivery": "WorksProjectionDeliveryMeasurementTests.OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits",
     "recovery-catalog": "WorksRecoveryCatalogMeasurementTests.CatalogSweepMeasuresRealStoreCost",
     "terminal-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost",
     "sharded-reads": "WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines",
