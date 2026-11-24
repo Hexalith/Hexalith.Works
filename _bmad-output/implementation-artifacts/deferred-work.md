@@ -2023,6 +2023,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Qualify unpaged authorized queue responses at real invocation limits before defining paging behavior.
+  status: done 2026-11-24
+  resolution: Real Dapr/Redis measurements bound unpaged responses inside the admitted population. With 256 and 1,024 eligible items the query always succeeded (up to 3.5 s). With 2,048 it succeeded 2 of 3 times, and 4,096 and the 10,000-member cap hit the five-second budget every time. The cause is per-member related reads, not response size. At the cap the base64 `QueryResult` would be 7.24 MB, beyond Dapr's default 4 MiB body limit at about 5,800 representative or 3,150 maximum-identity items. Real invocation was not driven; see the follow-up entries. [Measurement spec](spec-qualify-unpaged-queue-responses.md).
   evidence: R3B9, unverified medium: pre-existing WhatsNextQueryHandler ignores Paging; no response-size/deadline failure is demonstrated. Real-store and real-invocation tests at admitted item/byte limits would settle the claim.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2435,3 +2437,11 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
   summary: Reject the runnable `Hexalith.Works` host package ID as a dependency in `validate-nuget-packages.py`.
   evidence: Late iteration-3 row 97 of `spec-implement-works-ci-cd.md` is still open: `FORBIDDEN_DEPENDENCY_FRAGMENTS` lists only `.AppHost`, test, sample and `.ServiceDefaults` suffixes, so a dependency on the non-packable host ID `Hexalith.Works` would pass the fragment check if it entered the expected dependency set.
+
+- source_spec: `spec-qualify-unpaged-queue-responses.md`
+  summary: Decide and implement what's-next paging so that each page's related reads and wire size stay within the read budget and the invocation body limit.
+  evidence: Unpaged queries fail at about 2,048 eligible items (five-second budget), and the 10,000-member cap would produce a 7.24 MB base64 `QueryResult`, above Dapr's default 4 MiB body limit at about 5,800 representative or 3,150 maximum-identity items. The SDK paging contract allows up to 200 items per page. The owner must choose offset or cursor paging, bind any cursor to the selected projection generation, and read related documents only for the returned page.
+
+- source_spec: `spec-qualify-unpaged-queue-responses.md`
+  summary: Measure the chosen what's-next page size through the real gateway, actor and domain-service invocation path.
+  evidence: The real-store measurement had no app channel, so the 4 MiB comparison is arithmetic over measured `QueryResult` wire sizes. Once paging exists, a Platform run should send a maximum-size page through the actual Dapr invocation chain and confirm it is accepted within the budget.

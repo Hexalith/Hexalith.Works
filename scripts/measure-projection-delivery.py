@@ -21,7 +21,10 @@ METHODS = {
     "recovery-catalog": "WorksRecoveryCatalogMeasurementTests.CatalogSweepMeasuresRealStoreCost",
     "terminal-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost",
     "sharded-reads": "WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines",
+    "unpaged-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresUnpagedEligibleResponses",
 }
+# Seeding the 10,000-owner admitted queue cap on real Redis takes minutes; other scenarios fit the default.
+TIMEOUTS = {"unpaged-queue": 2_400}
 
 
 def docker(*arguments):
@@ -108,7 +111,8 @@ scopes:
             environment["WORKS_PROJECTION_MEASUREMENT_GRPC"] = "http://" + docker("port", sidecar, "50001/tcp")
             method = METHODS[args.scenario]
             subprocess.run(("dotnet", binary, "-explicit", "on", "-method", "Hexalith.Works.IntegrationTests." + method,
-                            "-showLiveOutput", "-result-xml", result), env=environment, check=True, timeout=480)
+                            "-showLiveOutput", "-result-xml", result), env=environment, check=True,
+                           timeout=TIMEOUTS.get(args.scenario, 480))
             print(json.dumps(validate_report(result, args.scenario, method, runtime_id, redis_id), indent=2))
         except (Exception, KeyboardInterrupt):
             subprocess.run(("docker", "logs", sidecar), check=False, timeout=30)
@@ -134,6 +138,13 @@ def validate_report(result, scenario, method, runtime_id, redis_id):
     elif scenario == "terminal-queue":
         observed = {(sample["terminalOwners"], sample["activeOwners"], len(sample["samplesMilliseconds"])) for sample in samples}
         expected = {(0, 8, 3), (1_024, 8, 3), (4_096, 8, 3)}
+    elif scenario == "unpaged-queue":
+        if any(sample["unpagedPayloadBytes"] <= 0 or sample["unpagedWireBytes"] <= sample["unpagedPayloadBytes"]
+               or len(sample["responseBytes"]) != sample["successful"] or len(sample["responseWireBytes"]) != sample["successful"]
+               or (sample["eligibleOwners"] <= 256 and sample["successful"] != 3) for sample in samples):
+            raise RuntimeError("The unpaged report must retain payload and wire sizes for every successful read.")
+        observed = {(sample["eligibleOwners"], len(sample["samplesMilliseconds"])) for sample in samples}
+        expected = {(256, 3), (1_024, 3), (2_048, 3), (4_096, 3), (10_000, 3)}
     else:
         observed = {(sample["owners"], len(sample["samplesMilliseconds"]), len(sample["discoveryMilliseconds"]),
                      len(sample["boundedDiscoveryMilliseconds"])) for sample in samples}

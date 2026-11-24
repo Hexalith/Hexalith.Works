@@ -14,6 +14,7 @@ using Hexalith.Works.Contracts.Models;
 using Hexalith.Works.Contracts.ValueObjects;
 using Hexalith.Works.Projections;
 using Hexalith.Works.Projections.SharedRebuild;
+using Hexalith.Works.Projections.Strategies;
 using Hexalith.Works.Queries;
 using Hexalith.Works.Recovery;
 
@@ -95,6 +96,96 @@ public sealed class WorksQueueMeasurementTests
         current.IsDegraded.ShouldBeFalse();
         TestContext.Current.TestOutputHelper!.WriteLine(JsonSerializer.Serialize(new { measurement = "terminal-queue",
             terminalOwners, activeOwners = ActiveOwners, successful, samplesMilliseconds = samples,
+            runtimeImage = Environment.GetEnvironmentVariable("WORKS_PROJECTION_MEASUREMENT_RUNTIME"),
+            redisImage = Environment.GetEnvironmentVariable("WORKS_PROJECTION_MEASUREMENT_REDIS") }));
+    }
+
+    /// <summary>Qualifies unpaged authorized responses up to the admitted queue membership against the read budget.</summary>
+    [Theory(Explicit = true)]
+    [InlineData(256)]
+    [InlineData(1_024)]
+    [InlineData(2_048)]
+    [InlineData(4_096)]
+    [InlineData(10_000)]
+    public async Task WhatsNextMeasuresUnpagedEligibleResponses(int eligibleOwners)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        using DaprClient client = WorksProjectionMeasurementEndpoint.CreateClient();
+        var store = new DaprReadModelStore(client, Options.Create(new ReadModelBatchOptions
+        {
+            MaxOperations = WorksRebuildOperationBound.MaxOperations,
+            MaxCanonicalManifestBytes = 8 * ReadModelBatchOptions.DefaultMaxCanonicalManifestBytes,
+        }));
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        string tenant = "unpaged-queue-" + Guid.NewGuid().ToString("N");
+        var scope = await SeedAsync(coordinator, tenant, eligibleOwners, 0, ct, assignedEligible: true);
+        var restarted = new SharedProjectionEpochCoordinator(store, store);
+        var index = await WorksRuntimeIndexReader.ReadAsync(restarted, scope, ct);
+        index.IsAvailable.ShouldBeTrue();
+        WorksWhatsNextTenantIndex queue = index.Value.ShouldNotBeNull().Indexes.Queue;
+        queue.MemberWorkItemIds.ShouldBe(Enumerable.Range(0, eligibleOwners).Select(Owner));
+        queue.Items.Count.ShouldBe(eligibleOwners);
+        queue.Items.Values.ShouldAllBe(item => item!.Status == WorkItemStatus.Assigned && item.ExecutorBinding != null
+            && item.Priority != null && item.DueDate != null && item.OwnRemaining != null);
+
+        // The handler returns every authorized eligible item in queue order; serialize that same payload from the
+        // selected generation so its size is known even when the read budget refuses the query.
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        WhatsNextItem[] unpaged = [.. queue.Items.Values.Select(item => item!).OrderBy(item => item, WhatsNextOrdering.Instance)];
+        int unpagedPayloadBytes = JsonSerializer.SerializeToUtf8Bytes(unpaged, options).Length;
+        // The domain-service response carries the payload as base64 bytes inside a JSON QueryResult.
+        int unpagedWireBytes = JsonSerializer.SerializeToUtf8Bytes(QueryResult.FromPayload(
+            JsonSerializer.SerializeToElement(unpaged, options), WorksReadModelKeys.WhatsNextProjectionType), options).Length;
+        // The same item with the longest admitted tenant (64), work-item (256) and a 256-character party.
+        int maxIdentityItemBytes = JsonSerializer.SerializeToUtf8Bytes(unpaged[0] with
+        {
+            TenantId = new TenantId(new string('t', 64)),
+            WorkItemId = new WorkItemId(new string('w', 256)),
+            ExecutorBinding = new ExecutorBinding(new PartyId(new string('p', 256)), Channel.Cli, AuthorityLevel.Contribute),
+        }, options).Length;
+        var policy = new WorksQueryPolicy(Substitute.For<IPartiesIdentityClient>(),
+            Options.Create(new WorksQueryOptions { PermittedCoordinatorWorkloads = [Workload] }));
+        var query = new QueryEnvelope(tenant, "work", Owner(0), WhatsNextQueryHandler.WhatsNextQueryType,
+            [], "unpaged-queue-measurement", Workload, null, false, null, null, Workload, false, null, null);
+        var samples = new List<double>();
+        var responseBytes = new List<int>();
+        var responseWireBytes = new List<int>();
+        int successful = 0;
+        for (int iteration = 0; iteration < 3; iteration++)
+        {
+            var logger = new Story48RecordingLogger<WhatsNextQueryHandler>();
+            var handler = new WhatsNextQueryHandler(policy, restarted, logger);
+            long start = Stopwatch.GetTimestamp();
+            QueryResult result = await handler.ExecuteAsync(query, ct);
+            TimeSpan elapsed = Stopwatch.GetElapsedTime(start);
+            samples.Add(elapsed.TotalMilliseconds);
+            if (result.Success)
+            {
+                result.Metadata.ShouldNotBeNull().Lifecycle.ShouldBe(ProjectionLifecycleState.Current);
+                byte[] payload = JsonSerializer.SerializeToUtf8Bytes(result.GetPayload(), options);
+                payload.Length.ShouldBe(unpagedPayloadBytes);
+                JsonSerializer.Deserialize<WhatsNextItem[]>(payload, options).ShouldNotBeNull()
+                    .Select(item => item.WorkItemId.Value).ShouldBe(unpaged.Select(item => item.WorkItemId.Value));
+                responseBytes.Add(payload.Length);
+                responseWireBytes.Add(JsonSerializer.SerializeToUtf8Bytes(result, options).Length);
+                successful++;
+            }
+            else
+            {
+                RequireTimeout(result, elapsed, logger);
+            }
+        }
+        if (eligibleOwners <= 256)
+        {
+            successful.ShouldBe(3, "the smallest population is the success-path control");
+        }
+
+        var current = await coordinator.GetStatusAsync(scope, ct);
+        current.PendingDeliveryCount.ShouldBe(0);
+        current.IsDegraded.ShouldBeFalse();
+        TestContext.Current.TestOutputHelper!.WriteLine(JsonSerializer.Serialize(new { measurement = "unpaged-queue",
+            eligibleOwners, successful, samplesMilliseconds = samples, responseBytes, responseWireBytes, unpagedPayloadBytes,
+            unpagedWireBytes, bytesPerItem = (double)unpagedPayloadBytes / eligibleOwners, maxIdentityItemBytes,
             runtimeImage = Environment.GetEnvironmentVariable("WORKS_PROJECTION_MEASUREMENT_RUNTIME"),
             redisImage = Environment.GetEnvironmentVariable("WORKS_PROJECTION_MEASUREMENT_REDIS") }));
     }
@@ -203,7 +294,7 @@ public sealed class WorksQueueMeasurementTests
     private static string Owner(int ordinal) => FormattableString.Invariant($"owner-{ordinal:D4}");
 
     private static async Task<SharedProjectionScope> SeedAsync(SharedProjectionEpochCoordinator coordinator, string tenant,
-        int activeOwners, int terminalOwners, CancellationToken ct, bool includeDateAwaits = false)
+        int activeOwners, int terminalOwners, CancellationToken ct, bool includeDateAwaits = false, bool assignedEligible = false)
     {
         const string writer = "works-runtime-v3-writer";
         var scope = new SharedProjectionScope(WorksReadModelKeys.StateStoreName, tenant, "work", WorksReadModelKeys.RuntimeFamily, [writer]);
@@ -225,6 +316,19 @@ public sealed class WorksQueueMeasurementTests
                     Event(new WorkItemClaimed(owner, 3, tenantId, item, binding), 3),
                     Event(new WorkItemSuspended(owner, 4, tenantId, item,
                         [AwaitCondition.DateReached(DateTimeOffset.UnixEpoch.AddDays(1))]), 4),
+                ]));
+                continue;
+            }
+            if (assignedEligible && ordinal < activeOwners)
+            {
+                // A fully populated eligible item: schedule, own effort and a 64-character executor party.
+                var executor = new ExecutorBinding(new PartyId("executor-" + new string('x', 55)), Channel.Cli, AuthorityLevel.Contribute);
+                histories.Add(new WorkItemSharedRebuildAggregateHistory(owner,
+                [
+                    Event(new WorkItemCreated(owner, 1, tenantId, item, new Obligation("Unpaged queue measurement"),
+                        new WorkItemEffort(8m, new Unit("hour")),
+                        new WorkItemSchedule(Priority.High, DateOnly.FromDayNumber(739_000 + ordinal % 365))), 1),
+                    Event(new WorkItemAssigned(owner, 2, tenantId, item, executor), 2),
                 ]));
                 continue;
             }
