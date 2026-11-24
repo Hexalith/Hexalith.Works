@@ -864,6 +864,8 @@ archived: 2026-10-23
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Complete reminder recovery and scheduling telemetry plus retry-verification hardening.
   evidence: Split from the 4,488-token remediation spec because parking-read classification, parked-skip accounting, scheduler-failure diagnostics, reconciliation exhaustion, and their focused tests form an independently shippable recovery bundle.
+  status: done 2026-11-24
+  resolution: The provisional recovery and telemetry bundle is closed by the SDK controls for bounded periodic recovery, retained failure context and durable per-await outcomes. See [recovery policy](spec-five-deferred-reminder-recovery-policy.md) and [reminder outcomes](spec-five-deferred-reminder-outcomes.md). This is an alias of the tracking reconciliation entry.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-4.md`
   summary: Register a production `IProjectionChangeNotifier` for the Works host or explicitly retain the projection seam as inactive.
@@ -886,6 +888,8 @@ archived: 2026-10-23
 - source_spec: none
   summary: Complete reminder recovery and scheduling telemetry plus retry-verification hardening.
   evidence: Split from the current Story 4.8 build so the independently shippable reserved-tenant command-envelope hardening can be implemented and reviewed first.
+  status: done 2026-11-24
+  resolution: The provisional recovery and telemetry bundle is closed by the SDK controls for bounded periodic recovery, retained failure context and durable per-await outcomes. See [recovery policy](spec-five-deferred-reminder-recovery-policy.md) and [reminder outcomes](spec-five-deferred-reminder-outcomes.md). This is an alias of the tracking reconciliation entry.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-5.md`
   summary: Preserve typed incomplete-scan context when partial reminder processing ends in a non-caller cancellation.
@@ -909,6 +913,8 @@ archived: 2026-10-23
   status: done 2026-10-28
   resolution: `spec-five-deferred-reminder-outcomes.md` — The legacy fail-fast handler is retired. Current SDK isolates each scheduler arm, retains the failed await as Pending/arm-failed across repeated reconstructed passes, and arms its healthy sibling. Repair arms the retained await without duplicating the sibling. Supported disposition is durable retry with degraded readiness, not a finite attempt budget or automatic dead-lettering.
 - `deferred-work.md` still carries the reserved-tenant command-envelope entry and the reminder recovery/scheduling entry as open (the latter recorded twice, the second with `source_spec: none`) although the 2026-09-16 bundles implement them. The precedent for closing is the `Resolution 2026-09-15` sub-bullet on defect (4). Left open so a sweep does not reschedule finished work without a human confirming the mapping. [_bmad-output/implementation-artifacts/deferred-work.md:924]
+  status: done 2026-11-24
+  resolution: Linked both provisional reminder bundle records to their completed SDK policy and outcome controls. The reserved-tenant item already links to its separate all-command verification.
 - No non-reminder EventId 4603 call site pins whether its record carries an exception. `ReminderReconciliationService` is now the only one of seven callers that omits it, so one event id has two payload shapes; the six cascade/child-completion/actor callers are unpinned either way. Belongs with the existing bounded-recovery-telemetry item for 4604/4606. Settled by whichever way the open 4603 decision in the story resolves. [src/Hexalith.Works/Recovery/Cascade/CascadeRecoveryService.cs:31]
   - Resolution 2026-09-17 (`spec-4-8-register-and-reconcile-date-reminders-durably-7.md`): closed as stale on insertion. Commit `06d64b0`, which appended this line, also restored `ReminderReconciliationService`'s exception argument, so all seven 4603 call sites already shared the structured-exception shape. The focused hosted-service tests pin the reminder caller; this record supplies no remaining behavioral gap for Story 4.8.
 - `ArchitectureTests` is red at 236/237: `global.json` pins SDK `10.0.401` while `BuildConfigurationTests` asserts `10.0.400`. Pre-existing tooling drift, honestly recorded by the bundle, but the fitness gate is not green on HEAD. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:16]
