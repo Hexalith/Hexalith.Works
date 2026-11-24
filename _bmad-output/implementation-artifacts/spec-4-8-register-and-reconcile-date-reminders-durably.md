@@ -90,6 +90,18 @@ context:
 - Story 4.8 adds no durable catalog type. The current checkout's catalog is 40 because concurrently completed
   Story 1.5 added three types after this spec's 37-type baseline; the 4.8 delta itself remains zero.
 
+### Concurrent dependency changes recorded 2026-11-24
+
+The workspace update from `062426c97ed7e8be24b51094234cd70f8c79169b` to `33a27e287862a53ee1b8e837d185a8945b321a11` included the Sentry/mTLS implementation and three sibling gitlink changes. The gitlinks were concurrent dependency changes outside the approved Story 4.8 scope. The historical commit and its parent remain the source of record for this transition.
+
+| Gitlink | Before the update | After the update |
+| --- | --- | --- |
+| `references/Hexalith.Parties` | `d5e5d361481be234d1fded40711f69b0a1f75cfe` | `27ef1d8abd03fa938edb60efd1ad2a930509ccab` |
+| `references/Hexalith.Projects` | `046386d376d3cdddf8a4aebe84255b5fe6177646` | `face60142b938918af7321727bb9f4c1d3050170` |
+| `references/Hexalith.Tenants` | `8f2fbc9cef22e4cab363d3dbfc9db1219ce938c6` | `610b926a372040278ae987faa318b89290bee953` |
+
+The follow-up from `0b38153a7b503b8a14c0b019ef1e958a7aeef034` to `56a235c28753d2f87ef6897b39a032a1989b5610` advanced Projects and Tenants again and introduced a separate EventStore gitlink change. The historical verification retains its original scope. This record establishes the Git transition only.
+
 ## Spec Change Log
 
 ## Review Triage Log

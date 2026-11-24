@@ -782,6 +782,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Separate or reconcile the three submodule pointer advances bundled with the earlier Story 4.8 commit.
+  status: done 2026-11-24
+  resolution: [Story 4.8 dependency reconciliation](spec-4-8-register-and-reconcile-date-reminders-durably.md#concurrent-dependency-changes-recorded-2026-11-24) records the exact three gitlink transitions in `33a27e2` and distinguishes the separate `56a235c` changes. The historical commits and current gitlinks are preserved.
   evidence: Parties, Projects, and Tenants pointers advanced relative to the 4.8 baseline despite its no-submodule constraint; they are already committed concurrent user-owned changes and were preserved as required by repository instructions.
 
 ## Deferred from: code review of 4-8-register-and-reconcile-date-reminders-durably (2026-09-06)
