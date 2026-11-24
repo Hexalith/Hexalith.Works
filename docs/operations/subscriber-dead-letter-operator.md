@@ -121,6 +121,13 @@ real tenant with that id, or its operators would share a scope with unidentified
 
 ## Works date-reminder recovery warnings
 
+### Historical projection decoder warnings
+
+Archived Works logs use 4504 for unknown or malformed projection evidence, 4505 for an identity
+mismatch, and 4501 for the retired ProjectionDecodeFailed warning. The current SDK rebuild calls
+the decoder without a logger and reports delivery failures through SDK diagnostics. For rollback
+investigations, check the application and category before interpreting archived 4501 events.
+
 ### Current SDK recovery
 
 The SDK reconciles periodically for the lifetime of the host. There is no five-attempt startup budget.

@@ -1,3 +1,4 @@
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
@@ -15,6 +16,26 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Qualifies the bounded skip diagnostics shared by projection decoding paths.</summary>
 public sealed class WorkItemProjectionDecoderTelemetryTests
 {
+    /// <summary>Works source-generated event identifiers select exactly one log declaration.</summary>
+    [Fact]
+    public void WorksLogDeclarationsUseUniqueEventIds()
+    {
+        var declarations = typeof(WorkItemProjectionEventDecoder).Assembly.GetTypes()
+            .SelectMany(type => type.GetMethods(BindingFlags.Static | BindingFlags.Instance |
+                BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly))
+            .Select(method => (Method: method, Message: method.GetCustomAttribute<LoggerMessageAttribute>()))
+            .Where(declaration => declaration.Message is not null)
+            .GroupBy(declaration => declaration.Message!.EventId)
+            .ToArray();
+
+        declarations.ShouldNotBeEmpty();
+        foreach (var group in declarations)
+        {
+            group.Select(declaration => $"{declaration.Method.DeclaringType?.FullName}.{declaration.Method.Name}")
+                .ShouldHaveSingleItem($"Works log EventId {group.Key} must identify one declaration.");
+        }
+    }
+
     /// <summary>Unknown, empty, null and malformed evidence retain classification and bounded structured fields.</summary>
     /// <param name="failure">The decoder refusal branch to execute.</param>
     [Theory]
