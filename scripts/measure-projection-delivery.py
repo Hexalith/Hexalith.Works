@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Measure ordinary Works delivery against an owned Dapr and Redis instance."""
+"""Measure Works projection and recovery paths against an owned Dapr and Redis instance."""
 
 import argparse
 import json
@@ -16,7 +16,10 @@ from xml.etree import ElementTree
 
 
 WORKSPACE = Path(__file__).resolve().parents[1]
-METHOD = "Hexalith.Works.IntegrationTests.WorksSdkProjectionQueryTests.OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits"
+METHODS = {
+    "ordinary-delivery": "WorksSdkProjectionQueryTests.OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits",
+    "recovery-catalog": "WorksRecoveryCatalogMeasurementTests.CatalogSweepMeasuresRealStoreCost",
+}
 
 
 def docker(*arguments):
@@ -42,7 +45,8 @@ def wait_for_sidecar(address):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--results", type=Path, required=True, help="Destination for the three-scenario xUnit XML report")
+    parser.add_argument("--results", type=Path, required=True, help="Destination for the xUnit XML report")
+    parser.add_argument("--scenario", choices=METHODS, default="ordinary-delivery")
     args = parser.parse_args()
     result = args.results.resolve()
     result.parent.mkdir(parents=True, exist_ok=True)
@@ -100,24 +104,34 @@ scopes:
             environment["WORKS_PROJECTION_MEASUREMENT_RUNTIME"] = runtime_id
             environment["WORKS_PROJECTION_MEASUREMENT_REDIS"] = redis_id
             environment["WORKS_PROJECTION_MEASUREMENT_GRPC"] = "http://" + docker("port", sidecar, "50001/tcp")
-            subprocess.run(("dotnet", binary, "-explicit", "on", "-method", METHOD,
+            method = METHODS[args.scenario]
+            subprocess.run(("dotnet", binary, "-explicit", "on", "-method", "Hexalith.Works.IntegrationTests." + method,
                             "-showLiveOutput", "-result-xml", result), env=environment, check=True, timeout=480)
-            assemblies = ElementTree.parse(result)
-            passed = [case for case in assemblies.findall(".//test") if case.get("result") == "Pass"]
-            if len(passed) != 3 or not all(case.get("method") == METHOD.rsplit(".", 1)[1] for case in passed):
-                raise RuntimeError("The measurement requires three successful delivery scenarios.")
-            # xUnit escapes quotes in test output before writing the XML text node.
-            samples = [json.loads(json.loads('"' + case.findtext("output", "").strip() + '"')) for case in passed]
-            scenarios = {(sample["ownerCount"], sample["largeHistories"]) for sample in samples}
-            if scenarios != {(32, False), (32, True), (512, False)} or any(
-                sample["measurement"] != "ordinary-delivery" or len(sample["samplesMilliseconds"]) != 5
-                or sample["runtimeImage"] != runtime_id or sample["redisImage"] != redis_id for sample in samples
-            ):
-                raise RuntimeError("The report must retain every delivery sample and the selected images.")
-            print(json.dumps(samples, indent=2))
+            print(json.dumps(validate_report(result, args.scenario, method, runtime_id, redis_id), indent=2))
         except (Exception, KeyboardInterrupt):
             subprocess.run(("docker", "logs", sidecar), check=False, timeout=30)
             raise
+
+
+def validate_report(result, scenario, method, runtime_id, redis_id):
+    cases = ElementTree.parse(result).findall(".//test")
+    if not cases or any(case.get("result") != "Pass" or case.get("method") != method.rsplit(".", 1)[1] for case in cases):
+        raise RuntimeError("The measurement requires all selected cases to pass.")
+    # xUnit escapes quotes in test output before writing the XML text node.
+    samples = [json.loads(json.loads('"' + line + '"'))
+               for case in cases for line in case.findtext("output", "").splitlines() if line.strip()]
+    if any(sample["measurement"] != scenario or len(sample["samplesMilliseconds"]) == 0
+           or sample["runtimeImage"] != runtime_id or sample["redisImage"] != redis_id for sample in samples):
+        raise RuntimeError("The report must retain the timing samples and the selected images.")
+    if scenario == "ordinary-delivery":
+        observed = {(sample["ownerCount"], sample["largeHistories"], len(sample["samplesMilliseconds"])) for sample in samples}
+        expected = {(32, False, 5), (32, True, 5), (512, False, 5)}
+    else:
+        observed = {(sample["candidates"], sample["multiPage"], len(sample["samplesMilliseconds"])) for sample in samples}
+        expected = {(6, False, 5), (45, True, 15)}
+    if len(samples) != len(expected) or observed != expected:
+        raise RuntimeError("The report must retain every expected workload and timing sample.")
+    return samples
 
 
 if __name__ == "__main__":

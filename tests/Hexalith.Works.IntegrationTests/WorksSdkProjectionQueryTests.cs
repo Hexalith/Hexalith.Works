@@ -1695,15 +1695,8 @@ public sealed class WorksSdkProjectionQueryTests
     [InlineData(512, false)]
     public async Task OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits(int ownerCount, bool largeHistories)
     {
-        string? endpoint = Environment.GetEnvironmentVariable("WORKS_PROJECTION_MEASUREMENT_GRPC");
-        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? address)
-            || address.Scheme != Uri.UriSchemeHttp || address.Host != "127.0.0.1")
-        {
-            throw new InvalidOperationException("The projection measurement requires a disposable loopback Dapr gRPC endpoint.");
-        }
-
         CancellationToken ct = TestContext.Current.CancellationToken;
-        using DaprClient client = new DaprClientBuilder().UseGrpcEndpoint(address.ToString()).Build();
+        using DaprClient client = WorksProjectionMeasurementEndpoint.CreateClient();
         var batchOptions = Options.Create(new ReadModelBatchOptions
         {
             MaxOperations = WorksRebuildOperationBound.MaxOperations,

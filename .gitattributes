@@ -128,3 +128,5 @@ tests/Hexalith.Works.IntegrationTests/WorksSdkReminderDeliveryTests.cs whitespac
 
 # Preserve the authored CRLF of the query admission tests.
 tests/Hexalith.Works.IntegrationTests/WorksQueryPolicyDeadlineTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksRecoveryCatalogMeasurementTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksProjectionMeasurementEndpoint.cs whitespace=cr-at-eol

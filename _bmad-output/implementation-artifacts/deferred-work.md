@@ -1630,6 +1630,8 @@ These four items were reconfirmed on the current production code. They do not op
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
   summary: Benchmark Works recovery catalog enumeration at supported large candidate populations (medium, unverified).
+  status: done 2026-11-24
+  resolution: The real Dapr/Redis catalog returned complete ordered sweeps for six and 45 sources across three tenants. The 45-source profile used three pages with 119–144 ms per call, below the selected 500 ms operation budget. [Measurement spec](spec-measure-works-recovery-catalog.md).
   evidence: Review BH6 found full membership reread/sort per keyset page, but no measured allowed population exceeds the SDK deadline; run a representative multi-tenant capacity benchmark with configured freshness and discovery limits to settle the claim.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-15-adopt-sdk-reminder-process-and-command-seams-in-works.md`
@@ -2147,6 +2149,8 @@ Hosting/runtime and architecture-guards group, Works `18e94d3..ab020fa`. These e
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B8 — Measure whole-catalog rescans during paged discovery (maybe-false; unverified medium).
+  status: done 2026-11-24
+  resolution: The 45-source recovery-catalog measurement closes this duplicate. Its five complete three-page sweeps exercise whole-catalog rereads on every continuation. [Measurement spec](spec-measure-works-recovery-catalog.md).
   evidence: WorksProcessSourceCatalog.cs:27 scans tenant membership and materializes all sources before applying afterKey at83 on each page. This predates cutover and no recovery/readiness deadline failure was demonstrated. Measure complete multi-page sweeps with real-store latency; any cursor optimization must preserve incomplete-scope detection and progress for healthy tenants.
 
 ## Deferred from: code review of spec-4-9-migrate-works-hosting-to-the-platform-boundary (2026-10-26, CI/build group)
