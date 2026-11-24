@@ -1704,6 +1704,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
   status: done 2026-10-28
   resolution: Duplicate observation of the mixed-mode restore item above, counted once; see [spec-five-deferred-recovery-admission.md](spec-five-deferred-recovery-admission.md). Current mixed modes fail explicitly with HXW0001 and the conditional PackageVersion removal no longer exists.
 - `Directory.Solution.targets` ignores `Targets`/`BuildProjectInSolution` metadata and may double-build; unverified low-medium — binlog.
+  status: done 2026-11-24
+  resolution: Executing the current Works solution imports proved native MSBuild honors the Release project exclusion, runs each requested Build and Pack in order once, and preserves a Pack-only invocation. Debug includes the excluded project as a control. [Verification spec](spec-qualify-native-solution-target-selection.md).
 
 ## Deferred from: code review of spec-4-15 (2026-10-17, src-only pass)
 

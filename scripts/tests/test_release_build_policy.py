@@ -284,24 +284,40 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
                 self.assertNotIn("COLLECTED", result.stdout)
                 self.assertNotIn("COMPILED", result.stdout)
 
-    def test_solution_build_then_pack_reaches_every_project(self):
+    def test_solution_build_and_pack_preserve_configuration_project_selection(self):
         shutil.copyfile(ROOT / "Directory.Solution.props", self.root / "Directory.Solution.props")
-        solution_targets = ROOT / "Directory.Solution.targets"
-        if solution_targets.exists():
-            shutil.copyfile(solution_targets, self.root / solution_targets.name)
-        for name in ("First", "Second"):
+        shutil.copyfile(ROOT / "Directory.Solution.targets", self.root / "Directory.Solution.targets")
+        projects = ("First", "Second", "DebugOnly")
+        for name in projects:
             (self.root / f"{name}.csproj").write_text(
                 '<Project><Target Name="Build"><Message Text="BUILD_' + name + '" Importance="high" />'
-                '</Target><Target Name="Pack"><Message Text="PACK_' + name + '" Importance="high" />'
-                '</Target></Project>'
+                '</Target><Target Name="Pack"><Message Text="PACK_' + name + '" Importance="high" /></Target></Project>'
             )
         self.project = self.root / "Probe.slnx"
-        self.project.write_text('<Solution><Project Path="First.csproj" /><Project Path="Second.csproj" /></Solution>')
-        result = self.msbuild("-t:Build,Pack", "-p:Configuration=Release")
-        self.assertEqual(0, result.returncode, result.stdout + result.stderr)
-        for name in ("First", "Second"):
-            self.assertEqual(1, result.stdout.count(f"BUILD_{name}"), result.stdout)
-            self.assertEqual(1, result.stdout.count(f"PACK_{name}"), result.stdout)
+        self.project.write_text(
+            '<Solution><Project Path="First.csproj" /><Project Path="Second.csproj" />'
+            '<Project Path="DebugOnly.csproj"><Build Solution="Release|*" Project="false" /></Project></Solution>'
+        )
+        evidence = Path(os.environ.get("WORKS_SOLUTION_BUILD_EVIDENCE", self.root)).resolve()
+        evidence.mkdir(parents=True, exist_ok=True)
+        for configuration in ("Release", "Debug"):
+            with self.subTest(configuration=configuration):
+                result = self.msbuild("-t:Build,Pack", f"-p:Configuration={configuration}",
+                                      f"-bl:{evidence / (configuration + '.binlog')}")
+                self.assertEqual(0, result.returncode, result.stdout + result.stderr)
+                for name in projects:
+                    count = 0 if configuration == "Release" and name == "DebugOnly" else 1
+                    self.assertEqual(count, result.stdout.count(f"BUILD_{name}"), result.stdout)
+                    self.assertEqual(count, result.stdout.count(f"PACK_{name}"), result.stdout)
+                    if count:
+                        self.assertLess(result.stdout.index(f"BUILD_{name}"), result.stdout.index(f"PACK_{name}"))
+
+        pack_only = self.msbuild("-t:Pack", "-p:Configuration=Release", f"-bl:{evidence / 'PackOnly.binlog'}")
+        self.assertEqual(0, pack_only.returncode, pack_only.stdout + pack_only.stderr)
+        for name in projects:
+            self.assertNotIn(f"BUILD_{name}", pack_only.stdout)
+            count = 0 if name == "DebugOnly" else 1
+            self.assertEqual(count, pack_only.stdout.count(f"PACK_{name}"), pack_only.stdout)
 
 
 if __name__ == "__main__":
