@@ -1346,6 +1346,8 @@ archived: 2026-10-23
   evidence: Continuation review C3-BH9 (2026-10-01). An earlier committed refresh of `epic-4-context.md` replaced the explicit publication-order statement with acknowledgement-after-durable-commit wording. The architecture remains authoritative and is loaded by this spec, but future context refreshes should carry the explicit order. This run did not edit the context, and the build workflow routes agent-context edits to deferred work.
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Reconcile the open intent-gap table in the Works CI/CD spec and retain its broad Integration TRX outside `/tmp`.
+  status: done 2026-11-24
+  resolution: Closes Story 4.11 review carries C7-BH13, C8-BH9, C12-BH10, C24-BH10 and C24-BH11. `spec-implement-works-ci-cd.md` now records that commit `78e4585` appended the late "Review iteration 3" table as a second record. Its intent-gap rows were settled by the frozen collision rule (every 409 fails), and its release path was removed by `18853d2` and replaced by the CiCd-owned shared release caller (`3996de2`). The six cited `/tmp` TRX files no longer exist and are recorded as unrecoverable. Committing replacements would contradict the CI/CD evidence policy; storage stays with the open artifact-storage decision. [Spec](spec-reconcile-works-ci-cd-intent-gaps.md).
   evidence: Story 4.11 review C7-BH13. `spec-implement-works-ci-cd.md` still places a 2026-09-20 "Review iteration 3" table after iteration 5, with open intent-gap rows 72–74, 93, and 103, and records the 514/514 Integration pass only as `/tmp/works-loop2-final-broad.vn9QkM/final-broad.trx`. This is outside Story 4.11.
 
 - source_spec: `spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
@@ -2421,3 +2423,15 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 - source_spec: `spec-measure-terminal-queue-membership.md`
   summary: Reduce the what's-next query's related-document reads for large retained terminal populations.
   evidence: Every query timed out near five seconds with eight eligible items and 4,096 terminal members. Any optimization must still bind parking and roll-up evidence to one generation and refuse contradictory indexes and corrupt related documents correctly.
+
+- source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
+  summary: Retire the module release scripts that no workflow invokes, or document a supported local use for them.
+  evidence: Since `18853d2` and the CiCd shared release caller (`3996de2`), only `scripts/tests/test_release_tooling.py` calls `push-release-packages.sh`, `validate-publication-preflight.sh`, `verify-release-publication.sh` and `validate-release-source.sh`. No file in Works references `validate-release-secrets.sh`. README still runs `python3 -m unittest discover -s scripts/tests` as release rehearsal, so the dead publisher logic is still maintained and tested.
+
+- source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
+  summary: Copy the repository SDK pin into the isolated package consumers built by `validate-consumer-package-references.py`.
+  evidence: Late iteration-3 row 79 of `spec-implement-works-ci-cd.md` is still open: the script writes no `global.json` into its scratch root, so `dotnet` can select a different installed SDK than `global.json` (11.0.100). README still lists the script in the local publication-free rehearsal.
+
+- source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
+  summary: Reject the runnable `Hexalith.Works` host package ID as a dependency in `validate-nuget-packages.py`.
+  evidence: Late iteration-3 row 97 of `spec-implement-works-ci-cd.md` is still open: `FORBIDDEN_DEPENDENCY_FRAGMENTS` lists only `.AppHost`, test, sample and `.ServiceDefaults` suffixes, so a dependency on the non-packable host ID `Hexalith.Works` would pass the fragment check if it entered the expected dependency set.
