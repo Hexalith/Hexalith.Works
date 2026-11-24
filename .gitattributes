@@ -130,3 +130,5 @@ tests/Hexalith.Works.IntegrationTests/WorksSdkReminderDeliveryTests.cs whitespac
 tests/Hexalith.Works.IntegrationTests/WorksQueryPolicyDeadlineTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksRecoveryCatalogMeasurementTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksProjectionMeasurementEndpoint.cs whitespace=cr-at-eol
+
+tests/Hexalith.Works.IntegrationTests/WorksQueueMeasurementTests.cs whitespace=cr-at-eol

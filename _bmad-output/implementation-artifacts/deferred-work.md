@@ -2139,6 +2139,8 @@ Hosting/runtime and architecture-guards group, Works `18e94d3..ab020fa`. These e
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B6 — Measure what's-next query cost over retained terminal membership (maybe-false; unverified medium).
+  status: done 2026-11-24
+  resolution: Real Dapr/Redis measurements held the authorized result to eight rows. Three queries passed with 1,024 terminal owners, while all three timed out around five seconds with 4,096 terminal owners and a healthy selected epoch. [Measurement spec](spec-measure-terminal-queue-membership.md).
   evidence: WhatsNextQueryHandler.cs:113 loads parking and roll-up documents for all retained members before executor/status filtering; SharedProjectionEpochCoordinator.ReadManyAsync reads logical keys sequentially. This predates cutover, and no admitted-population timeout was demonstrated. Real-store population measurements against the actual caller deadline would settle the operational effect before any filtering/storage redesign.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2407,3 +2409,7 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 - source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
   summary: Qualify the pending-date document limit for a single owner with many active awaits.
   evidence: Partitioning by owner preserves sequence tombstones across many owners. A single owner with enough valid date conditions can still exceed the same per-document SDK limit that applied to the flat index. Measure the admitted event and projected bytes before deciding how to page an individual owner's active awaits.
+
+- source_spec: `spec-measure-terminal-queue-membership.md`
+  summary: Reduce the what's-next query's related-document reads for large retained terminal populations.
+  evidence: Every query timed out near five seconds with eight eligible items and 4,096 terminal members. Any optimization must still bind parking and roll-up evidence to one generation and refuse contradictory indexes and corrupt related documents correctly.
