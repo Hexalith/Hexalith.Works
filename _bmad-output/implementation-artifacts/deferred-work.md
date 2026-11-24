@@ -1599,6 +1599,8 @@ These four items were reconfirmed on the current production code. They do not op
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-14-adopt-sdk-projection-and-query-seams-in-works.md`
   summary: Benchmark ordinary projection delivery near admitted history/document limits and establish whether full-family read amplification requires optimization (medium, unverified).
+  status: done 2026-11-24
+  resolution: The actual dispatcher and Dapr/Redis store passed three workloads at 32 and 512 owners, including 15,474,344 bytes of history and an append to a near-limit owner. Five samples each measured 287–358 ms, 1,744–1,979 ms and 2,248–2,450 ms. The measured service cost remains below five seconds, with increasing costs for both history and population. [Measurement spec](spec-measure-ordinary-projection-delivery.md).
   evidence: R2-B9 traces sequential loading of member histories, parking, and proposed documents, but no latency-bearing boundary run or measured delivery failure establishes operational harm. A representative persisted-capacity fixture with measured store latency, delivery duration and throughput would settle the claim.
 
 ## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-14)
@@ -1953,6 +1955,8 @@ Historical entries above stay unchanged. The [corrections packet](evidence/story
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: Measure ordinary family-fold latency and capacity against real store budgets (unverified medium).
+  status: done 2026-11-24
+  resolution: The same real-store measurement closes this duplicate of the Story 4.14 delivery benchmark. [Measurement spec](spec-measure-ordinary-projection-delivery.md).
   evidence: Review B10: family-wide reads predate cutover; no admitted-population latency or operational-budget failure has been demonstrated. Settle with real-store population/capacity measurements under the selected SDK profile.
 
 - source_spec: `/home/administrator/projects/hexalith/works/_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2137,6 +2141,8 @@ Hosting/runtime and architecture-guards group, Works `18e94d3..ab020fa`. These e
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R26-B7 — Measure ordinary full-family projection-fold cost (maybe-false; unverified medium; existing follow-up).
+  status: done 2026-11-24
+  resolution: The same real-store measurement closes this duplicate of the Story 4.14 delivery benchmark. [Measurement spec](spec-measure-ordinary-projection-delivery.md).
   evidence: WorkItemSharedProjectionRebuildHandler.cs:170 reloads retained member histories and refolds the tenant per ordinary delivery. The same concern is already in the 4.14 and 4.9 performance follow-ups. No measured operational-budget failure was demonstrated; settle using real-store latency and representative admitted population/history limits before changing folding semantics.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
