@@ -2195,6 +2195,8 @@ Group 3A, Works `18e94d3..986b56f`, limited to the Platform live-proof and harne
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R27A-A3 — AC2's shared-rebuild failure branch has only an in-memory proof (medium; pre-existing).
+  status: done 2026-11-24
+  resolution: Real Dapr/Redis now proves the abort branch. The test uses the dispatcher's deferred-open abort and completion, with deliveries journaled during the capture and racing the abort. The committed generation stays served, every delivery converges, a later rebuild promotes cleanly, and all four observed states equal the in-memory reference. The gateway-delivered Platform check is a new follow-up entry. [Spec](spec-prove-real-store-rebuild-abort.md).
   evidence: `WorksPlatformProjectionChecks.cs:184` drives Begin→Commit only. Abort under concurrent delivery is proven only by `WorksSdkProjectionQueryTests.Aborted_concurrent_rebuild_keeps_old_generation_and_allows_live_delivery_afterward` over `InMemoryReadModelStore`. At the next Platform requalification, add a live abort-under-concurrent-delivery check asserting the served generation and catch-up convergence on the real state store.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2445,3 +2447,11 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 - source_spec: `spec-qualify-unpaged-queue-responses.md`
   summary: Measure the chosen what's-next page size through the real gateway, actor and domain-service invocation path.
   evidence: The real-store measurement had no app channel, so the 4 MiB comparison is arithmetic over measured `QueryResult` wire sizes. Once paging exists, a Platform run should send a maximum-size page through the actual Dapr invocation chain and confirm it is accepted within the budget.
+
+- source_spec: `spec-prove-real-store-rebuild-abort.md`
+  summary: Add the abort-under-concurrent-delivery branch to the gateway-driven Platform projection checks at the next Platform requalification.
+  evidence: `WorksPlatformProjectionChecks` drives only Begin→Commit through the gateway. The real-store proof covers the coordinator abort sequence, but not gateway-delivered events or the dispatcher's Accumulate/Finalize staging. Do not add another `ConversationLinked` to the shared owner, because R3 expects exactly one redelivery.
+
+- source_spec: `spec-prove-real-store-rebuild-abort.md`
+  summary: Determine whether `SharedProjectionEpochCoordinator.GetCheckpointAsync` can be read after a dispatcher-driven rebuild commit of owners that had earlier live deliveries (maybe-false, medium, EventStore).
+  evidence: In-memory and real Dapr stores behave the same. The sequence is: live journal and catch-up for two owners, then `DomainSharedProjectionRebuildDispatcher` Begin/Accumulate/Finalize/Stage/Commit. After that, `GetCheckpointAsync` throws "The owner checkpoint has malformed captured identity references", because the checkpoint has `OwnerSequenceNumber` 0 and a captured identity reference with count 1. A missing Verify or owner-sequence handoff step in the test would settle this as false; a failing read during the next ordinary delivery would confirm it as an SDK defect.

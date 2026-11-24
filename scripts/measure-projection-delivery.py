@@ -22,6 +22,7 @@ METHODS = {
     "terminal-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost",
     "sharded-reads": "WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines",
     "unpaged-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresUnpagedEligibleResponses",
+    "aborted-rebuild": "WorksRealStoreRebuildAbortTests.AbortedRebuildUnderConcurrentDeliveryKeepsTheServedGenerationOnTheRealStore",
 }
 # Seeding the 10,000-owner admitted queue cap on real Redis takes minutes; other scenarios fit the default.
 TIMEOUTS = {"unpaged-queue": 2_400}
@@ -138,6 +139,10 @@ def validate_report(result, scenario, method, runtime_id, redis_id):
     elif scenario == "terminal-queue":
         observed = {(sample["terminalOwners"], sample["activeOwners"], len(sample["samplesMilliseconds"])) for sample in samples}
         expected = {(0, 8, 3), (1_024, 8, 3), (4_096, 8, 3)}
+    elif scenario == "aborted-rebuild":
+        observed = {(sample["realDigest"] == sample["referenceDigest"], sample["servedGeneration"], len(sample["samplesMilliseconds"]))
+                    for sample in samples}
+        expected = {(True, 1, 1)}
     elif scenario == "unpaged-queue":
         if any(sample["unpagedPayloadBytes"] <= 0 or sample["unpagedWireBytes"] <= sample["unpagedPayloadBytes"]
                or len(sample["responseBytes"]) != sample["successful"] or len(sample["responseWireBytes"]) != sample["successful"]
