@@ -20,6 +20,7 @@ METHODS = {
     "ordinary-delivery": "WorksSdkProjectionQueryTests.OrdinaryDeliveryMeasuresRealStoreCostNearHistoryLimits",
     "recovery-catalog": "WorksRecoveryCatalogMeasurementTests.CatalogSweepMeasuresRealStoreCost",
     "terminal-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost",
+    "sharded-reads": "WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines",
 }
 
 
@@ -130,9 +131,13 @@ def validate_report(result, scenario, method, runtime_id, redis_id):
     elif scenario == "recovery-catalog":
         observed = {(sample["candidates"], sample["multiPage"], len(sample["samplesMilliseconds"])) for sample in samples}
         expected = {(6, False, 5), (45, True, 15)}
-    else:
+    elif scenario == "terminal-queue":
         observed = {(sample["terminalOwners"], sample["activeOwners"], len(sample["samplesMilliseconds"])) for sample in samples}
         expected = {(0, 8, 3), (1_024, 8, 3), (4_096, 8, 3)}
+    else:
+        observed = {(sample["owners"], len(sample["samplesMilliseconds"]), len(sample["discoveryMilliseconds"]),
+                     len(sample["boundedDiscoveryMilliseconds"])) for sample in samples}
+        expected = {(2_048, 5, 5, 5)}
     if len(samples) != len(expected) or observed != expected:
         raise RuntimeError("The report must retain every expected workload and timing sample.")
     return samples

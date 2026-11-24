@@ -2404,6 +2404,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
   summary: Measure sharded-index reads against the protected Works query and recovery deadlines.
+  status: done 2026-11-24
+  resolution: Real Dapr/Redis reads reopened 89 shards at 2,048 retained owners. Five authorized detail reads completed in 84–159 ms. Raw discovery took 539–950 ms and all five direct 500 ms-budget probes cancelled. This larger population is projection stress evidence. [Measurement spec](spec-measure-sharded-projection-reads.md).
   evidence: The 10,000-owner coordinator fixture qualifies staging and retained metadata. Discovery reads the new shard keys through SDK admission, and detail verifies the selected index before reading its related data. Measure these paths against the real Dapr provider with representative admitted tenants before tuning concurrency or changing the index.
 
 - source_spec: `spec-dw-68-shard-runtime-index-watermarks.md`
