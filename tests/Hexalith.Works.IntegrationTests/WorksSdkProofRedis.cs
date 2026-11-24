@@ -329,7 +329,7 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
     {
         await CaptureRedisAsync(cancellationToken).ConfigureAwait(false);
         var snapshot = _snapshot ?? throw new InvalidOperationException("Redis capture did not complete.");
-        var files = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+        var files = EnumerateConfigurationFiles()
             .ToDictionary(path => Path.GetRelativePath(directory, path), File.ReadAllBytes, StringComparer.Ordinal);
         Dictionary<string, UnixFileMode>? fileModes = null;
         if (!OperatingSystem.IsWindows())
@@ -401,10 +401,9 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         foreach (RedisKey key in redis.GetServer(RedisEndpoint).Keys())
             fingerprints.Add(key.ToString(), await RedisValueFingerprintAsync(database, key).ConfigureAwait(false)
                 ?? throw new InvalidOperationException("A restored or captured synthetic key is missing."));
-        Dictionary<string, string> hashes = Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-            .Select(path => Path.GetRelativePath(directory, path))
-            .Where(relative => relative != "scheduler.tar")
-            .ToDictionary(relative => relative, relative => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(Path.Combine(directory, relative)))), StringComparer.Ordinal);
+        Dictionary<string, string> hashes = EnumerateConfigurationFiles()
+            .ToDictionary(path => Path.GetRelativePath(directory, path),
+                path => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))), StringComparer.Ordinal);
         hashes["scheduler.tar"] = Convert.ToHexString(SHA256.HashData(await File.ReadAllBytesAsync(Path.Combine(directory, "scheduler.tar"), cancellationToken).ConfigureAwait(false)));
         hashes["scheduler-file-inventory-sha256"] = Convert.ToHexString(SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(
             await SchedulerInventoryAsync(cancellationToken).ConfigureAwait(false))));
@@ -424,8 +423,10 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         IDatabase database = redis.GetDatabase();
         await RestoreCapturedRedisAsync(redis, cancellationToken).ConfigureAwait(false);
         await File.WriteAllTextAsync(Path.Combine(directory, "post-snapshot-sentinel"), "must-be-removed", cancellationToken).ConfigureAwait(false);
-        foreach (string path in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-            .Where(path => Path.GetFileName(path) != "scheduler.tar")) File.Delete(path);
+        foreach (string path in EnumerateConfigurationFiles())
+        {
+            File.Delete(path);
+        }
         foreach ((string relative, byte[] bytes) in _files)
         {
             string path = Path.Combine(directory, relative);
@@ -441,6 +442,10 @@ internal sealed class WorksSdkProofRedis(string name, string directory, Func<str
         if (await SchedulerInventoryAsync(cancellationToken).ConfigureAwait(false) != _schedulerInventory)
             throw new InvalidOperationException("Restored Scheduler file inventory differs from its stopped backup.");
     }
+
+    private IEnumerable<string> EnumerateConfigurationFiles() =>
+        Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+            .Where(path => Path.GetRelativePath(directory, path) != "scheduler.tar");
 
     /// <summary>Restores and verifies the captured Redis values of this owned, stopped fleet.</summary>
     internal async Task RestoreRedisAsync(CancellationToken cancellationToken)

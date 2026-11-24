@@ -286,6 +286,42 @@ public sealed class WorksPlatformFleetRestoreTests
         error.Message.ShouldBe("No compatible fleet snapshot exists.");
     }
 
+    /// <summary>A second full capture replaces the archived Scheduler state and preserves nested configuration files.</summary>
+    [Fact]
+    public async Task SecondFleetCaptureRestoresItsOwnSchedulerArchive()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        WorksSdkProofRedis fixture = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: true).ConfigureAwait(true);
+        await using var ownedFixture = fixture.ConfigureAwait(true);
+
+        string root = Path.GetDirectoryName(fixture.ComponentPath).ShouldNotBeNull();
+        string nestedArchive = Path.Combine(root, "configuration", "scheduler.tar");
+        Directory.CreateDirectory(Path.GetDirectoryName(nestedArchive).ShouldNotBeNull());
+        await File.WriteAllTextAsync(nestedArchive, "first configuration", ct).ConfigureAwait(true);
+        _ = await fixture.ExecuteInSchedulerVolumeAsync("printf first > /fleet/state", ct).ConfigureAwait(true);
+        IReadOnlyDictionary<string, string> first = await fixture.CaptureFleetAsync(ct).ConfigureAwait(true);
+
+        await File.WriteAllTextAsync(nestedArchive, "second configuration", ct).ConfigureAwait(true);
+        _ = await fixture.ExecuteInSchedulerVolumeAsync("printf second > /fleet/state", ct).ConfigureAwait(true);
+        IReadOnlyDictionary<string, string> second = await fixture.CaptureFleetAsync(ct).ConfigureAwait(true);
+        second["scheduler.tar"].ShouldNotBe(first["scheduler.tar"]);
+        second["scheduler-file-inventory-sha256"].ShouldNotBe(first["scheduler-file-inventory-sha256"]);
+
+        string laterArchive = Path.Combine(root, "later", "scheduler.tar");
+        Directory.CreateDirectory(Path.GetDirectoryName(laterArchive).ShouldNotBeNull());
+        await File.WriteAllTextAsync(laterArchive, "post-capture configuration", ct).ConfigureAwait(true);
+        _ = await fixture.ExecuteInSchedulerVolumeAsync("printf third > /fleet/state", ct).ConfigureAwait(true);
+        await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+
+        (await fixture.ExecuteInSchedulerVolumeAsync("cat /fleet/state", ct).ConfigureAwait(true)).Trim().ShouldBe("second");
+        (await File.ReadAllTextAsync(nestedArchive, ct).ConfigureAwait(true)).ShouldBe("second configuration");
+        File.Exists(laterArchive).ShouldBeFalse();
+        IReadOnlyDictionary<string, string> restored = await fixture.ObserveFleetAsync(ct).ConfigureAwait(true);
+        restored.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+            .ShouldBe(second.Where(pair => pair.Key != WorksSdkProofRedis.DumpInventoryKey)
+                .OrderBy(pair => pair.Key, StringComparer.Ordinal));
+    }
+
     /// <summary>Full restored-state validation refuses changed bytes, collections, types and expiry.</summary>
     [Theory]
     [InlineData("string")]

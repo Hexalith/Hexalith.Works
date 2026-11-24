@@ -2378,3 +2378,5 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 - source_spec: `spec-repair-works-release-gates.md`
   summary: A second complete fleet backup on the same fixture can restore the first Scheduler archive.
   evidence: Before and after the Redis test repair, full capture reads configuration files before writing the new `scheduler.tar`. On the second capture the previous archive is one of those files. Full restore writes that copy back before extracting it. A regression fixture should take two complete snapshots with distinct Scheduler contents and restore the second.
+  status: done 2026-11-24
+  resolution: The root Scheduler tar is captured and restored only as the Scheduler archive. The two-snapshot regression restores the second Scheduler contents, reproduces the fleet inventory, and verifies normal cleanup and restore of nested same-name configuration files.
