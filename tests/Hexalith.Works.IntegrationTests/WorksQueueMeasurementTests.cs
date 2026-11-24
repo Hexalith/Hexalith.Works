@@ -32,7 +32,7 @@ public sealed class WorksQueueMeasurementTests
     private const string Workload = "scheduler";
     private const int ActiveOwners = 8;
 
-    /// <summary>Compares successful or deadline-bounded reads without increasing the authorized result size.</summary>
+    /// <summary>Requires successful reads for every retained terminal population without increasing the authorized result size.</summary>
     [Theory(Explicit = true)]
     [InlineData(0)]
     [InlineData(1_024)]
@@ -87,10 +87,11 @@ public sealed class WorksQueueMeasurementTests
             }
             else
             {
-                terminalOwners.ShouldBeGreaterThan(0);
                 RequireTimeout(result, elapsed, logger);
             }
         }
+        // Retained terminal members no longer cost related reads, so every population must answer within budget.
+        successful.ShouldBe(3);
         var current = await coordinator.GetStatusAsync(scope, ct);
         current.PendingDeliveryCount.ShouldBe(0);
         current.IsDegraded.ShouldBeFalse();

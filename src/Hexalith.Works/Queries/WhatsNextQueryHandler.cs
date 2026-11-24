@@ -20,8 +20,9 @@ namespace Hexalith.Works.Queries;
 /// <see cref="WhatsNextOrdering"/> (Priority → earliest Due Date → identity) and the pure
 /// <see cref="WhatsNextQueryAuthorization"/> tenant filter using <see cref="QueryEnvelope.TenantId"/>, and
 /// returns the ordered, authorized result as payload bytes with projection metadata. An available projection
-/// with no eligible authorized items returns an empty queue. Missing, invalid, or unavailable required
-/// projection documents instead return a <c>projection-unavailable</c> failure with unavailable metadata.
+/// with no eligible authorized items returns an empty queue. Parking and roll-up documents are required only
+/// for the authorized eligible candidates and for members named by SDK parking evidence; missing, invalid, or
+/// unavailable required documents return a <c>projection-unavailable</c> failure with unavailable metadata.
 /// Recorded parked members are omitted from a successful degraded queue carrying <c>works-runtime-parked</c>.
 /// </summary>
 public sealed class WhatsNextQueryHandler : IDomainQueryHandler
@@ -129,11 +130,41 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             return Unavailable(preliminary.Generation, preliminary.IsStale);
         }
 
-        IReadOnlyList<string> membersForRead = preliminary.Value.Indexes.Queue.MemberWorkItemIds;
+        // Related documents are read only for the authorized eligible candidates and for members named by SDK
+        // parking evidence, so retained terminal membership does not cost two reads per member. Evidence matters
+        // even when resolved: re-parking at an already recorded position writes Parked without new evidence.
+        WorksWhatsNextTenantIndex index = preliminary.Value.Indexes.Queue;
+        var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
+        if (index.Items.Any(static pair => pair.Value?.WorkItemId?.Value is { } id && !string.Equals(id, pair.Key, StringComparison.Ordinal)))
+        {
+            // A contradictory index could alias two entries to one work item's related documents.
+            WorksFailureDiagnostics.QueryUnavailable(_logger, WhatsNextQueryType, query.TenantId, query.CorrelationId, "invalid-index");
+            return Unavailable(preliminary.Generation, true);
+        }
+        IReadOnlyList<WhatsNextItem> candidates = WhatsNextQueryAuthorization.FilterList(
+            query.TenantId,
+            index.Items.Values
+                .Where(item => item?.WorkItemId is not null && members.Contains(item.WorkItemId.Value))
+                .OrderBy(static item => item, WhatsNextOrdering.Instance),
+            item => authority.AllWork
+                || item.Status == WorkItemStatus.Queued
+                || item.Status == WorkItemStatus.Assigned
+                    && string.Equals(item.ExecutorBinding?.PartyId?.Value, authority.PartyId, StringComparison.Ordinal));
+        SharedProjectionEpochStatus selected = await coordinator.GetStatusAsync(scope, cancellationToken)
+            .ConfigureAwait(false);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (selected.IsDegraded || selected.IsOffboarded || selected.ActiveGeneration != preliminary.Generation)
+        {
+            return Unavailable(preliminary.Generation, true);
+        }
+
+        HashSet<string> evidenced = ParkingEvidenceMembers(selected, members);
+        string[] parkingMembers = [.. candidates.Select(static item => item.WorkItemId.Value)
+            .Concat(evidenced).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal)];
         SharedProjectionReadResult<WorksRuntimeIndexView> read = await WorksRuntimeIndexReader
             .ReadRelatedAsync(coordinator, scope, preliminary,
-                [.. membersForRead.Select(WorksReadModelKeys.RuntimeParkingKey),
-                    .. membersForRead.Select(WorksReadModelKeys.RuntimeRollUpKey)], cancellationToken)
+                [.. parkingMembers.Select(WorksReadModelKeys.RuntimeParkingKey),
+                    .. candidates.Select(static item => WorksReadModelKeys.RuntimeRollUpKey(item.WorkItemId.Value))], cancellationToken)
             .ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
         if (!read.IsAvailable || read.Value is null)
@@ -144,16 +175,18 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
         SharedProjectionEpochStatus status = await coordinator.GetStatusAsync(scope, cancellationToken)
             .ConfigureAwait(false);
         cancellationToken.ThrowIfCancellationRequested();
-        if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation)
+        if (read.IsDegraded || status.IsDegraded || status.IsOffboarded || status.ActiveGeneration != read.Generation
+            || !ParkingEvidenceMembers(status, members).IsSubsetOf(parkingMembers))
         {
+            // Defense in depth: new unresolved evidence already degrades the status, but a parking document read
+            // must always cover every member the SDK records as parked.
             return Unavailable(read.Generation, true);
         }
 
         bool stale = read.IsStale || status.IsBuilding || status.PendingDeliveryCount > 0;
 
-        WorksWhatsNextTenantIndex index = read.Value.Indexes.Queue;
         var parked = new HashSet<string>(StringComparer.Ordinal);
-        foreach (string member in index.MemberWorkItemIds)
+        foreach (string member in parkingMembers)
         {
             if (!read.Value.Documents.TryGetValue(WorksReadModelKeys.RuntimeParkingKey(member),
                     out WorksRuntimeDocument? parkingDocument) || parkingDocument is null)
@@ -167,18 +200,7 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             }
         }
 
-        var members = new HashSet<string>(index.MemberWorkItemIds, StringComparer.Ordinal);
-        IReadOnlyList<WhatsNextItem> items = WhatsNextQueryAuthorization.FilterList(
-            query.TenantId,
-            index.Items.Values
-                .Where(item => item?.WorkItemId is not null
-                    && members.Contains(item.WorkItemId.Value)
-                    && !parked.Contains(item.WorkItemId.Value))
-                .OrderBy(static item => item, WhatsNextOrdering.Instance),
-            item => authority.AllWork
-                || item.Status == WorkItemStatus.Queued
-                || item.Status == WorkItemStatus.Assigned
-                    && string.Equals(item.ExecutorBinding?.PartyId?.Value, authority.PartyId, StringComparison.Ordinal));
+        IReadOnlyList<WhatsNextItem> items = [.. candidates.Where(item => !parked.Contains(item.WorkItemId.Value))];
         var rollUps = new List<WorkItemRollUp>();
         foreach (WhatsNextItem item in items)
         {
@@ -198,6 +220,9 @@ public sealed class WhatsNextQueryHandler : IDomainQueryHandler
             WorksReadModelKeys.WhatsNextProjectionType,
             Metadata(read.Generation, stale, parked.Count > 0, rollUps));
     }
+
+    private static HashSet<string> ParkingEvidenceMembers(SharedProjectionEpochStatus status, HashSet<string> members)
+        => new(status.ParkingEvidence.Select(static evidence => evidence.SourceStream).Where(members.Contains), StringComparer.Ordinal);
 
     private static QueryResponseMetadata Metadata(long generation, bool stale, bool parked, IReadOnlyList<WorkItemRollUp> rollUps)
     {

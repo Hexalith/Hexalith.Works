@@ -61,9 +61,13 @@ public sealed class WorksProjectionQueryCancellationTests
                 new Obligation("Projection read deadline"));
             var dto = new ProjectionEventDto(nameof(WorkItemCreated), JsonSerializer.SerializeToUtf8Bytes(created),
                 "json", 1, DateTimeOffset.UnixEpoch, "deadline-seed", GlobalPosition: 1);
-            var candidate = new WorkItemSharedRebuildCandidateState([new WorkItemSharedRebuildAggregateHistory(WorkItem, [dto])]);
+            // The what's-next query reads parking only for eligible candidates, so the blocked item is queued.
+            var queued = new WorkItemQueued(WorkItem, 2, new TenantId(Tenant), new WorkItemId(WorkItem));
+            var queuedDto = new ProjectionEventDto(nameof(WorkItemQueued), JsonSerializer.SerializeToUtf8Bytes(queued),
+                "json", 2, DateTimeOffset.UnixEpoch, "deadline-seed", GlobalPosition: 2);
+            var candidate = new WorkItemSharedRebuildCandidateState([new WorkItemSharedRebuildAggregateHistory(WorkItem, [dto, queuedDto])]);
             var plan = WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity, candidate, ct);
-            _ = await seeded.BeginAsync(scope, identity.OperationId, "seed-catalog", new Dictionary<string, long> { [WorkItem] = 1 }, ct);
+            _ = await seeded.BeginAsync(scope, identity.OperationId, "seed-catalog", new Dictionary<string, long> { [WorkItem] = 2 }, ct);
             _ = await seeded.StageAsync(scope, identity.OperationId, plan.Operations, ct);
             await seeded.CommitAsync(scope, identity.OperationId, ct);
             long generation = (await seeded.GetStatusAsync(scope, ct)).ActiveGeneration;

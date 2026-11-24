@@ -2430,6 +2430,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-measure-terminal-queue-membership.md`
   summary: Reduce the what's-next query's related-document reads for large retained terminal populations.
+  status: done 2026-11-24
+  resolution: The what's-next handler now reads parking and roll-up documents only for authorized eligible candidates and for members named by SDK parking evidence. Real Dapr/Redis queries with 4,096 retained terminal members succeed 3/3 in 159–168 ms; before, all three timed out at about 5 s. Candidate documents still refuse or degrade the queue; ineligible members' documents no longer do. [Spec](spec-bound-whats-next-related-reads.md).
   evidence: Every query timed out near five seconds with eight eligible items and 4,096 terminal members. Any optimization must still bind parking and roll-up evidence to one generation and refuse contradictory indexes and corrupt related documents correctly.
 
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
