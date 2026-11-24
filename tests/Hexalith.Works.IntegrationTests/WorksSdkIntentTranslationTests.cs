@@ -220,6 +220,119 @@ public sealed class WorksSdkIntentTranslationTests
         JsonSerializer.Deserialize<ResumeWorkItem>(before.CommandPayload)!.AwaitCondition.ShouldBe(condition);
     }
 
+    /// <summary>
+    /// R29R-B3: a completion checkpointed while the parent was not waiting is reconciled by the parent's own later
+    /// suspension. Only the current suspension of a reciprocally related, already completed child resumes it, and
+    /// an unresolvable child relationship never quarantines the parent's source.
+    /// </summary>
+    /// <param name="scenario">The awaited children and later parent facts when the suspension is translated.</param>
+    /// <param name="resumedChild">The child whose completion resumes the parent, or null for no effect.</param>
+    /// <param name="childReads">The exact number of child stream reads.</param>
+    /// <param name="pageSize">The maximum contextual envelopes per gateway page.</param>
+    [Theory]
+    [InlineData("completed", "child", 1, 256)]
+    [InlineData("completed", "child", 1, 1)]
+    [InlineData("open", null, 1, 256)]
+    [InlineData("missing", null, 1, 256)]
+    [InlineData("rejected-creation", null, 1, 256)]
+    [InlineData("foreign-parent", null, 1, 256)]
+    [InlineData("no-parent", null, 1, 256)]
+    [InlineData("unspawned", null, 0, 256)]
+    [InlineData("resumed-later", null, 0, 256)]
+    [InlineData("resuspended-later", null, 0, 256)]
+    [InlineData("cancelled-later", null, 0, 256)]
+    [InlineData("second-completed", "child-b", 2, 256)]
+    [InlineData("repeated-condition", "child", 1, 2)]
+    public async Task SuspensionResumesFromAnAlreadyCompletedAwaitedChild(string scenario, string? resumedChild, int childReads, int pageSize)
+    {
+        var tenant = new TenantId(Tenant);
+        var parent = new WorkItemId("parent");
+        var child = new WorkItemId("child");
+        var childB = new WorkItemId("child-b");
+        var parentReference = new ParentWorkItemReference(tenant, parent);
+        IEventPayload[] Completed(WorkItemId id, ParentWorkItemReference? claimed) =>
+            [new WorkItemCreated(id.Value, 1, tenant, id, new Obligation(id.Value), Parent: claimed), new WorkItemCompleted(id.Value, 2, tenant, id)];
+        var children = new Dictionary<string, StreamReadPage>(StringComparer.Ordinal)
+        {
+            [child.Value] = Story48Streams.Page(Tenant, child.Value, scenario switch
+            {
+                "open" or "second-completed" => [new WorkItemCreated(child.Value, 1, tenant, child, new Obligation("child"), Parent: parentReference)],
+                "rejected-creation" => [new Hexalith.Works.Contracts.Events.Rejections.WorkItemTransitionRejected(tenant, child, WorkItemStatus.Unknown, "invalid")],
+                "foreign-parent" => Completed(child, new ParentWorkItemReference(tenant, new WorkItemId("other-parent"))),
+                "no-parent" => Completed(child, null),
+                _ => Completed(child, parentReference),
+            }),
+            [childB.Value] = Story48Streams.Page(Tenant, childB.Value, Completed(childB, parentReference)),
+        };
+        AwaitCondition[] conditions = scenario switch
+        {
+            "second-completed" => [AwaitCondition.ChildCompleted(child), AwaitCondition.DateReached(s_due), AwaitCondition.ChildCompleted(childB)],
+            "repeated-condition" => [AwaitCondition.ChildCompleted(child), AwaitCondition.ChildCompleted(child)],
+            _ => [AwaitCondition.DateReached(s_due), AwaitCondition.ChildCompleted(child)],
+        };
+        var parentFacts = new List<IEventPayload> { new WorkItemCreated(parent.Value, 1, tenant, parent, new Obligation("parent")) };
+        if (scenario != "unspawned") parentFacts.Add(new ChildSpawned(parent.Value, parentFacts.Count + 1, tenant, parent, child, new Obligation("child")));
+        parentFacts.Add(new ChildSpawned(parent.Value, parentFacts.Count + 1, tenant, parent, childB, new Obligation("child-b")));
+        int suspension = parentFacts.Count;
+        parentFacts.Add(new WorkItemSuspended(parent.Value, suspension + 1, tenant, parent, conditions));
+        if (scenario == "resumed-later")
+            parentFacts.Add(new WorkItemResumed(parent.Value, suspension + 2, tenant, parent, AwaitCondition.DateReached(s_due)));
+        if (scenario == "resuspended-later")
+            parentFacts.Add(new WorkItemSuspended(parent.Value, suspension + 2, tenant, parent, [AwaitCondition.ChildCompleted(child)]));
+        if (scenario == "cancelled-later")
+            parentFacts.Add(new WorkItemCancelled(parent.Value, suspension + 2, tenant, parent));
+        StreamReadPage parentPage = Story48Streams.Page(Tenant, parent.Value, [.. parentFacts]);
+        int reads = 0;
+        IEventStoreGatewayClient gateway = Substitute.For<IEventStoreGatewayClient>();
+        gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(call =>
+        {
+            StreamReadRequest request = call.Arg<StreamReadRequest>();
+            if (request.AggregateId == parent.Value) return Task.FromResult(SlicePage(parentPage, request, pageSize));
+            if (request.FromSequence == 0) reads++;
+            return scenario == "missing" && request.AggregateId == child.Value
+                ? Task.FromException<StreamReadPage>(new EventStoreGatewayException(404, "Missing stream", reasonCode: StreamReplayReasonCodes.MissingStream))
+                : Task.FromResult(SlicePage(children[request.AggregateId!], request, pageSize));
+        });
+        var translator = new WorksProcessTranslator(new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions())));
+
+        IReadOnlyList<ProcessEffect> effects = await translator.TranslateAsync(new ProcessSource(Tenant, "work", parent.Value),
+            parentPage.Events[suspension], TestContext.Current.CancellationToken);
+
+        reads.ShouldBe(childReads);
+        if (resumedChild is null)
+        {
+            effects.ShouldBeEmpty();
+            return;
+        }
+
+        ProcessEffect effect = effects.ShouldHaveSingleItem();
+        effect.Kind.ShouldBe(EffectKindCatalog.ChildCompletionResume);
+        effect.TargetDomain.ShouldBe("work");
+        effect.TargetAggregate.ShouldBe(parent.Value);
+        effect.Ordinal.ShouldBe(EffectKindCatalog.PrimaryTargetOrdinal);
+        effect.CommandType.ShouldBe(nameof(ResumeWorkItem));
+        ResumeWorkItem command = JsonSerializer.Deserialize<ResumeWorkItem>(effect.CommandPayload).ShouldNotBeNull();
+        command.TenantId.ShouldBe(tenant);
+        command.WorkItemId.ShouldBe(parent);
+        command.AwaitCondition.ShouldBe(AwaitCondition.ChildCompleted(new WorkItemId(resumedChild)));
+    }
+
+    /// <summary>A suspension that awaits no child makes no gateway call.</summary>
+    [Fact]
+    public async Task SuspensionWithoutChildAwaitsReadsNoRelationshipContext()
+    {
+        var tenant = new TenantId(Tenant);
+        var parent = new WorkItemId("parent");
+        StreamReadPage dateOnly = Story48Streams.Page(Tenant, parent.Value,
+            new WorkItemCreated(parent.Value, 1, tenant, parent, new Obligation("parent")),
+            new WorkItemSuspended(parent.Value, 2, tenant, parent, [AwaitCondition.DateReached(s_due)]));
+        IEventStoreGatewayClient quiet = Substitute.For<IEventStoreGatewayClient>();
+        (await new WorksProcessTranslator(new WorksSourceStreamReader(quiet, Options.Create(new WorksRecoveryOptions())))
+            .TranslateAsync(new ProcessSource(Tenant, "work", parent.Value), dateOnly.Events[1], TestContext.Current.CancellationToken))
+            .ShouldBeEmpty();
+        quiet.ReceivedCalls().ShouldBeEmpty();
+    }
+
     /// <summary>Expired parents map each direct child to delegated cascade expiry without a scheduled witness.</summary>
     /// <param name="pageSize">The maximum contextual envelopes per gateway page.</param>
     [Theory]

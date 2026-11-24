@@ -34,7 +34,8 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
         ArgumentNullException.ThrowIfNull(streamEvent);
         long observation = Interlocked.Increment(ref _nextObservation);
         string type = (streamEvent.EventTypeName is { Length: <= 512 } name ? name : string.Empty).Split(',')[0].Split('.').Last();
-        string kind = type is nameof(WorkItemCancelled) or nameof(WorkItemExpired) or nameof(WorkItemCompleted) or nameof(WorkItemRescheduled) ? type : "other";
+        string kind = type is nameof(WorkItemCancelled) or nameof(WorkItemExpired) or nameof(WorkItemCompleted) or nameof(WorkItemRescheduled)
+            or nameof(WorkItemSuspended) ? type : "other";
         long began = Stopwatch.GetTimestamp();
         TryObserve(() => TranslationStarted(logger!, observation, kind));
         try
@@ -76,7 +77,10 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
         if (!WorksEventIdentity.Matches(payload, source.Tenant, source.Aggregate))
             throw new InvalidOperationException("Works process payload differs from its source identity.");
         WorksExpiryEvidence.Validate(payload, source.Tenant, source.Aggregate);
-        if (payload is not (WorkItemCancelled or WorkItemExpired or WorkItemCompleted or WorkItemRescheduled)) return [];
+        if (payload is not (WorkItemCancelled or WorkItemExpired or WorkItemCompleted or WorkItemRescheduled or WorkItemSuspended)) return [];
+        // Only a child await can be satisfied before it is committed; other suspensions need no relationship context.
+        if (payload is WorkItemSuspended { AwaitConditions: var awaited }
+            && !awaited.Any(static condition => condition?.Kind == AwaitConditionKind.ChildCompleted)) return [];
 
         IReadOnlyList<WorksCommittedEvent> history = await _streams.ReadAsync(source.Tenant, source.Aggregate, cancellationToken).ConfigureAwait(false);
         WorksCommittedEvent committed = history.SingleOrDefault(fact => fact.Envelope.SequenceNumber == streamEvent.SequenceNumber)
@@ -90,6 +94,9 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
 
         if (payload is WorkItemCompleted completed)
             return await ChildResumeAsync(source, streamEvent, completed, history, cancellationToken).ConfigureAwait(false);
+
+        if (payload is WorkItemSuspended suspended)
+            return await SuspensionChildResumeAsync(source, streamEvent, suspended, history, cancellationToken).ConfigureAwait(false);
 
         ChildSpawned[] children = [.. history.Where(fact => fact.Envelope.SequenceNumber < streamEvent.SequenceNumber)
             .Select(fact => fact.Payload).OfType<ChildSpawned>()
@@ -183,6 +190,55 @@ internal sealed partial class WorksProcessTranslator(WorksSourceStreamReader str
         return [.. ChildCompletionResumeTranslator.ToResumeCommands(completed,
             [new AwaitingParent(parent.TenantId, parent.WorkItemId, conditions)])
             .Select(command => Effect(EffectKindCatalog.ChildCompletionResume, command.WorkItemId.Value, nameof(ResumeWorkItem), command))];
+    }
+
+    /// <summary>
+    /// Reconciles a child completion that was checkpointed before its parent suspended on it. A completion translated
+    /// while the parent was not waiting has no effect, so the parent's own suspension resumes it when one awaited,
+    /// reciprocally related child has already completed. Later acts on the parent own its state instead.
+    /// </summary>
+    private async Task<IReadOnlyList<ProcessEffect>> SuspensionChildResumeAsync(ProcessSource source, StreamReadEvent envelope,
+        WorkItemSuspended suspended, IReadOnlyList<WorksCommittedEvent> history, CancellationToken cancellationToken)
+    {
+        if (history.Any(fact => fact.Envelope.SequenceNumber > envelope.SequenceNumber
+                && fact.Payload is WorkItemSuspended or WorkItemResumed or WorkItemCancelled or WorkItemExpired or WorkItemCompleted or WorkItemRejected))
+            return [];
+        var spawned = new HashSet<string>(history.Where(fact => fact.Envelope.SequenceNumber < envelope.SequenceNumber)
+            .Select(fact => fact.Payload).OfType<ChildSpawned>().Select(child => child.ChildWorkItemId.Value), StringComparer.Ordinal);
+        // Awaited children in condition order, once each; a null or non-child condition has no relationship context.
+        WorkItemId[] awaitedChildren = [.. suspended.AwaitConditions
+            .Where(static condition => condition?.Kind == AwaitConditionKind.ChildCompleted && condition.ChildWorkItemId is not null)
+            .Select(static condition => condition!.ChildWorkItemId!).DistinctBy(static child => child.Value)];
+        foreach (WorkItemId child in awaitedChildren)
+        {
+            // Without the parent's reciprocal ChildSpawned this path does not resume; the child-side path owns that refusal.
+            if (!spawned.Contains(child.Value)) continue;
+            IReadOnlyList<WorksCommittedEvent> related;
+            try
+            {
+                related = await _streams.ReadAsync(source.Tenant, child.Value, cancellationToken).ConfigureAwait(false);
+            }
+            catch (EventStoreGatewayException exception) when (exception.StatusCode == 404
+                && (exception.Code == StreamReplayReasonCodes.MissingStream || exception.ReasonCode == StreamReplayReasonCodes.MissingStream))
+            {
+                // An uncreated child has not completed; its own completion will find this suspension.
+                continue;
+            }
+
+            // A rejected creation or a child claiming another parent cannot complete this wait. This reconciliation
+            // does not quarantine the parent's source over it: the cascade and child-completion paths keep their refusals.
+            if (related.Select(fact => fact.Payload).OfType<WorkItemCreated>().SingleOrDefault() is not { Parent: { } claimed }
+                || claimed.TenantId.Value != source.Tenant || claimed.WorkItemId.Value != source.Aggregate) continue;
+            if (related.Select(fact => fact.Payload).OfType<WorkItemCompleted>().FirstOrDefault() is not { } completed) continue;
+
+            // One effect per source event: the first completed awaited child resumes the parent.
+            return [.. ChildCompletionResumeTranslator.ToResumeCommands(completed,
+                    [new AwaitingParent(suspended.TenantId, suspended.WorkItemId, suspended.AwaitConditions)])
+                .Take(1)
+                .Select(command => Effect(EffectKindCatalog.ChildCompletionResume, command.WorkItemId.Value, nameof(ResumeWorkItem), command))];
+        }
+
+        return [];
     }
 
     private static ProcessEffect Effect<TCommand>(string kind, string target, string type, TCommand command)

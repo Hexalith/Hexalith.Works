@@ -247,7 +247,8 @@ surface documented below is unchanged from the original `c6b72caa` verification.
   completion is the durable side-effect boundary. Dapr pub/sub remains at-least-once and unordered, so target
   commands retain deterministic ids and aggregate `Handle` remains authoritative.
 - **Stream re-reads remain per aggregate.** Child-completion recovery reads the child stream for its parent
-  reference, then reads that parent stream to rebuild current await conditions. Cascade discovery reads the
+  reference, then reads that parent stream to rebuild current await conditions. A parent suspension that awaits a
+  child it spawned reads that child stream, so a completion checkpointed before the await still resumes the parent. Cascade discovery reads the
   parent stream and consults each child's persisted roll-up only for terminal status; parent roll-up totals with
   child contributions are explicitly unavailable and are never used for cascade decisions.
 - **Command payload binding uses the same shared reader contract.** The pinned EventStore aggregate adapter

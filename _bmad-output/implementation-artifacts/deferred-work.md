@@ -2274,6 +2274,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29R-B3 — Resolve a parent suspension that begins after its child completion was checkpointed with no effects.
+  status: done 2026-11-24
+  resolution: The parent's own `WorkItemSuspended` now reconciles an awaited, reciprocally spawned child that has already completed into one `ChildCompletionResume` effect. Later parent acts and unresolvable relationships produce no effect, and nothing quarantines the parent's source. This follows the adopted "reconcile in either order" rule; the installed-wait witness remains with Forward Candidate F3-G. [Spec](spec-resume-parent-after-early-child-completion.md).
   evidence: The unchanged pre-cutover child-completion translator returns no effect when the parent has no current child await; later wakeups enroll only their own aggregate, so a subsequently committed parent await has no demonstrated reactivation path for the already checkpointed child completion. Add completion-before-suspension coverage and an owning reconciliation decision.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`

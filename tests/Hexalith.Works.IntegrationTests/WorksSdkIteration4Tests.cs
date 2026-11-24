@@ -571,6 +571,53 @@ public sealed class WorksSdkIteration4Tests
         await Should.ThrowAsync<EventStoreGatewayException>(() => streams.ReadAsync(Tenant, "absent", TestContext.Current.CancellationToken));
     }
 
+    /// <summary>R29R-B3: the SDK runner checkpoints an early child completion with no effect, then the parent's suspension resumes it.</summary>
+    [Fact]
+    public async Task ChildCompletionCheckpointedBeforeSuspensionResumesFromTheParentSource()
+    {
+        var parent = new WorkItemId("parent");
+        var child = new WorkItemId("child");
+        AwaitCondition awaited = AwaitCondition.ChildCompleted(child);
+        StreamReadPage childPage = Story48Streams.Page(Tenant, child.Value,
+            new WorkItemCreated(child.Value, 1, s_tenant, child, new("child"), Parent: new(s_tenant, parent)),
+            new WorkItemCompleted(child.Value, 2, s_tenant, child));
+        IEventPayload[] spawned = [new WorkItemCreated(parent.Value, 1, s_tenant, parent, new("parent")),
+            new ChildSpawned(parent.Value, 2, s_tenant, parent, child, new("child"))];
+        StreamReadPage parentPage = Story48Streams.Page(Tenant, parent.Value, spawned);
+        using var http = new HttpClient(new WorksSdkHttpEvidenceHandler(async (request, token) =>
+        {
+            StreamReadRequest read = (await request.Content!.ReadFromJsonAsync<StreamReadRequest>(cancellationToken: token).ConfigureAwait(false))!;
+            return new(HttpStatusCode.OK) { Content = JsonContent.Create(Tail(read.AggregateId == child.Value ? childPage : parentPage, read)) };
+        })) { BaseAddress = new("https://eventstore.test/") };
+        IEventStoreGatewayClient gateway = Gateway(http);
+        var streams = new WorksSourceStreamReader(gateway, Options.Create(new WorksRecoveryOptions()));
+        var store = new InMemoryReadModelStore();
+        var options = Options.Create(new EventStoreProcessOptions());
+        var submitter = Substitute.For<ITrustedEffectSubmitter>();
+        submitter.SubmitAsync(Arg.Any<TrustedEffectSubmission>(), Arg.Any<TrustedEffectContext>(), Arg.Any<CancellationToken>())
+            .Returns(call => Task.FromResult(new TrustedEffectResult(EffectIdentityCodec.ComputeEffectId(call.Arg<TrustedEffectSubmission>().Identity), TrustedEffectDisposition.Success, false, null)));
+        var checkpoints = new ProcessCheckpointStore(store, options, TimeProvider.System);
+
+        var childSource = new ProcessSource(Tenant, "work", child.Value);
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(childSource, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(ProcessSourceStatus.Active);
+        (await checkpoints.GetAsync(childSource, TestContext.Current.CancellationToken)).Checkpoint.ShouldBe(2);
+        submitter.ReceivedCalls().ShouldBeEmpty();
+
+        parentPage = Story48Streams.Page(Tenant, parent.Value, [.. spawned, new WorkItemSuspended(parent.Value, 3, s_tenant, parent, [awaited])]);
+        var parentSource = new ProcessSource(Tenant, "work", parent.Value);
+        (await Runner(gateway, streams, store, options, submitter).RunAsync(parentSource, TestContext.Current.CancellationToken))
+            .Status.ShouldBe(ProcessSourceStatus.Active);
+        ProcessSourceState retained = await checkpoints.GetAsync(parentSource, TestContext.Current.CancellationToken);
+        retained.Checkpoint.ShouldBe(3);
+        retained.PendingPlan.ShouldBeNull();
+        TrustedEffectSubmission submitted = submitter.ReceivedCalls().ShouldHaveSingleItem().GetArguments()[0].ShouldBeOfType<TrustedEffectSubmission>();
+        submitted.Identity.ShouldBe(new EffectIdentity(Tenant, "work", parent.Value, 3, EffectKindCatalog.ChildCompletionResume, "work", parent.Value,
+            EffectKindCatalog.PrimaryTargetOrdinal));
+        submitted.CommandType.ShouldBe(nameof(Hexalith.Works.Contracts.Commands.ResumeWorkItem));
+        JsonSerializer.Deserialize<Hexalith.Works.Contracts.Commands.ResumeWorkItem>(submitted.CommandPayload)!.AwaitCondition.ShouldBe(awaited);
+    }
+
     /// <summary>The actual SDK client bounds transport separately from the smaller retained Works context allowance.</summary>
     [Theory]
     [InlineData(false)]
