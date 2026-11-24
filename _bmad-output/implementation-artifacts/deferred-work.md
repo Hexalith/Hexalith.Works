@@ -943,6 +943,7 @@ archived: 2026-10-23
 ## Deferred from: code review of spec-4-8-register-and-reconcile-date-reminders-durably-7.md (2026-09-17)
 
 - EventId 4603's runtime template still says the step "will be retried at-least-once" even though this close-out can log 4603 and then complete from a canceled retry delay with no further attempt. Pre-existing shared template; already recorded under spec-5 as "Distinguish final recovery exhaustion from retryable EventId 4603 failures". Changing it is operator surface for all seven `Reason` values and is outside spec-7's Code Map. [src/Hexalith.Works/Runtime/WorksRecoveryLog.cs:36]
+<a id="story-4-8-exact-caller-cancellation-reobservation"></a>
 - Exact caller cancellation after a prior in-tenant candidate failure still discards that tenant's locals. spec-7 Never list freezes in-tenant cancellation changes; already recorded in the 2026-09-16 six-finding close-out section. [src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:145-197]
 - `DateReminderReconciler` remarks still say an incomplete scan is rethrown so the hosted service retries it, but `ReminderReconciliationService` now logs 4603 and can return from the canceled retry delay without another attempt. spec-7 Never list leaves `DateReminderReconciler` unchanged. [src/Hexalith.Works/Reminders/DateReminderReconciler.cs:33-38]
 
@@ -1058,6 +1059,8 @@ archived: 2026-10-23
   resolution: The fitness runner disables MSBuild node reuse and bounds its post-termination wait to five seconds. A cancellation fact verifies child exit and the original token on successful cleanup.
 - EventStore and Admin nested hosts omit `DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER`. maybe-false: settle with a DCP command line showing those hosts still `dotnet run` after `SuppressBuild => false`. [src/Hexalith.Works.AppHost/Program.cs:92]
 - spec-9 Code Map still cites `deferred-work.md:967`, which the 2026-09-20 File List close-out ledger append retargeted onto the new unpark `source_spec`. Deferred: fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md:43]
+  status: done 2026-11-24
+  resolution: The Code Map now links directly to the 2026-09-17 re-observation whose historical source range ends at line 197.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Add a post-startup reminder-reconciliation retry or terminal readiness policy after the bounded startup attempts are exhausted.

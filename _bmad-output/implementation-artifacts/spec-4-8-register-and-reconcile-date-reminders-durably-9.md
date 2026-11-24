@@ -40,7 +40,7 @@ context:
 - `src/Hexalith.Works/Reminders/IndexedPendingDateAwaitSource.cs:68-108` -- read-only behavior under test; the clean outer exact-token arm at line 97 must remain unchanged.
 - `tests/Hexalith.Works.IntegrationTests/IndexedPendingDateAwaitSourceTests.cs:582-905` -- reuse the boundary and prior-evidence arrangements; add the exact two-tenant clean next-index case.
 - `docs/operations/subscriber-dead-letter-operator.md:128-143` and `tests/Hexalith.Works.ArchitectureTests/FitnessTests/SubscriberDeadLetterOperatorDocumentationTests.cs:92-169` -- mirror and pin the 4604/4606 host-lifecycle wording in row 4608.
-- `_bmad-output/implementation-artifacts/deferred-work.md:967` -- extend the cited source range through the stream exact-token filter at line 197; do not change the deferred decision.
+- [Story 4.8 deferred cancellation observation](deferred-work.md#story-4-8-exact-caller-cancellation-reobservation) records the historical source range through the stream exact-token filter at line 197.
 - `references/Hexalith.Chatbot`, `references/Hexalith.Conversations`, `references/Hexalith.EventStore` -- read-only evidence at `1047ef38d3845406227891639aaeb853e5d4f116`, `d956c9b1de73bcf15969d5e1a6435d6d98a2dd49`, and `b5541259058320a0a7f1db19038709cbd02dad85`.
 - Story 4.8, spec-8, `sprint-status.yaml`, and `tests/test-summary.md` -- resolve the four findings, replace stale current-state gitlink claims, record verification, and return the story to review.
 
