@@ -1051,6 +1051,8 @@ archived: 2026-10-23
   resolution: Duplicate observation of the 2026-09-18 operator warning regression, closed by the same row-level checks.
 - DW-20/53/54/55 live-ledger headings remain truncated mid-word. Reconfirmed; already recorded at `deferred-work.md:940`. [_bmad-output/implementation-artifacts/deferred-work.md:144]
 - spec-8 triage rewrote original `false | reject` rows to `superseded | patch`, so the spec-8-era record is no longer recoverable from that table. Fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md:104]
+  status: done 2026-11-24
+  resolution: Restored the five original dispositions under Original review dispositions with a revision-bound link. The subsequent decisions retain their original wording and position.
 - Killed MSBuild child uses unbounded `WaitForExitAsync(CancellationToken.None)`. maybe-false: settle by showing `Kill(entireProcessTree: true)` can leave a live child on this runner. [tests/Hexalith.Works.ArchitectureTests/FitnessTests/BuildConfigurationTests.cs:333]
 - EventStore and Admin nested hosts omit `DOTNET_CLI_DO_NOT_USE_MSBUILD_SERVER`. maybe-false: settle with a DCP command line showing those hosts still `dotnet run` after `SuppressBuild => false`. [src/Hexalith.Works.AppHost/Program.cs:92]
 - spec-9 Code Map still cites `deferred-work.md:967`, which the 2026-09-20 File List close-out ledger append retargeted onto the new unpark `source_spec`. Deferred: fix edits another spec. [_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-9.md:43]

@@ -116,6 +116,18 @@ context:
 | VG-01 — Candidate-failure evidence is unverified on next-index cancellation | medium | patch | Pre-verified by the verification-gap layer: existing candidate coverage stops at the loop-head check, so no test enters the changed outer catch with `FailedCandidateCount == 1`. |
 | VG-02 — The reviewed diff silently advances EventStore despite the evidence record | superseded | patch | Corrected by spec-9: the later adopted pointer transition is explicit in the evidence record, and no pointer changed in the spec-9 patch. |
 
+### Original review dispositions
+
+The five rows below come from the [original review revision](https://github.com/Hexalith/Hexalith.Works/blob/a292e3b2ad3ee57a8ee180adf360972297e57bb1/_bmad-output/implementation-artifacts/spec-4-8-register-and-reconcile-date-reminders-durably-8.md#review-triage-log). The table above contains the later decisions.
+
+| Finding | Verdict | Action | Evidence |
+| --- | --- | --- | --- |
+| BH-01 — EventStore gitlink violates the frozen pointer constraint | false | reject | The root index still records `629168e3983e5a9cd1639013f39d758fb0068cac` and has no staged gitlink change. The diff hunk reflects an unrelated shared-worktree checkout at `b5541259058320a0a7f1db19038709cbd02dad85`, which this build did not create or adopt. |
+| BH-02 — File List and completion record omit the EventStore change | false | reject | The checkout-only drift is not an implementation file, and both this spec and `tests/test-summary.md` explicitly disclose its actual revision, unstaged status, and separation from the retained root gitlink. |
+| BH-03 — Gates did not run against the retained EventStore pointer | false | reject | The only files between the retained and checked-out EventStore revisions are that submodule's spec and sprint-status artifacts; `git diff --quiet` confirms no source, test, project, package, or SDK build input differs. The exact checkout used by the gates is disclosed rather than misrepresented. |
+| EC-02 — The EventStore checkout drift changes the retained dependency contract | false | reject | `git ls-files -s` proves the retained superproject contract remains `629168e3983e5a9cd1639013f39d758fb0068cac`; the unstaged checkout-only drift is external state, not an adopted gitlink. |
+| VG-02 — The reviewed diff silently advances EventStore despite the evidence record | false | reject | The root index and staging area do not advance EventStore, while the evidence record expressly identifies the actual checkout used. A raw worktree diff showing external submodule state does not make that state part of this implementation. |
+
 ## Verification
 
 **Commands:**
