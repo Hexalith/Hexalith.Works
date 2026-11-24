@@ -782,6 +782,215 @@ public sealed class WorksSdkProtectedHttpTests
         store.ReceivedCalls().ShouldBeEmpty();
     }
 
+    /// <summary>
+    /// R29R-B1 qualification. A bound assertion (CallerAuthority plus its digest claim) refuses every caller-identity
+    /// mutation before Parties resolution or state access. An unbound assertion leaves the caller named by the
+    /// envelope: Works authorizes the tenant, actor, user, party and workload fields as sent, so one captured unbound
+    /// assertion can be replayed with another caller's identity. The rows expecting another caller's work record the
+    /// open gap tracked in deferred-work.md; a fix must turn them into refusals.
+    /// </summary>
+    /// <param name="scenario">The envelope and assertion shape submitted to the protected query endpoint.</param>
+    /// <param name="expected">The returned work items, or the refusal.</param>
+    [Theory]
+    [InlineData("unbound-own", "mine,queue")]
+    [InlineData("unbound-replayed-forged-actor", "foreign,queue")]
+    [InlineData("unbound-forged-actor-detail", "found:foreign")]
+    [InlineData("unbound-forged-tenant", "projection-unavailable")]
+    [InlineData("unbound-forged-workload", "foreign,mine,queue")]
+    [InlineData("unbound-mismatched-party", "Forbidden")]
+    [InlineData("unbound-unpermitted-workload", "Forbidden")]
+    [InlineData("bound-own", "mine,queue")]
+    [InlineData("bound-forged-actor", "safe-denial")]
+    [InlineData("bound-forged-workload-only", "safe-denial")]
+    [InlineData("bound-coordinator", "safe-denial")]
+    [InlineData("digest-without-authority", "safe-denial")]
+    public async Task UnboundQueryAssertionsLeaveTheCallerNamedByTheEnvelope(string scenario, string expected)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string victimActor = "01ARZ3NDEKTSV4RRFFQ69G5FAW";
+        const string otherTenant = "tenant-sdk-other";
+        var identityRequests = new List<string>();
+        await using WebApplication parties = BuildAuthenticatedPartiesGateway((request, _) =>
+        {
+            var resolve = request.Payload.ShouldNotBeNull()
+                .Deserialize<Hexalith.Parties.Contracts.Queries.ResolvePartyIdentity>(JsonSerializerOptions.Web).ShouldNotBeNull();
+            identityRequests.Add(resolve.TenantId + "/" + resolve.PartyId + "@" + resolve.ExpectedActorId);
+            // A cooperating directory: it confirms exactly the binding that each request names.
+            PartyIdentityResult current = CurrentIdentity();
+            PartyIdentityEvidence evidence = current.Evidence!;
+            PartyIdentityResult resolved = resolve.PartyId == "party-other" && resolve.ExpectedActorId == victimActor
+                ? current with { Evidence = evidence with { PartyId = "party-other",
+                    HumanBinding = evidence.HumanBinding! with { PartyId = "party-other", ActorId = victimActor } } }
+                : resolve.TenantId == otherTenant
+                    ? current with { Evidence = evidence with { TenantId = otherTenant,
+                        HumanBinding = evidence.HumanBinding! with { TenantId = otherTenant } } }
+                    : current;
+            return Results.Ok(new SubmitQueryResponse("identity", JsonSerializer.SerializeToElement(resolved)));
+        });
+        await parties.StartAsync(ct).ConfigureAwait(true);
+        var store = new QueryWindowStore(new InMemoryReadModelStore());
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
+        store.Observe = true;
+        await using WebApplication app = BuildProtectedHost(store, Address(parties), coordinator,
+            [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer()}", "--Works:Query:PermittedCoordinatorWorkloads:0=scheduler"]);
+        await app.StartAsync(ct).ConfigureAwait(true);
+        using var client = WorksHttpCatalogFixture.Client(app, Address(app));
+
+        QueryEnvelope own = ExecutorQuery() with { Payload = JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-mine" }) };
+        QueryEnvelope ownBound = own with { CallerAuthority = new QueryCallerAuthority("authenticated-caller", [], []) };
+        QueryEnvelope ForgeActor(QueryEnvelope query) => query with
+        {
+            OriginalActorId = victimActor,
+            UserId = victimActor,
+            Payload = JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-other" }),
+        };
+        QueryEnvelope Coordinator(QueryEnvelope query, string workload) => query with
+        {
+            IsDelegated = false,
+            OriginalActorId = null,
+            AuthenticatedWorkloadId = workload,
+        };
+        string ownAssertion = Assertion("domain-service:query");
+        int operationsBefore = 0;
+        (QueryEnvelope sent, string assertion) = scenario switch
+        {
+            "unbound-own" => (own, ownAssertion),
+            "unbound-replayed-forged-actor" => (ForgeActor(own), ownAssertion),
+            "unbound-forged-actor-detail" => (ForgeActor(own) with { AggregateId = "foreign", QueryType = GetWorkItemQueryHandler.GetWorkItemQueryType }, ownAssertion),
+            "unbound-forged-tenant" => (own with { TenantId = otherTenant }, ownAssertion),
+            "unbound-forged-workload" => (Coordinator(own, "scheduler"), ownAssertion),
+            "unbound-mismatched-party" => (own with { Payload = JsonSerializer.SerializeToUtf8Bytes(new { partyId = "party-other" }) }, ownAssertion),
+            "unbound-unpermitted-workload" => (Coordinator(own, "rogue"), ownAssertion),
+            "bound-own" => (ownBound, Assertion("domain-service:query", query: ownBound)),
+            "bound-forged-actor" => (ForgeActor(ownBound), Assertion("domain-service:query", query: ownBound)),
+            "bound-forged-workload-only" => (ownBound with { AuthenticatedWorkloadId = "scheduler" }, Assertion("domain-service:query", query: ownBound)),
+            "bound-coordinator" => (Coordinator(ownBound, "scheduler"), Assertion("domain-service:query", query: Coordinator(ownBound, "scheduler"))),
+            "digest-without-authority" => (own, Assertion("domain-service:query", query: ownBound)),
+            _ => throw new ArgumentOutOfRangeException(nameof(scenario)),
+        };
+        if (scenario == "unbound-replayed-forged-actor")
+        {
+            // The legitimate request consumes nothing: the same unbound assertion string is accepted again.
+            using HttpResponseMessage legitimate = await client.SendAsync(Request("/query", own, channel: true, assertion: ownAssertion), ct).ConfigureAwait(true);
+            legitimate.StatusCode.ShouldBe(HttpStatusCode.OK);
+            identityRequests.Clear();
+            operationsBefore = store.Operations;
+        }
+
+        using HttpResponseMessage response = await client.SendAsync(Request("/query", sent, channel: true, assertion: assertion), ct).ConfigureAwait(true);
+        string outcome;
+        if (response.StatusCode != HttpStatusCode.OK)
+        {
+            outcome = "http-" + (int)response.StatusCode;
+        }
+        else
+        {
+            QueryResult result = (await response.Content.ReadFromJsonAsync<QueryResult>(cancellationToken: ct).ConfigureAwait(true)).ShouldNotBeNull();
+            outcome = !result.Success ? result.ErrorMessage ?? "failure"
+                : sent.QueryType == GetWorkItemQueryHandler.GetWorkItemQueryType
+                    ? (result.GetPayload().GetProperty("found").GetBoolean() ? "found:" : "missing:") + sent.AggregateId
+                    : string.Join(',', result.GetPayload().EnumerateArray().Select(item => item.GetProperty("workItemId").GetProperty("value").GetString()));
+        }
+
+        bool gap = scenario is "unbound-replayed-forged-actor" or "unbound-forged-actor-detail" or "unbound-forged-tenant" or "unbound-forged-workload";
+        if (gap)
+            outcome.ShouldBe(expected, "R29R-B1 open gap (deferred-work.md): an unbound assertion admits the identity named by the envelope. Update this row when the gap closes.");
+        else
+            outcome.ShouldBe(expected);
+        // Every refusal precedes Works state access. Bound refusals also precede Parties resolution; unbound policy
+        // refusals show which checks still hold: the Parties binding must match, and the workload must be permitted.
+        bool refused = expected is "safe-denial" or "Forbidden";
+        if (refused)
+            (store.Operations - operationsBefore).ShouldBe(0, "A refusal must precede every Works state read.");
+        else
+            (store.Operations - operationsBefore).ShouldBeGreaterThan(0, "An admitted query reads the named tenant's projection.");
+        identityRequests.ShouldBe(scenario switch
+        {
+            "unbound-own" or "bound-own" => [Tenant + "/party-mine@" + Actor],
+            "unbound-replayed-forged-actor" or "unbound-forged-actor-detail" => [Tenant + "/party-other@" + victimActor],
+            "unbound-forged-tenant" => [otherTenant + "/party-mine@" + Actor],
+            "unbound-mismatched-party" => [Tenant + "/party-other@" + Actor],
+            _ => [],
+        });
+    }
+
+    /// <summary>
+    /// R29R-B1 mint-path trace. The public gateway captures and binds caller authority for a Works query only when
+    /// <c>Authentication:QueryAuthority:RequiredQueries:work</c> lists it; otherwise the canonical Works query arrives unbound.
+    /// A bound delegated query still passes Works authorization end to end.
+    /// </summary>
+    /// <param name="required">Whether the gateway configuration requires authority for the what's-next query.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task PublicGatewayBindsWorksQueryAuthorityOnlyWhenTheDomainRequiresIt(bool required)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var identity = new WorksSdkPlatformAuthorityFixture(Tenant, Actor, Issuer, SigningKey, CurrentIdentity);
+        await using WebApplication parties = identity.Build(null);
+        await parties.StartAsync(ct).ConfigureAwait(true);
+        var store = new InMemoryReadModelStore();
+        var coordinator = new SharedProjectionEpochCoordinator(store, store);
+        await PopulateRuntimeAsync(coordinator).ConfigureAwait(true);
+        await using WebApplication domain = BuildProtectedHost(store, Address(parties), coordinator,
+            [$"--Works:Query:PartiesGatewayBearerToken={ServiceBearer()}"]);
+        await domain.StartAsync(ct).ConfigureAwait(true);
+        using var domainClient = WorksHttpCatalogFixture.Client(domain, Address(domain));
+        var authority = domain.Services.GetRequiredService<Hexalith.EventStore.ServiceDefaults.Routing.IRouteCatalogAuthority>();
+        var invoked = new List<QueryEnvelope>();
+        HttpStatusCode? domainStatus = null;
+        // Stands in for DaprDomainQueryInvoker, which signs the outbound assertion with the query digest only when the
+        // gateway captured CallerAuthority; this test observes the gateway's capture decision, not the Dapr transport.
+        var invoker = new WorksGatewayDomainQueryInvoker(async (query, token) =>
+        {
+            invoked.Add(query);
+            using var call = Request("/query", query, channel: true, assertion: Assertion("domain-service:query",
+                query: query.CallerAuthority is null ? null : query));
+            using var response = await domainClient.SendAsync(call, token).ConfigureAwait(false);
+            domainStatus = response.StatusCode;
+            return response.StatusCode == HttpStatusCode.OK
+                ? (await response.Content.ReadFromJsonAsync<QueryResult>(cancellationToken: token).ConfigureAwait(false))!
+                : QueryResult.Failure("domain-" + (int)response.StatusCode);
+        });
+        var inner = Substitute.For<Hexalith.EventStore.Server.Queries.IQueryRouter>();
+        var registry = Substitute.For<Hexalith.EventStore.Queries.IDomainQueryHandlerRegistry>();
+        var router = new Hexalith.EventStore.Queries.HandlerAwareQueryRouter(authority, inner, registry, invoker,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger<Hexalith.EventStore.Queries.HandlerAwareQueryRouter>.Instance);
+        await using WebApplication gateway = WorksGatewayHttpFixture.Build(authority, router,
+            Substitute.For<Hexalith.EventStore.Server.Commands.ICommandRouter>(), new InMemoryCommandStatusStore(), new InMemoryCommandArchiveStore(),
+            Issuer, SigningKey, required
+                ? new Dictionary<string, string?> { ["Authentication:QueryAuthority:RequiredQueries:work:0"] = WhatsNextQueryHandler.WhatsNextQueryType }
+                : null);
+        await gateway.StartAsync(ct).ConfigureAwait(true);
+        using var client = new HttpClient { BaseAddress = new Uri(Address(gateway)) };
+        using var request = Request("/api/v1/queries", new SubmitQueryRequest(Tenant, "work", "mine", WhatsNextQueryHandler.WhatsNextQueryType,
+            Payload: JsonSerializer.SerializeToElement(new { partyId = "party-mine" })), bearer: GatewayUiToken("ui"));
+        using var result = await client.SendAsync(request, ct).ConfigureAwait(true);
+        result.StatusCode.ShouldBe(HttpStatusCode.OK, await result.Content.ReadAsStringAsync(ct).ConfigureAwait(true));
+        var body = (await result.Content.ReadFromJsonAsync<SubmitQueryResponse>(cancellationToken: ct).ConfigureAwait(true))!;
+        body.Payload.EnumerateArray().Select(item => item.GetProperty("workItemId").GetProperty("value").GetString()).ShouldBe(["mine", "queue"]);
+        domainStatus.ShouldBe(HttpStatusCode.OK);
+        QueryEnvelope minted = invoked.ShouldHaveSingleItem();
+        minted.UserId.ShouldBe(Actor);
+        minted.OriginalActorId.ShouldBe(Actor);
+        minted.AuthenticatedWorkloadId.ShouldBe("eventstore");
+        minted.IsDelegated.ShouldBeTrue();
+        if (required)
+        {
+            QueryCallerAuthority captured = minted.CallerAuthority.ShouldNotBeNull();
+            captured.Origin.ShouldBe("authenticated-caller");
+            captured.Permissions.ShouldContain("query:read");
+        }
+        else
+        {
+            minted.CallerAuthority.ShouldBeNull("the canonical Works query is not listed, so the gateway mints an unbound assertion");
+        }
+
+        inner.ReceivedCalls().ShouldBeEmpty();
+        registry.ReceivedCalls().ShouldBeEmpty();
+    }
+
     [Theory]
     [InlineData("/query")]
     [InlineData("/query/")]

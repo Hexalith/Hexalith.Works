@@ -2264,6 +2264,8 @@ Group 3B, Works `6967819..HEAD`, limited to the projection, rebuild and query in
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
   summary: R29R-B1 — Qualify whether unbound gateway query assertions can carry forged caller identity outside the trusted issuer path (unverified high).
+  status: done 2026-11-24
+  resolution: Confirmed by protected-HTTP qualification. Canonical Works queries arrive unbound because no composition lists them under `RequiredQueries:work`. One unbound assertion can be replayed with another tenant, actor and party, or with a permitted coordinator workload, and Works authorizes the envelope as sent. Bound assertions refuse every such mutation before any Parties call or state read. Closure is split into the owner and Platform entries below. [Spec](spec-qualify-unbound-query-caller-identity.md).
   evidence: Works trusts workload/actor envelope fields when the SDK receives neither CallerAuthority nor its digest claim. Those exact admission conditions predate cutover in Works 696781961155d764ed805843f55b40dc5882e887 and SDK b16be63521e8b784fc68828e0267f892b8e45924. Current canonical gateway queries capture authenticated caller authority, and possession of an authorized generic gateway assertion by an unauthorized caller was not demonstrated. Trace a legitimate assertion mint path and execute protected HTTP missing-binding/workload/actor mutation controls before changing compatibility; no unauthenticated bypass is claimed.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-9-migrate-works-hosting-to-the-platform-boundary.md`
@@ -2455,3 +2457,15 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 - source_spec: `spec-prove-real-store-rebuild-abort.md`
   summary: Determine whether `SharedProjectionEpochCoordinator.GetCheckpointAsync` can be read after a dispatcher-driven rebuild commit of owners that had earlier live deliveries (maybe-false, medium, EventStore).
   evidence: In-memory and real Dapr stores behave the same. The sequence is: live journal and catch-up for two owners, then `DomainSharedProjectionRebuildDispatcher` Begin/Accumulate/Finalize/Stage/Commit. After that, `GetCheckpointAsync` throws "The owner checkpoint has malformed captured identity references", because the checkpoint has `OwnerSequenceNumber` 0 and a captured identity reference with count 1. A missing Verify or owner-sequence handoff step in the test would settle this as false; a failing read during the next ordinary delivery would confirm it as an SDK defect.
+
+- source_spec: `spec-qualify-unbound-query-caller-identity.md`
+  summary: Bind Works queries to gateway caller authority by listing `whats-next` and `get-work-item` under `Authentication:QueryAuthority:RequiredQueries:work` in the Platform composition, and decide whether Works then refuses unbound delegated queries (owner and Platform, confirmed high).
+  evidence: `UnboundQueryAssertionsLeaveTheCallerNamedByTheEnvelope` shows that an unbound assertion admits a replayed envelope naming another tenant, actor and party. `PublicGatewayBindsWorksQueryAuthorityOnlyWhenTheDomainRequiresIt` shows the gateway binds a Works query, and Works serves the bound delegated caller, once the query type is listed. Platform currently lists only conversation queries (`PlatformRoutingCatalogBootstrap`). Refusing unbound queries in Works breaks any host that has not been configured.
+
+- source_spec: `spec-qualify-unbound-query-caller-identity.md`
+  summary: Decide whether the unbound non-delegated coordinator branch of `WorksQueryPolicy` (`PermittedCoordinatorWorkloads`) should be removed or given a bound design (owner decision).
+  evidence: With the option configured, an unbound envelope naming the coordinator workload returns all of a tenant's work without any Parties check. A bound coordinator envelope fails, because `QueryCallerAuthorityBinding.Verify` requires `OriginalActorId` to equal `UserId`. No gateway path produces coordinator queries, since the public controller always stamps the original actor. The option is empty by default.
+
+- source_spec: `spec-qualify-unbound-query-caller-identity.md`
+  summary: Assess replay protection for unbound EventStore workload assertions, which are cached client-credential tokens with no `jti` replay cache (EventStore).
+  evidence: The qualification reused one unbound `domain-service:query` assertion string for a second, forged request, and it was accepted. No replay cache was found in the EventStore workload authentication. Binding the query (the first entry) removes the forgery, but an unbound assertion stays replayable for its lifetime.

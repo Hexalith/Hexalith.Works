@@ -35,7 +35,8 @@ internal static class WorksGatewayHttpFixture
     internal const string Audience = "works-ui-gateway";
 
     internal static WebApplication Build(IRouteCatalogAuthority authority, IQueryRouter queries, ICommandRouter commands,
-        InMemoryCommandStatusStore statuses, InMemoryCommandArchiveStore archives, string issuer, string signingKey)
+        InMemoryCommandStatusStore statuses, InMemoryCommandArchiveStore archives, string issuer, string signingKey,
+        IReadOnlyDictionary<string, string?>? settings = null)
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
         {
@@ -49,6 +50,7 @@ internal static class WorksGatewayHttpFixture
             ["Authentication:JwtBearer:Issuer"] = issuer, ["Authentication:JwtBearer:Audience"] = Audience,
             ["Authentication:JwtBearer:SigningKey"] = signingKey,
         });
+        if (settings is not null) builder.Configuration.AddInMemoryCollection(settings);
         builder.Services.AddEventStore();
         // This component fixture exercises HTTP admission and the real request terminals.
         // The separate canonical cohort owns distributed workers and activation.
