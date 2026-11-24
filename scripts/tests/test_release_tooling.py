@@ -5,10 +5,12 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+import unittest.mock
 import zipfile
 from pathlib import Path
 from types import ModuleType
@@ -38,6 +40,7 @@ def load_script_module(name: str, script: str) -> ModuleType:
 
 PACK = load_script_module("pack_release_packages", "pack-release-packages.py")
 VALIDATE = load_script_module("validate_nuget_packages", "validate-nuget-packages.py")
+CONSUMERS = load_script_module("validate_consumer_package_references", "validate-consumer-package-references.py")
 
 
 def write_manifest(path: Path, package_ids: list[str] | None = None) -> None:
@@ -108,6 +111,54 @@ def write_package(
             archive.writestr("README.md", "fixture")
         archive.writestr(f"lib/net10.0/{package_id}.dll", b"fixture")
     return package_path
+
+
+class ConsumerIsolationTests(unittest.TestCase):
+    """The isolated package consumers keep the repository SDK pin but no other repository build policy."""
+
+    def test_isolation_boundaries_carry_only_the_repository_sdk_pin(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            CONSUMERS.write_isolation_boundaries(directory)
+            repository = json.loads((ROOT / "global.json").read_text(encoding="utf-8"))
+            isolated = json.loads((directory / "global.json").read_text(encoding="utf-8"))
+            self.assertEqual(isolated, {"sdk": repository["sdk"]})
+            self.assertEqual((directory / "Directory.Build.props").read_text(encoding="utf-8"), "<Project />\n")
+            self.assertEqual((directory / "Directory.Build.targets").read_text(encoding="utf-8"), "<Project />\n")
+            self.assertIn(
+                "<ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>",
+                (directory / "Directory.Packages.props").read_text(encoding="utf-8"),
+            )
+
+    def test_isolation_boundaries_fail_closed_without_a_repository_sdk_pin(self) -> None:
+        with tempfile.TemporaryDirectory() as repository, tempfile.TemporaryDirectory() as temporary:
+            with unittest.mock.patch.object(CONSUMERS, "ROOT", Path(repository)):
+                with self.assertRaises(FileNotFoundError):
+                    CONSUMERS.write_isolation_boundaries(Path(temporary))
+            (Path(repository) / "global.json").write_text('{"test": {}}', encoding="utf-8")
+            with unittest.mock.patch.object(CONSUMERS, "ROOT", Path(repository)):
+                with self.assertRaises(ValueError):
+                    CONSUMERS.write_isolation_boundaries(Path(temporary))
+
+    @unittest.skipUnless(shutil.which("dotnet"), "dotnet is required to resolve SDKs")
+    def test_consumer_directory_resolves_the_repository_sdk(self) -> None:
+        environment = {**os.environ, "DOTNET_CLI_TELEMETRY_OPTOUT": "1", "DOTNET_NOLOGO": "1"}
+
+        def sdk(cwd: Path) -> str:
+            result = subprocess.run(["dotnet", "--version"], cwd=cwd, env=environment, check=False,
+                                    capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            return result.stdout.strip()
+
+        with tempfile.TemporaryDirectory() as unpinned, tempfile.TemporaryDirectory() as temporary:
+            pinned = sdk(ROOT)
+            if sdk(Path(unpinned)) == pinned:
+                self.skipTest(f"An unpinned directory already resolves {pinned}; this host cannot show the difference.")
+            directory = Path(temporary)
+            CONSUMERS.write_isolation_boundaries(directory)
+            consumer = directory / "Hexalith.Works.Contracts"
+            consumer.mkdir()
+            self.assertEqual(sdk(consumer), pinned)
 
 
 class PackageValidationTests(unittest.TestCase):

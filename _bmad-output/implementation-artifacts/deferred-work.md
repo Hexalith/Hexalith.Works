@@ -2440,6 +2440,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
   summary: Copy the repository SDK pin into the isolated package consumers built by `validate-consumer-package-references.py`.
+  status: done 2026-11-24
+  resolution: `write_isolation_boundaries` now writes the repository's `sdk` pin into the isolated consumer root and fails closed when the pin is missing. New script tests cover the copy and the fail-closed cases, and the README package rehearsal built and ran all five consumers. [Spec](spec-pin-sdk-for-package-consumers.md).
   evidence: Late iteration-3 row 79 of `spec-implement-works-ci-cd.md` is still open: the script writes no `global.json` into its scratch root, so `dotnet` can select a different installed SDK than `global.json` (11.0.100). README still lists the script in the local publication-free rehearsal.
 
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`

@@ -63,8 +63,16 @@ def manifest_package_probes() -> dict[str, str]:
 
 
 def write_isolation_boundaries(directory: Path) -> None:
-    """Prevent a scratch consumer from inheriting repository MSBuild policy."""
+    """Prevent a scratch consumer from inheriting repository MSBuild policy while keeping its SDK pin."""
 
+    # The scratch root sits outside the repository. Without its own global.json the dotnet host may select a
+    # different SDK than the one that built the packages: a newer installed feature band, or a global.json above
+    # the temporary directory. Only the repository's sdk selection is carried over, not its other settings.
+    with (ROOT / "global.json").open("r", encoding="utf-8") as handle:
+        sdk = json.load(handle).get("sdk")
+    if not isinstance(sdk, dict) or not isinstance(sdk.get("version"), str):
+        raise ValueError("The repository global.json must pin an sdk version.")
+    (directory / "global.json").write_text(json.dumps({"sdk": sdk}, indent=2) + "\n", encoding="utf-8")
     (directory / "Directory.Build.props").write_text("<Project />\n", encoding="utf-8")
     (directory / "Directory.Build.targets").write_text("<Project />\n", encoding="utf-8")
     (directory / "Directory.Packages.props").write_text(
