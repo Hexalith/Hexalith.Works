@@ -4,12 +4,12 @@
     "references/Hexalith.EventStore": {
       "sourceRevision": "70e1f765d21ec93f1461c21e4a460b4b14dc7b66",
       "releaseProperty": "HexalithEventStoreVersion",
-      "releaseVersion": "5.5.1"
+      "releaseVersion": "5.5.2"
     },
     "references/Hexalith.PolymorphicSerializations": {
       "sourceRevision": "a8093f273cd095a3cb86bf59e6042c1843f4d086",
       "releaseProperty": "HexalithPolymorphicSerializationsVersion",
-      "releaseVersion": "2.0.1"
+      "releaseVersion": "2.0.2"
     }
   }
 }

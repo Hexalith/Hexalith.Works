@@ -898,3 +898,40 @@ No cutover checks or live parity lanes ran in that historical attempt: its prere
 ### Resumed qualification 2026-11-03
 
 The bounded [resumed qualification and publication handoff](evidence/story-4-9/resume-2026-11-03/README.md) retains the six nonqualifying full attempts, final focused controls, public SDK 4.0.2 candidate preparation and exact remaining owner publication steps. The accepted Builds tuple and Works Release pin remain unchanged. Story/sprint stay in progress and the final full/CI qualification task stays unchecked.
+
+### Qualification checkpoint 2026-11-25
+
+The fresh canonical `full` attempt on Works `0f7963233e721cd758e56000c1bff4da76706756`
+and Platform `616e27789f935ebb7f7f33406150ecf2dc9913a2` selected EventStore `5.5.1`.
+It exited 1 after 23 Platform verifier fixture setup errors out of 209 tests.
+The synthetic SDK checkout lacked `module/hexalith.module-manifest.v2.json`.
+The [Platform fixture](../../references/Hexalith.Platform/eng/test_works_verifier_inputs.py)
+now creates that required file and verifies that a later manifest change fails
+source closure. All 209 verifier controls pass with the fix.
+
+The fresh `full` retry passed 209 verifier controls, 21 component controls, the
+local scaffold build, 193 Platform tests in each of Debug and Release, both Works
+consumer builds, and 437 supporting Works facts. It matched nine public SDK
+archives and 2,798 runtime/build files to EventStore producer
+`f2ade96970f929dd96e8865075339954233e61ed` and completed all six runtime builds.
+The retry exited 1 with `Installed daprd differs from Platform's qualified Works
+proof runtime hash`. The installed runtime is 1.19.1 and the catalog requires
+Platform's hash-qualified Linux 1.19.2 binary. All eleven rows remain open and
+complete-fleet rollback is pending.
+
+`python3 scripts/prepare-platform-builds.py` independently exited 1. Platform
+pins Builds `v6.7.0`, whose official tag names
+`763fc0e937413cb44e533391e573c43640263b40`. Its recorded Builds gitlink names
+`80928033b28e7a9726e93c8850389a081d3a2cb6`. The Platform and CI/CD owners must
+align the release, lock, and recorded gitlink before fresh full and CI can
+qualify the same inputs. The actual CI profile remains pending.
+
+Works bootstrap controls passed 22/22. The isolated Release architecture build
+used Works' committed Builds revision and passed all 39 hosting-boundary tests.
+The source identity preflight also passed with that revision. The existing live
+Builds checkout selects serializer 2.0.2 and triggered the preflight's release
+version drift refusal against Works' recorded 2.0.1 pairing. Both retained
+archive hashes match the historical packet. The exact commands, terminal
+ledgers, and test results are retained locally in
+`.artifacts/story49-qualification.PIbqazGn/`. The story and sprint remain
+`in-progress` with final qualification open.
