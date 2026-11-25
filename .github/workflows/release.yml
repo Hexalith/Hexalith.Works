@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   release:
-    uses: "Hexalith/Hexalith.Builds/.github/workflows/release.yml@v6.8.1"
+    uses: "Hexalith/Hexalith.Builds/.github/workflows/release.yml@v6.8.3"
     permissions:
       contents: write
       actions: read
@@ -34,7 +34,7 @@ jobs:
       actions: read
       id-token: write
     steps:
-      - uses: "Hexalith/Hexalith.Builds/Github/publish@v6.8.1"
+      - uses: "Hexalith/Hexalith.Builds/Github/publish@v6.8.3"
         with:
           publish: ${{ needs.release.outputs.publish }}
           version: ${{ needs.release.outputs.version }}
