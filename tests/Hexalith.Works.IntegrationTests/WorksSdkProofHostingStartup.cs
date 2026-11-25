@@ -130,8 +130,8 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
                 var signingKey = new RsaSecurityKey(rsa.ExportParameters(false)) { KeyId = key.KeyId };
                 var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
                 metadata.SigningKeys.Add(signingKey);
-                options.Authority = null;
-                options.MetadataAddress = null;
+                options.Authority = string.Empty;
+                options.MetadataAddress = string.Empty;
                 options.RequireHttpsMetadata = false;
                 options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
                 options.TokenValidationParameters.ValidIssuer = WorksSdkProofDelegationProvider.Issuer;
