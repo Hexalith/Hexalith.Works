@@ -138,3 +138,6 @@ tests/Hexalith.Works.IntegrationTests/WorksQueueMeasurementTests.cs whitespace=c
 # Recognize authored CRLF in the process sweep serialization qualification.
 docs/sdk-reminder-process-adoption.md whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksProcessSweepSerializationTests.cs whitespace=cr-at-eol
+
+# Recognize authored CRLF in partitioned rebuild checkpoint coverage.
+tests/Hexalith.Works.IntegrationTests/WorksSdkPartitionedRebuildTests.cs whitespace=cr-at-eol

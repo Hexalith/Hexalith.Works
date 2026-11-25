@@ -2474,6 +2474,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-prove-real-store-rebuild-abort.md`
   summary: Determine whether `SharedProjectionEpochCoordinator.GetCheckpointAsync` can be read after a dispatcher-driven rebuild commit of owners that had earlier live deliveries (maybe-false, medium, EventStore).
+  status: done 2026-11-25
+  resolution: Two previously live owners have readable checkpoints immediately after Commit and after Verify in both rebuild generations, with current captured identity references. Subsequent canonical ordinary deliveries preserve both exact persisted histories and advance both checkpoints. This settles the supported owner-sequenced dispatcher path; direct zero-sequence legacy journal entries are outside this proof. [Spec](spec-qualify-dispatcher-rebuild-checkpoints.md).
   evidence: In-memory and real Dapr stores behave the same. The sequence is: live journal and catch-up for two owners, then `DomainSharedProjectionRebuildDispatcher` Begin/Accumulate/Finalize/Stage/Commit. After that, `GetCheckpointAsync` throws "The owner checkpoint has malformed captured identity references", because the checkpoint has `OwnerSequenceNumber` 0 and a captured identity reference with count 1. A missing Verify or owner-sequence handoff step in the test would settle this as false; a failing read during the next ordinary delivery would confirm it as an SDK defect.
 
 - source_spec: `spec-qualify-unbound-query-caller-identity.md`

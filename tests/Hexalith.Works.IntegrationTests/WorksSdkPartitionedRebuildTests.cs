@@ -39,7 +39,14 @@ public sealed class WorksSdkPartitionedRebuildTests
         var localIdentity = new DomainProjectionIdentityOptions { AppId = "works-test", ServiceVersion = "v1" };
         string catalog = AdminOperationalIndexMetadata.Create(new DiscoveryResult([], []), ["work"], [], [handler],
             localIdentity.AppId, localIdentity.ServiceVersion, new ProjectionDispatchOptions(), ["work"]).CatalogFingerprint!;
-        ProjectionEventDto[] captured = [Dto(new WorkItemCreated(Aggregate, 1, new TenantId(Tenant), new WorkItemId(Aggregate), new Obligation("captured")), 1)];
+        var captured = new SortedDictionary<string, ProjectionEventDto[]>(StringComparer.Ordinal)
+        {
+            [Aggregate] = [Created(Aggregate, 10)],
+            ["partition-second-owner"] = [Created("partition-second-owner", 11)],
+        };
+        ProjectionEventDto Created(string owner, long position) =>
+            Dto(new WorkItemCreated(owner, 1, new TenantId(Tenant), new WorkItemId(owner), new Obligation("captured")), 1)
+                with { GlobalPosition = position };
         ServiceProvider Provider(SharedProjectionEpochCoordinator current)
         {
             var services = new ServiceCollection();
@@ -50,12 +57,30 @@ public sealed class WorksSdkPartitionedRebuildTests
             services.AddSingleton<IAsyncDomainProjectionHandler>(handler);
             return services.BuildServiceProvider();
         }
-        ProjectionDispatchRequest Delivery(ProjectionEventDto[] events, string dispatch) => new(
-            new ProjectionRequest(Tenant, "work", Aggregate, events), [handler.ProjectionType], dispatch, catalog);
+        ProjectionDispatchRequest Delivery(string owner, ProjectionEventDto[] events, string dispatch) => new(
+            new ProjectionRequest(Tenant, "work", owner, events), [handler.ProjectionType], dispatch + "-" + owner, catalog);
+        async Task AssertCapturedCheckpointsAsync(int generation)
+        {
+            var cold = new SharedProjectionEpochCoordinator(store, store);
+            (await cold.GetStatusAsync(scope, ct).ConfigureAwait(false)).ActiveGeneration.ShouldBe(generation);
+            foreach ((string owner, ProjectionEventDto[] events) in captured)
+            {
+                SharedProjectionCheckpoint checkpoint = (await cold.GetCheckpointAsync(scope, owner, ct).ConfigureAwait(false)).ShouldNotBeNull();
+                checkpoint.Position.ShouldBe(events[^1].GlobalPosition);
+                checkpoint.OwnerSequenceNumber.ShouldBe(events[^1].SequenceNumber);
+                checkpoint.CapturedEventDigests.ShouldBeNull();
+                SharedProjectionCapturedIdentityReference reference = checkpoint.CapturedIdentityReference.ShouldNotBeNull();
+                reference.Epoch.ShouldBe(generation);
+                reference.Count.ShouldBe(events.Length);
+                reference.RootDigest.ShouldNotBeNullOrWhiteSpace();
+                reference.LastPosition.ShouldBe(events[^1].GlobalPosition);
+            }
+        }
         using (ServiceProvider provider = Provider(coordinator))
         {
-            (await DomainProjectionDispatcher.DispatchAsync(provider, Delivery(captured, "initial"), new ProjectionDispatchOptions(), localIdentity, ct))
-                .Outcomes.ShouldHaveSingleItem().Status.ShouldBe(ProjectionDispatchStatus.Completed);
+            foreach ((string owner, ProjectionEventDto[] events) in captured)
+                (await DomainProjectionDispatcher.DispatchAsync(provider, Delivery(owner, events, "initial"), new ProjectionDispatchOptions(), localIdentity, ct))
+                    .Outcomes.ShouldHaveSingleItem().Status.ShouldBe(ProjectionDispatchStatus.Completed);
         }
         for (int epoch = 1; epoch <= 2; epoch++)
         {
@@ -65,51 +90,64 @@ public sealed class WorksSdkPartitionedRebuildTests
             DomainSharedProjectionRebuildRequest Request(DomainSharedProjectionRebuildAction action) => new(DomainSharedProjectionRebuildProtocol.Version, action, identity);
             Task<DomainSharedProjectionRebuildResponse> Dispatch(DomainSharedProjectionRebuildRequest request) =>
                 DomainSharedProjectionRebuildDispatcher.DispatchAsync(provider, request, new ProjectionDispatchOptions(), localIdentity, ct);
-            string inventory = DomainSharedProjectionRebuildFingerprint.AppendInventory(DomainSharedProjectionRebuildFingerprint.EmptyInventory, 0,
-                DomainSharedProjectionRebuildFingerprint.ComputeHistory(Aggregate, false, captured));
+            string inventory = DomainSharedProjectionRebuildFingerprint.EmptyInventory;
+            int ordinal = 0;
+            foreach ((string owner, ProjectionEventDto[] events) in captured)
+                inventory = DomainSharedProjectionRebuildFingerprint.AppendInventory(inventory, ordinal++,
+                    DomainSharedProjectionRebuildFingerprint.ComputeHistory(owner, false, events));
             (await Dispatch(Request(DomainSharedProjectionRebuildAction.Begin) with
             {
                 CaptureInventoryFingerprint = inventory,
-                SourceHighWatermarks = new Dictionary<string, long> { [Aggregate] = captured[^1].GlobalPosition },
+                SourceHighWatermarks = captured.ToDictionary(pair => pair.Key, pair => pair.Value[^1].GlobalPosition, StringComparer.Ordinal),
             })).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Accumulating);
-            (await Dispatch(Request(DomainSharedProjectionRebuildAction.Accumulate) with
+            ordinal = 0;
+            foreach ((string owner, ProjectionEventDto[] events) in captured)
             {
-                AggregateOrdinal = 0, AggregateId = Aggregate, Events = captured,
-            })).AcceptedAggregateCount.ShouldBe(1);
+                var accumulated = await Dispatch(Request(DomainSharedProjectionRebuildAction.Accumulate) with
+                {
+                    AggregateOrdinal = ordinal++, AggregateId = owner, Events = events,
+                });
+                accumulated.AcceptedAggregateCount.ShouldBe(ordinal);
+            }
             (await Dispatch(Request(DomainSharedProjectionRebuildAction.Finalize) with
             {
-                ExpectedAggregateCount = 1, ExpectedInventoryFingerprint = inventory,
+                ExpectedAggregateCount = captured.Count, ExpectedInventoryFingerprint = inventory,
             })).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Finalized);
             (await Dispatch(Request(DomainSharedProjectionRebuildAction.Stage))).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Prepared);
             (await Dispatch(Request(DomainSharedProjectionRebuildAction.Commit))).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
+            await AssertCapturedCheckpointsAsync(epoch);
             (await Dispatch(Request(DomainSharedProjectionRebuildAction.Verify))).Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
-            var cold = new SharedProjectionEpochCoordinator(store, store);
-            SharedProjectionCheckpoint checkpoint = (await cold.GetCheckpointAsync(scope, Aggregate, ct)).ShouldNotBeNull();
-            checkpoint.OwnerSequenceNumber.ShouldBe(1);
-            // EventStore 3.126.1 retains each captured owner identity as a sealed paged reference, never inline.
-            checkpoint.CapturedEventDigests.ShouldBeNull();
-            SharedProjectionCapturedIdentityReference identityReference = checkpoint.CapturedIdentityReference.ShouldNotBeNull();
-            identityReference.Count.ShouldBe(1);
-            identityReference.RootDigest.ShouldNotBeNullOrWhiteSpace();
-            identityReference.LastPosition.ShouldBe(captured[^1].GlobalPosition);
-            (await cold.GetStatusAsync(scope, ct)).ActiveGeneration.ShouldBe(epoch);
+            await AssertCapturedCheckpointsAsync(epoch);
         }
-        coordinator = new SharedProjectionEpochCoordinator(store, store);
-        using (ServiceProvider provider = Provider(coordinator))
+        long nextPosition = 20;
+        var updated = new Dictionary<string, ProjectionEventDto[]>(StringComparer.Ordinal);
+        foreach ((string owner, ProjectionEventDto[] events) in captured)
         {
-            ProjectionEventDto[] next = [.. captured, Dto(new WorkItemQueued(Aggregate, 2, new TenantId(Tenant), new WorkItemId(Aggregate)), 2)];
-            (await DomainProjectionDispatcher.DispatchAsync(provider, Delivery(next, "after-two-commits"), new ProjectionDispatchOptions(), localIdentity, ct))
+            coordinator = new SharedProjectionEpochCoordinator(store, store);
+            using ServiceProvider provider = Provider(coordinator);
+            ProjectionEventDto[] next = [.. events, Dto(new WorkItemQueued(owner, 2, new TenantId(Tenant), new WorkItemId(owner)), 2)
+                with { GlobalPosition = nextPosition++ }];
+            (await DomainProjectionDispatcher.DispatchAsync(provider, Delivery(owner, next, "after-two-commits"), new ProjectionDispatchOptions(), localIdentity, ct))
                 .Outcomes.ShouldHaveSingleItem().Status.ShouldBe(ProjectionDispatchStatus.Completed);
-            (await DomainProjectionDispatcher.DispatchAsync(provider, Delivery(next, "same-prefix-redelivery"), new ProjectionDispatchOptions(), localIdentity, ct))
+            (await DomainProjectionDispatcher.DispatchAsync(provider, Delivery(owner, next, "same-prefix-redelivery"), new ProjectionDispatchOptions(), localIdentity, ct))
                 .Outcomes.ShouldHaveSingleItem().Status.ShouldBeOneOf(ProjectionDispatchStatus.Completed, ProjectionDispatchStatus.AlreadyCompleted);
+            updated.Add(owner, next);
         }
         var restarted = new SharedProjectionEpochCoordinator(store, store);
-        (await restarted.GetCheckpointAsync(scope, Aggregate, ct))!.OwnerSequenceNumber.ShouldBe(2);
         (await restarted.GetStatusAsync(scope, ct)).PendingDeliveryCount.ShouldBe(0);
-        var read = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(Aggregate), ct);
-        read.IsAvailable.ShouldBeTrue(); read.IsDegraded.ShouldBeFalse(); read.IsStale.ShouldBeFalse();
-        read.Value!.As<WorkItemRollUp>().Status.ShouldBe(WorkItemStatus.Queued);
-        (await WorkItemRuntimeHistoryStore.ReadAsync(restarted, scope, read.Generation, Aggregate, ct)).Events.Length.ShouldBe(2);
+        foreach ((string owner, ProjectionEventDto[] next) in updated)
+        {
+            SharedProjectionCheckpoint checkpoint = (await restarted.GetCheckpointAsync(scope, owner, ct)).ShouldNotBeNull();
+            checkpoint.OwnerSequenceNumber.ShouldBe(2);
+            checkpoint.Position.ShouldBe(next[^1].GlobalPosition);
+            var read = await restarted.ReadAsync<WorksRuntimeDocument>(scope, WorksReadModelKeys.RuntimeRollUpKey(owner), ct);
+            read.IsAvailable.ShouldBeTrue();
+            read.IsDegraded.ShouldBeFalse();
+            read.IsStale.ShouldBeFalse();
+            read.Value!.As<WorkItemRollUp>().Status.ShouldBe(WorkItemStatus.Queued);
+            var persisted = await WorkItemRuntimeHistoryStore.ReadAsync(restarted, scope, read.Generation, owner, ct);
+            JsonSerializer.Serialize(persisted.Events, s_json).ShouldBe(JsonSerializer.Serialize(next, s_json));
+        }
     }
 
     [Fact]
