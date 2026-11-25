@@ -53,6 +53,8 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         {
             WorksAdminProofService.RegisterIssuer(services, context.Configuration);
             services.AddHostedService<WorksAdminProofService>();
+            if (privateKey is { Length: > 0 })
+                ConfigureProofJwtBearer(services, privateKey);
             return;
         }
         if (role == "metadata-only")
@@ -64,7 +66,12 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(privateKey!), out _);
         var key = new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" };
         services.AddSingleton(key);
+        // Every catalog participant must validate the same proof issuer, audience, and key. Rewriting
+        // only EventStore leaves AuthenticationFingerprint mismatched and process evidence unavailable.
+        ConfigureProofJwtBearer(services, rsa, key);
         services.AddSingleton<WorksSdkProofIntentRegistry>();
+        if (role is "operations")
+            return;
         if (role == "works")
         {
             // Keep the actual Works health result, exposing only the same bounded diagnostic response used by the gateway.
@@ -125,25 +132,6 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
             services.AddSingleton<IIdempotencyIntentAdapterRegistry>(provider => provider.GetRequiredService<WorksSdkProofIntentRegistry>());
             services.AddSingleton<ITrustedEffectRetentionGate, WorksSdkProofRetentionGate>();
             services.AddSingleton<ITrustedEffectAuditSink, WorksSdkProofAuditSink>();
-            services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
-            {
-                var signingKey = new RsaSecurityKey(rsa.ExportParameters(false)) { KeyId = key.KeyId };
-                var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
-                metadata.SigningKeys.Add(signingKey);
-                options.Authority = string.Empty;
-                options.MetadataAddress = string.Empty;
-                options.RequireHttpsMetadata = false;
-                options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
-                options.TokenValidationParameters.ValidIssuer = WorksSdkProofDelegationProvider.Issuer;
-                options.TokenValidationParameters.ValidIssuers = [WorksSdkProofDelegationProvider.Issuer];
-                options.TokenValidationParameters.ValidAudience = "hexalith-eventstore";
-                options.TokenValidationParameters.ValidAudiences = ["hexalith-eventstore"];
-                options.TokenValidationParameters.IssuerSigningKey = signingKey;
-                options.TokenValidationParameters.ValidateIssuer = true;
-                options.TokenValidationParameters.ValidateAudience = true;
-                options.TokenValidationParameters.ValidateIssuerSigningKey = true;
-                options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.RsaSha256];
-            });
             services.Configure<TrustedEffectAuthorityOptions>(options => options.Rules = [
                 new("works", "works.date-resume", "work", "ResumeWorkItem"),
                 new("works", "works.expiry", "work", "ExpireWorkItem"),
@@ -152,6 +140,38 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
                 new("works", "works.child-completion-resume", "work", "ResumeWorkItem"),
             ]);
         }
+    }
+
+    private static void ConfigureProofJwtBearer(IServiceCollection services, string pkcs8PrivateKey)
+    {
+        var rsa = RSA.Create();
+        rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(pkcs8PrivateKey), out _);
+        var key = new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" };
+        services.AddSingleton(key);
+        ConfigureProofJwtBearer(services, rsa, key);
+    }
+
+    private static void ConfigureProofJwtBearer(IServiceCollection services, RSA rsa, RsaSecurityKey key)
+    {
+        services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
+        {
+            var signingKey = new RsaSecurityKey(rsa.ExportParameters(includePrivateParameters: false)) { KeyId = key.KeyId };
+            var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
+            metadata.SigningKeys.Add(signingKey);
+            options.Authority = string.Empty;
+            options.MetadataAddress = string.Empty;
+            options.RequireHttpsMetadata = false;
+            options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
+            options.TokenValidationParameters.ValidIssuer = WorksSdkProofDelegationProvider.Issuer;
+            options.TokenValidationParameters.ValidIssuers = [WorksSdkProofDelegationProvider.Issuer];
+            options.TokenValidationParameters.ValidAudience = "hexalith-eventstore";
+            options.TokenValidationParameters.ValidAudiences = ["hexalith-eventstore"];
+            options.TokenValidationParameters.IssuerSigningKey = signingKey;
+            options.TokenValidationParameters.ValidateIssuer = true;
+            options.TokenValidationParameters.ValidateAudience = true;
+            options.TokenValidationParameters.ValidateIssuerSigningKey = true;
+            options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.RsaSha256];
+        });
     }
 
     private static void ConfigureMetadata(IServiceCollection services)

@@ -884,10 +884,12 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             builder.CreateResourceBuilder(builder.Resources.OfType<ProjectResource>().Single(resource => resource.Name == "eventstore-admin"))
                 .WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", hostingStartup, ';'))
                 .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", "eventstore-admin")
+                .WithEnvironment("WORKS_SDK_PROOF_KEY", key)
                 .WithEnvironment(WorksAdminProofProtocol.DirectoryKey, adminDirectory).WithEnvironment(WorksAdminProofProtocol.SessionKey, callerSession)
                 .WithEnvironment("WORKS_PLATFORM_RECOVERY_GRANTS", JsonSerializer.Serialize(recoveryGrants));
         }
-        foreach (ProjectResource resource in builder.Resources.OfType<ProjectResource>().Where(resource => resource.Name is "works" or "works-ha" or "eventstore"))
+        foreach (ProjectResource resource in builder.Resources.OfType<ProjectResource>()
+            .Where(resource => resource.Name is "works" or "works-ha" or "eventstore" or "eventstore-operations"))
         {
             IResourceBuilder<ProjectResource> target = builder.CreateResourceBuilder(resource);
             target.WithEnvironment("HexalithEventStoreVersion", WorksSdkProofProducer.Version);
@@ -897,8 +899,14 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             // Platform remains first and its WORKS_PLATFORM_RUNTIME gate still executes in the live process.
             if (!WorksAppHostSelection.IsPlatform)
                 target.WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "DOTNET_STARTUP_HOOKS", assembly, Path.PathSeparator));
+            string proofRole = resource.Name switch
+            {
+                "eventstore" => "eventstore",
+                "eventstore-operations" => "operations",
+                _ => "works",
+            };
             target.WithEnvironment(context => ExtendEnvironmentList(context.EnvironmentVariables, "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES", hostingStartup, ';'))
-                .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", resource.Name == "eventstore" ? "eventstore" : "works")
+                .WithEnvironment("WORKS_SDK_PROOF", "1").WithEnvironment("WORKS_SDK_PROOF_ROLE", proofRole)
                 .WithEnvironment("WORKS_SDK_PROOF_KEY", key);
             if (WorksAppHostSelection.IsPlatform)
             {
@@ -913,7 +921,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     if (File.Exists(ownerPath)) target.WithEnvironment(WorksFleetQuiescence.OwnerEnvironment, ownerPath);
                     target.WithEnvironment(WorksProofCallerProtocol.DirectoryKey, callerDirectory).WithEnvironment(WorksProofCallerProtocol.SessionKey, callerSession);
                 }
-                else
+                else if (resource.Name is "works" or "works-ha")
                 {
                     target.WithEnvironment(WorksProofRuntimeInventoryService.PathKey, Path.Combine(callerDirectory, "runtime-inventory.json"))
                         .WithEnvironment(WorksReminderPhaseDiagnostics.PathKey, Path.Combine(callerDirectory, "reminder-phases.json"));
@@ -932,7 +940,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                     }
                 }
             }
-            if (resource.Name != "eventstore")
+            if (resource.Name is "works" or "works-ha")
             {
                 if (WorksAppHostSelection.IsPlatform)
                 {
@@ -960,7 +968,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                         .WithEnvironment("Works__Query__PartiesGatewayBearerToken", identity.ServiceBearer);
                 ConfigureRecoveryProfile(target);
             }
-            else
+            else if (resource.Name == "eventstore")
             {
                 // Rate limits stay the selected host's own composition: Platform composes explicit development/test
                 // limits, and the retained host keeps its proof-topology limits.
