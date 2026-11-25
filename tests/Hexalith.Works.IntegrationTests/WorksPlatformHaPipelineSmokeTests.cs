@@ -54,7 +54,8 @@ public sealed class WorksPlatformHaPipelineSmokeTests
             Endpoint(primary, "DAPR_HTTP_ENDPOINT").ShouldNotBe(Endpoint(secondary, "DAPR_HTTP_ENDPOINT"));
             using DaprClient dapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, primary, token).ConfigureAwait(false);
             var store = new DaprReadModelStore(dapr);
-            DateTimeOffset due = DateTimeOffset.UtcNow.AddSeconds(60);
+            // Witness registration plus primary stop can exceed 60s on catalog-bound RSA hosts.
+            DateTimeOffset due = DateTimeOffset.UtcNow.AddMinutes(4);
             await WorksAppHostSmokeHarness.ParkSuspendedOnDateAsync(gateway, tenant, item, due, token).ConfigureAwait(false);
             string actor = ReminderIdentityCodec.ComputeActorId(tenant, item);
             string reminderName = await WaitWitnessAsync(store, "eventstore:reminders:v1:WorksSdkReminderActor:item:" + actor, token).ConfigureAwait(false);
