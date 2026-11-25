@@ -2442,6 +2442,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
   summary: Retire the module release scripts that no workflow invokes, or document a supported local use for them.
+  status: done 2026-11-25
+  resolution: Removed five unused shell publication and verification scripts and their dedicated tests. The current shared Builds publication path and the publication-free local pack, checksum, validation, and consumer rehearsal remain available. [Spec](spec-retire-obsolete-works-release-scripts.md).
   evidence: Since `18853d2` and the CiCd shared release caller (`3996de2`), only `scripts/tests/test_release_tooling.py` calls `push-release-packages.sh`, `validate-publication-preflight.sh`, `verify-release-publication.sh` and `validate-release-source.sh`. No file in Works references `validate-release-secrets.sh`. README still runs `python3 -m unittest discover -s scripts/tests` as release rehearsal, so the dead publisher logic is still maintained and tested.
 
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`

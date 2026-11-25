@@ -69,7 +69,7 @@ def load_manifest() -> list[ReleasePackage]:
 
 
 def write_checksum_ledger(output: Path, artifacts: list[Path]) -> Path:
-    """Freeze the exact release-candidate names and bytes for the publisher."""
+    """Record the exact candidate archive names and digests for the local rehearsal."""
 
     ledger = output / "release-artifacts.sha256"
     ledger.write_text(
@@ -154,8 +154,7 @@ def main() -> int:
     # counts, so a legacy .symbols.nupkg or any other extra archive cannot evade the release inventory.
     archives, symbols = validate_output_inventory(output, packages, args.version)
 
-    # Freeze the exact candidate bytes before the first publication side effect. Same-invocation retries are
-    # permitted only from this unchanged directory; every HTTP 409 remains a fatal collision.
+    # Record the archive bytes that the publication-free package rehearsal validated.
     write_checksum_ledger(output, [*archives, *symbols])
     return 0
 
