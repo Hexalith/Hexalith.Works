@@ -115,9 +115,17 @@ internal static class WorksPlatformRollbackChecks
 #if WORKS_PLATFORM_PARITY
             // The operator record belongs to the completed child process source, not the resumed parent.
             var source = new Hexalith.EventStore.Client.Processes.ProcessSource(submission.Identity.Tenant, submission.Identity.SourceDomain, submission.Identity.SourceAggregate);
-            WorksProcessDispositionAuditDocument audit = (await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore",
-                WorksSyntheticDispositionAuditSink.Key(source), cancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull();
-            audit.Attempts.ShouldHaveSingleItem().Actor.ShouldBe("synthetic-operator-416");
+            WorksProcessDispositionAuditDocument? audit = null;
+            using var auditDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            auditDeadline.CancelAfter(TimeSpan.FromMinutes(2));
+            do
+            {
+                audit = (await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore",
+                    WorksSyntheticDispositionAuditSink.Key(source), auditDeadline.Token).ConfigureAwait(false)).Value;
+                if (audit is not null) break;
+                await Task.Delay(100, auditDeadline.Token).ConfigureAwait(false);
+            } while (true);
+            audit.ShouldNotBeNull().Attempts.ShouldHaveSingleItem().Actor.ShouldBe("synthetic-operator-416");
             restoredOperatorAuditAttempts = audit.Attempts.Count;
 #endif
         }
