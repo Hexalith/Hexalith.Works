@@ -1333,6 +1333,8 @@ archived: 2026-10-23
   evidence: Iteration 3 BH4/EC4/EC3, carrying chunk 1, R2-EC6, R2-BH3, and R2-BH4. Four kinds of candidate keep every pass incomplete, readiness Degraded, and the loop on `RetryInitialDelay`: null rows, actor-ID mismatches (`ReminderReconciler.cs:89`), stored headers re-indexed without re-derivation on the fail-closed and actor-collision paths, and folds that always throw, for example after erasure. Operator repair belongs to Story 4.16.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Confirm that every call inside a reminder actor turn is bounded by a finite timeout.
+  status: done 2026-11-25
+  resolution: The pinned EventStore 5.5.1 ReminderActor sends an uncancelable token to its item store. A controlled read stayed pending after the caller's 500 ms wait expired. Releasing the provider completed the turn without writing a reminder item for a stream with no date intent. This establishes the missing actor-level bound while provider transport deadlines remain configuration-specific. [Spec](spec-qualify-reminder-actor-turn-deadline.md).
   evidence: Iteration 3 BH9 (unverified medium), carrying R2-BH5. `ReminderActor` passes `CancellationToken.None`, and `DaprReminderActorInvoker` checks cancellation only before creating the proxy (`DaprReminderActorInvoker.cs:27`). Settle this by measuring the Dapr actor proxy, store, and submitter timeouts under a hung dependency.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Prove AC4 against the named public EventStore release that contains the R6 API.

@@ -3,6 +3,7 @@ using System.Text.Json;
 
 using Dapr.Actors;
 using Dapr.Actors.Client;
+using Dapr.Actors.Runtime;
 
 using Hexalith.EventStore.Client.Discovery;
 using Hexalith.EventStore.Client.Gateway;
@@ -256,6 +257,44 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
         _ = recovered.Received(1).ConvergeAsync(targets[0]);
         Discovery(store, "indexed").GetProperty("isIncomplete").GetBoolean().ShouldBeFalse();
         (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Healthy);
+    }
+
+    /// <summary>The caller can time out while the live SDK actor turn is still waiting for its item store.</summary>
+    [Fact]
+    public async Task ReminderActorTurnKeepsWaitingAfterCallerDeadline()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        const string item = "stalled-item-state";
+        string actorId = ReminderIdentityCodec.ComputeActorId(Tenant, item);
+        string key = Prefix + ":item:" + actorId;
+        var store = new InMemoryReadModelStore();
+        var delayed = new WorksDelayedReminderItemRead(store, key);
+        var page = Story48Streams.Page(Tenant, item, new WorkItemCreated(item, 1,
+            new TenantId(Tenant), new WorkItemId(item), new Obligation("no date intent")));
+        using ServiceProvider services = Services(store, null, new(), page, readModelStore: delayed);
+        using IServiceScope scope = services.CreateScope();
+        var host = ActorHost.CreateForTest<ReminderActor>(new ActorTestOptions { ActorId = new ActorId(actorId) });
+        var actor = new ReminderActor(host, scope.ServiceProvider);
+        Task<ReminderConvergenceResult> turn = actor.ConvergeAsync(new ReminderTarget(Tenant, "work", item));
+        ReminderConvergenceResult result;
+        try
+        {
+            CancellationToken providerCancellation = await delayed.Entered.WaitAsync(TimeSpan.FromSeconds(5), ct);
+            providerCancellation.CanBeCanceled.ShouldBeFalse();
+            await Should.ThrowAsync<TimeoutException>(() => turn.WaitAsync(TimeSpan.FromMilliseconds(500), ct));
+            turn.IsCompleted.ShouldBeFalse();
+            store.SnapshotRaw("statestore", key).ShouldBeNull();
+        }
+        finally
+        {
+            delayed.Release();
+            using var cleanup = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+            result = await turn.WaitAsync(cleanup.Token).ConfigureAwait(true);
+        }
+
+        result.Armed.ShouldBe(0);
+        result.Unresolved.ShouldBe(0);
+        store.SnapshotRaw("statestore", key).ShouldBeNull();
     }
 
     /// <summary>Host shutdown can interrupt a pass despite a different provider token, without publishing success or losing the durable cursor.</summary>
@@ -595,7 +634,7 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
 
     private static ServiceProvider Services(InMemoryReadModelStore store, IReminderRegistrar? registrar,
         WorksReminderRecoveryLogCapture logs, StreamReadPage? page = null, bool enabled = true,
-        IActorProxyFactory? actorProxyFactory = null)
+        IActorProxyFactory? actorProxyFactory = null, IReadModelStore? readModelStore = null)
     {
         IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -613,7 +652,7 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
         environment.EnvironmentName.Returns(Environments.Production);
         services.AddSingleton(environment);
         services.AddLogging(builder => builder.ClearProviders().SetMinimumLevel(LogLevel.Debug).AddProvider(logs));
-        services.AddSingleton<IReadModelStore>(store);
+        services.AddSingleton<IReadModelStore>(readModelStore ?? store);
         services.AddSingleton<IReadModelConditionalEraser>(store);
         services.AddSingleton<TimeProvider>(new Story48FixedTimeProvider(s_now));
         services.AddWorksReminderAndCascadeRecovery(configuration);
