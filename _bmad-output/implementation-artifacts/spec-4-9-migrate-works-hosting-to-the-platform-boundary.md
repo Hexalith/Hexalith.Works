@@ -935,3 +935,33 @@ archive hashes match the historical packet. The exact commands, terminal
 ledgers, and test results are retained locally in
 `.artifacts/story49-qualification.PIbqazGn/`. The story and sprint remain
 `in-progress` with final qualification open.
+
+### Latest packages and Dapr qualification 2026-11-25
+
+The local upgrade selects the published Builds `v6.8.3` catalog at
+`62876129eaa035e78bd0324419231f07d43a07b8`: EventStore 5.5.2, Commons 3.0.3,
+PolymorphicSerializations 2.0.2, Parties 4.0.1, Dapr runtime 1.19.2, and Dapr
+CLI and .NET packages 1.19.1. The Works source identity check and Release
+solution build passed. Platform authenticated the published Builds tooling,
+verified 18 owner packages and audited the 33-project Release graph. The
+[fixture commit](https://github.com/Hexalith/Hexalith.Platform/commit/4de0bfff31b849986f6f1ea200a3585eb76c9938)
+was pushed on `fix/story-4-9-verifier-fixture`.
+
+The fresh canonical `full` run accepted the exact Dapr 1.19.2 runtime hash,
+matched nine public packages and 2,798 SDK runtime/build inputs to the official
+5.5.2 producer `f0694e52814a8cbaed632fa608f54cb20c512d85`, and passed 193
+Platform tests in each mode, 437 Works supporting facts, and retained-host
+startup. During the live recovery lane, eight cases passed and two failed
+when `CreateWorkItem` returned HTTP 401 with `InvalidSignature` after readiness
+passed. The proof harness signs the command requests with its legacy test key.
+The current Platform preview configures the receiver with its RS256 Keycloak
+realm. This qualification ended before the remaining live lanes, complete-fleet
+rollback, and actual CI. The exact result is recorded in
+`.artifacts/hexalith-6.8.3-upgrade/full-latest-ledger.json`.
+
+Works remote main contains the product updates from `3e1d6ea`, followed by
+`048fe229dcb927188f3923015cc56dd4e0084655`, which restored the CI/CD-owned
+Builds 6.8.1 gitlink. The [Works CI run](https://github.com/Hexalith/Hexalith.Works/actions/runs/45605677513)
+failed before parity. Local `python3 references/Hexalith.Builds/check.py`
+exited 1 because the delivered Builds tag is still `v6.8.1`. The aligned CI/CD
+delivery and a live proof identity accepted by the current realm remain open.
