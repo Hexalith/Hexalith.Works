@@ -39,9 +39,10 @@ internal static class WorksPlatformProjectionChecks
     /// <param name="executor">The test-only Parties identity whose Party is bound to <paramref name="aggregateId"/>; every query is a delegated Executor query.</param>
     /// <param name="initialConvergencePhase">The unique evidence phase for this caller's initial natural convergence.</param>
     /// <param name="expectedSources">The complete process candidate count of the caller's fixture.</param>
+    /// <param name="verifyAbort">Whether the caller also runs the isolated abort scenario.</param>
     internal static async Task<object> VerifyAsync(DistributedApplication app, HttpClient gateway, IReadModelStore store,
         string tenant, string aggregateId, WorksPlatformIdentityFixture executor, CancellationToken cancellationToken,
-        string initialConvergencePhase = "platform-initial-projection-convergence", int expectedSources = 11)
+        string initialConvergencePhase = "platform-initial-projection-convergence", int expectedSources = 11, bool verifyAbort = false)
     {
         ArgumentNullException.ThrowIfNull(executor);
         int identityCallsBefore = executor.Calls;
@@ -238,9 +239,19 @@ internal static class WorksPlatformProjectionChecks
         (await SnapshotAsync(coordinator, scope, histories, cancellationToken).ConfigureAwait(false)).Digest.ShouldBe(after.Digest);
         object concurrentDelivery = await VerifyConcurrentDeliveryAsync(coordinator, scope, gateway, gatewaySidecar, histories,
             aggregateId, catalog, executor, delegatedQuery, cancellationToken).ConfigureAwait(false);
+        object? abortedDelivery = null;
+        if (verifyAbort)
+        {
+            var latest = new SortedDictionary<string, ProjectionEventDto[]>(histories, StringComparer.Ordinal)
+            {
+                [aggregateId] = await ReadHistoryAsync(gateway, new ProcessSource(tenant, "work", aggregateId), cancellationToken).ConfigureAwait(false),
+            };
+            abortedDelivery = await VerifyConcurrentDeliveryAsync(coordinator, scope, gateway, gatewaySidecar, latest,
+                aggregateId, catalog, executor, delegatedQuery, cancellationToken, abort: true).ConfigureAwait(false);
+        }
         object queryIdentity = executor.Evidence(delegatedQuery, identityCallsBefore);
         (executor.Calls - identityCallsBefore).ShouldBeGreaterThan(0, "Works must resolve every delegated rebuild query through the Parties authority.");
-        return new { initialConvergence, concurrentDelivery, catalog, sources = histories.Keys.ToArray(), sourceGlobalPositions = after.Checkpoints, sourceHeads = histories.ToDictionary(pair => pair.Key, pair => pair.Value[^1].SequenceNumber, StringComparer.Ordinal), redelivered, fenced,
+        return new { initialConvergence, concurrentDelivery, abortedDelivery, catalog, sources = histories.Keys.ToArray(), sourceGlobalPositions = after.Checkpoints, sourceHeads = histories.ToDictionary(pair => pair.Key, pair => pair.Value[^1].SequenceNumber, StringComparer.Ordinal), redelivered, fenced,
             negatives = new { wrongOrigin = (int)wrongOrigin.StatusCode, wrongOperation = (int)wrongOperation.StatusCode, invalidSequence = invalidSequenceStatus, circuitRefusals,
                 unchangedProtectedControls = negativeControls.Count, negativeControlDispatchIds = negativeControls },
             before = new { before.Generation, before.Digest }, after = new { after.Generation, after.Digest }, inventory,
@@ -249,7 +260,7 @@ internal static class WorksPlatformProjectionChecks
 
     private static async Task<object> VerifyConcurrentDeliveryAsync(SharedProjectionEpochCoordinator coordinator, SharedProjectionScope scope,
         HttpClient gateway, HttpClient gatewaySidecar, SortedDictionary<string, ProjectionEventDto[]> histories, string owner,
-        string catalog, WorksPlatformIdentityFixture executor, QueryEnvelope delegatedQuery, CancellationToken cancellationToken)
+        string catalog, WorksPlatformIdentityFixture executor, QueryEnvelope delegatedQuery, CancellationToken cancellationToken, bool abort = false)
     {
         int identityCallsBefore = executor.Calls;
         string assertion = WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]);
@@ -267,19 +278,45 @@ internal static class WorksPlatformProjectionChecks
             SourceHighWatermarks = histories.ToDictionary(pair => pair.Key, pair => pair.Value[^1].GlobalPosition, StringComparer.Ordinal),
         }, assertion, cancellationToken).ConfigureAwait(false);
         string correlation = "synthetic-capture-416-" + Convert.ToHexStringLower(RandomNumberGenerator.GetBytes(5));
-        await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, scope.TenantId, owner, nameof(LinkConversation),
-            new LinkConversation(new TenantId(scope.TenantId), new WorkItemId(owner), new ConversationCorrelationId(correlation)), cancellationToken).ConfigureAwait(false);
+        var tenant = new TenantId(scope.TenantId);
+        var workItem = new WorkItemId(owner);
+        var schedule = new WorkItemSchedule(DueDate: new DateOnly(2040, 6, 15));
+        string command = abort ? nameof(RescheduleWorkItem) : nameof(LinkConversation);
+        if (abort)
+            await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, scope.TenantId, owner, command,
+                new RescheduleWorkItem(tenant, workItem, schedule), cancellationToken).ConfigureAwait(false);
+        else
+            await WorksAppHostSmokeHarness.SubmitToTerminalAsync(gateway, scope.TenantId, owner, command,
+                new LinkConversation(tenant, workItem, new ConversationCorrelationId(correlation)), cancellationToken).ConfigureAwait(false);
         ProjectionEventDto[] changed = await ReadHistoryAsync(gateway, new ProcessSource(scope.TenantId, "work", owner), cancellationToken).ConfigureAwait(false);
         changed.Length.ShouldBe(histories[owner].Length + 1);
-        changed[^1].EventTypeName.Split('.').Last().ShouldBe(nameof(ConversationLinked));
-        JsonSerializer.Deserialize<ConversationLinked>(changed[^1].Payload, _json)!.ConversationCorrelationId.Value.ShouldBe(correlation);
+        ProjectionDispatchOutcome? fencedNewEvent = null;
+        if (abort)
+        {
+            changed[^1].EventTypeName.Split('.').Last().ShouldBe(nameof(WorkItemRescheduled));
+            JsonSerializer.Deserialize<WorkItemRescheduled>(changed[^1].Payload, _json)!.Schedule.ShouldBe(schedule);
+            var pendingDelivery = new ProjectionDispatchRequest(new ProjectionRequest(scope.TenantId, "work", owner, [changed[^1]]),
+                [WorksReadModelKeys.RuntimeFamily], identity.OperationId + "-fenced", catalog);
+            fencedNewEvent = (await DispatchAsync(gatewaySidecar, pendingDelivery, assertion, cancellationToken).ConfigureAwait(false))
+                .Outcomes.ShouldHaveSingleItem();
+            fencedNewEvent.Status.ShouldBe(ProjectionDispatchStatus.Retryable);
+            fencedNewEvent.ReasonCode.ShouldBe(ProjectionDispatchReasonCodes.PartialRetry);
+        }
+        else
+        {
+            changed[^1].EventTypeName.Split('.').Last().ShouldBe(nameof(ConversationLinked));
+            JsonSerializer.Deserialize<ConversationLinked>(changed[^1].Payload, _json)!.ConversationCorrelationId.Value.ShouldBe(correlation);
+        }
         var during = await SnapshotAsync(coordinator, scope, histories, cancellationToken, expectStale: true).ConfigureAwait(false);
         during.Generation.ShouldBe(before.Generation);
         during.Digest.ShouldBe(before.Digest);
+        during.Checkpoints.ShouldBe(before.Checkpoints);
         QueryResult stale = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         stale.Success.ShouldBeTrue(stale.ErrorMessage);
         stale.Metadata.ShouldNotBeNull().IsStale.ShouldBe(true);
         stale.GetPayload().ToString().ShouldNotContain(correlation);
+        if (abort)
+            stale.GetPayload().GetProperty("latestAcceptedSourceSequence").GetInt64().ShouldBe(histories[owner][^1].SequenceNumber);
         // Observed, not asserted-then-restated: the old generation served the stale view without the new event.
         bool oldGenerationStayedReadable = during.Generation == before.Generation && during.Digest == before.Digest && stale.Success
             && stale.Metadata?.IsStale == true && stale.GetPayload().GetProperty("found").GetBoolean() && !stale.GetPayload().ToString().Contains(correlation, StringComparison.Ordinal);
@@ -296,8 +333,9 @@ internal static class WorksPlatformProjectionChecks
         }, assertion, cancellationToken).ConfigureAwait(false);
         _ = await RebuildAsync(gatewaySidecar, Lifecycle(DomainSharedProjectionRebuildAction.Stage), assertion, cancellationToken).ConfigureAwait(false);
         (await SnapshotAsync(coordinator, scope, histories, cancellationToken, expectStale: true).ConfigureAwait(false)).Digest.ShouldBe(before.Digest);
-        DomainSharedProjectionRebuildResponse committed = await RebuildAsync(gatewaySidecar, Lifecycle(DomainSharedProjectionRebuildAction.Commit), assertion, cancellationToken).ConfigureAwait(false);
-        committed.Phase.ShouldBe(DomainSharedProjectionRebuildPhase.Committed);
+        DomainSharedProjectionRebuildAction close = abort ? DomainSharedProjectionRebuildAction.Abort : DomainSharedProjectionRebuildAction.Commit;
+        DomainSharedProjectionRebuildResponse closed = await RebuildAsync(gatewaySidecar, Lifecycle(close), assertion, cancellationToken).ConfigureAwait(false);
+        closed.Phase.ShouldBe(abort ? DomainSharedProjectionRebuildPhase.Aborted : DomainSharedProjectionRebuildPhase.Committed);
         SharedProjectionCheckpoint? caughtUp = null;
         try
         {
@@ -327,10 +365,13 @@ internal static class WorksPlatformProjectionChecks
         assertion = WorksPlatformProofRequests.Assertion("eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]);
         var updated = new SortedDictionary<string, ProjectionEventDto[]>(histories, StringComparer.Ordinal) { [owner] = changed };
         var after = await SnapshotAsync(coordinator, scope, updated, cancellationToken).ConfigureAwait(false);
-        after.Generation.ShouldBeGreaterThan(before.Generation);
+        if (abort)
+            after.Generation.ShouldBe(before.Generation);
+        else
+            after.Generation.ShouldBeGreaterThan(before.Generation);
         after.Digest.ShouldNotBe(before.Digest);
         // Independently fold authoritative streams into logical documents. This checks every persisted
-        // family value and complete source history after transport, promotion and automatic SDK catch-up.
+        // family value and complete source history after transport, rebuild closure and SDK catch-up.
         DomainProjectionRebuildPlan expected = WorkItemSharedRebuildManifestBuilder.BuildEpoch(identity,
             new WorkItemSharedRebuildCandidateState([.. updated.Select(pair => new WorkItemSharedRebuildAggregateHistory(pair.Key, pair.Value))]), cancellationToken);
         WorksRuntimeDocument ReadPlannedDocument(string key)
@@ -352,6 +393,12 @@ internal static class WorksPlatformProjectionChecks
         QueryResult current = await WorksPlatformIdentityFixture.QueryAsync(gatewaySidecar, delegatedQuery, cancellationToken).ConfigureAwait(false);
         current.Success.ShouldBeTrue(current.ErrorMessage);
         current.Metadata.ShouldNotBeNull().IsStale.ShouldBe(false);
+        if (abort)
+        {
+            current.GetPayload().GetProperty("latestAcceptedSourceSequence").GetInt64().ShouldBe(changed[^1].SequenceNumber);
+            return new { command, phase = closed.Phase, fencedNewEvent, staleQuery = stale.Metadata, currentQuery = current.Metadata,
+                before = new { before.Generation, before.Digest }, after = new { after.Generation, after.Digest }, expectedDigest, caughtUpCheckpoint = caughtUp };
+        }
         current.GetPayload().ToString().ShouldContain(correlation);
         var redelivery = new ProjectionDispatchRequest(new ProjectionRequest(scope.TenantId, "work", owner, changed),
             [WorksReadModelKeys.RuntimeFamily], identity.OperationId + "-redelivery", catalog);

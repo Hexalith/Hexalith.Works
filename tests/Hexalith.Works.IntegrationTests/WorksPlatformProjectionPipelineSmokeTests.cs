@@ -78,7 +78,7 @@ public sealed class WorksPlatformProjectionPipelineSmokeTests
                         await Task.Delay(100, deadline.Token).ConfigureAwait(false);
             }
             object proof = await WorksPlatformProjectionChecks.VerifyAsync(app, gateway, store, tenant, owner, identity, token,
-                initialConvergencePhase: "platform-focused-initial-projection-convergence", expectedSources: sources.Length).ConfigureAwait(false);
+                initialConvergencePhase: "platform-focused-initial-projection-convergence", expectedSources: sources.Length, verifyAbort: true).ConfigureAwait(false);
             if (Environment.GetEnvironmentVariable("WORKS_SDK_PROOF_EVIDENCE_PATH") is { Length: > 0 } path)
                 await File.AppendAllTextAsync(path, JsonSerializer.Serialize(new { phase = "platform-focused-projection-rebuild", state = proof }) + Environment.NewLine, token).ConfigureAwait(false);
         }, builder =>

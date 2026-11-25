@@ -2468,6 +2468,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-prove-real-store-rebuild-abort.md`
   summary: Add the abort-under-concurrent-delivery branch to the gateway-driven Platform projection checks at the next Platform requalification.
+  status: done 2026-11-25
+  resolution: The focused Platform projection fact now submits a reschedule through the gateway during another rebuild. It verifies the new event hits the projection fence, aborts through the protected dispatcher, and checks automatic convergence against the authoritative fold on the original served generation. The shared recovery fixture still writes one conversation event. [Spec](spec-qualify-platform-gateway-rebuild-abort.md).
   evidence: `WorksPlatformProjectionChecks` drives only Begin→Commit through the gateway. The real-store proof covers the coordinator abort sequence, but not gateway-delivered events or the dispatcher's Accumulate/Finalize staging. Do not add another `ConversationLinked` to the shared owner, because R3 expects exactly one redelivery.
 
 - source_spec: `spec-prove-real-store-rebuild-abort.md`
