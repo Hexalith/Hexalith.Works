@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "dependencies": {
     "references/Hexalith.EventStore": {
-      "sourceRevision": "295b5a6ba584167f21cfef40787477b8814e32da",
+      "sourceRevision": "521bc1b75f84a24fd5e12f0029221f1e34e2c4de",
       "releaseProperty": "HexalithEventStoreVersion",
-      "releaseVersion": "5.5.2"
+      "releaseVersion": "5.6.0"
     },
     "references/Hexalith.PolymorphicSerializations": {
       "sourceRevision": "538fe092340a7a6266128463c4cfd008aad6ebd5",
