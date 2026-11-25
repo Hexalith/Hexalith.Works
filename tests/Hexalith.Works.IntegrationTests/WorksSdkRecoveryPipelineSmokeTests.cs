@@ -842,6 +842,8 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 sidecar.Annotations.Add(new DaprSidecarOptionsAnnotation(options with { Config = config }));
             }
         }
+        if (WorksAppHostSelection.IsPlatform)
+            WorksPlatformResiliencyOverlay.Apply(builder, componentPath);
         foreach (DaprComponentResource component in builder.Resources.OfType<DaprComponentResource>())
         {
             if (component.Options?.LocalPath is not { } original || component.Name is not ("statestore" or "pubsub" or "configstore")) continue;
