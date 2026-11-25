@@ -82,6 +82,24 @@ class ReleaseBuildPolicyTests(unittest.TestCase):
         self.assertIn("HXW0003", refused.stdout)
         self.assertIn(f"committed EventStore pin '{PIN}'; received '{works_pin}'", refused.stdout)
 
+    def test_release_pin_ignores_an_alternate_builds_tooling_root(self):
+        alternate_root = self.root / "alternate-builds-tooling"
+        catalog = alternate_root / "Props" / "Directory.Packages.props"
+        catalog.parent.mkdir(parents=True)
+        alternate_pin = f"{PIN}-unqualified"
+        catalog.write_text(
+            f"<Project><PropertyGroup><HexalithEventStoreVersion>{alternate_pin}</HexalithEventStoreVersion>"
+            "</PropertyGroup></Project>", encoding="utf-8",
+        )
+        arguments = ("-t:ValidateHexalithDependencyMode", "-p:Configuration=Release",
+                     f"-p:HexalithBuildsRoot={alternate_root}")
+        approved = self.msbuild(*arguments, f"-p:HexalithEventStoreVersion={PIN}")
+        self.assertEqual(0, approved.returncode, approved.stdout + approved.stderr)
+        refused = self.msbuild(*arguments, f"-p:HexalithEventStoreVersion={alternate_pin}")
+        self.assertNotEqual(0, refused.returncode)
+        self.assertIn("HXW0003", refused.stdout)
+        self.assertIn(f"committed EventStore pin '{PIN}'; received '{alternate_pin}'", refused.stdout)
+
     def test_debug_source_mode_still_refuses_each_missing_root_marker(self):
         markers = (
             self.root / "references/Hexalith.Builds/Props/Directory.Packages.props",

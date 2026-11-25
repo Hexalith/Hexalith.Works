@@ -1638,6 +1638,8 @@ These four items were reconfirmed on the current production code. They do not op
   status: done 2026-11-23
   resolution: Both queue and detail handlers use a coordinator connected to an observed store. Denied queries perform zero reads. An authorized control for each handler reaches that same store, and the permitted coordinator workload reads the seeded queue. [Verification spec](spec-five-deferred-projection-replay-checks.md).
 - Hard-coded `Hexalith.Platform.Identity` catalog exemption and candidate version pins under `#if !DEBUG` (low).
+  status: done 2026-11-25
+  resolution: Release test metadata and architecture provenance read the independent public SDK pin from the shared Builds catalog. The Platform.Identity check obtains the assembly identity from its source-linked type and still requires a project reference in the Release dependency manifest. Focused Release package and architecture controls passed.
 
 ## Deferred from: code review of spec-4-14-adopt-sdk-projection-and-query-seams-in-works (2026-10-15, pass 3)
 

@@ -384,20 +384,13 @@ internal static class KernelDependencyPolicy
     {
         string approvedCatalog = Path.GetFullPath(approvedSharedCatalogPath);
         var violations = new List<string>();
-        string? publicPin = null;
-        if (approvedRepositoryRoot is not null)
+        string? publicPin = approvedRepositoryRoot is not null && File.Exists(approvedCatalog)
+            ? XDocument.Load(approvedCatalog).Root?.Elements("PropertyGroup")
+                .Elements("HexalithEventStoreVersion").LastOrDefault()?.Value
+            : null;
+        if (string.IsNullOrWhiteSpace(publicPin) || publicPin.Contains("$(", StringComparison.Ordinal))
         {
-            string pinProject = Path.Combine(approvedRepositoryRoot, "tests", "Hexalith.Works.IntegrationTests", "Hexalith.Works.IntegrationTests.csproj");
-            if (File.Exists(pinProject))
-            {
-                publicPin = XDocument.Load(pinProject).Descendants("AssemblyMetadata")
-                    .SingleOrDefault(item => (string?)item.Attribute("Include") == "WorksPinnedEventStoreVersion")
-                    ?.Attribute("Value")?.Value;
-                if (string.IsNullOrWhiteSpace(publicPin) || publicPin.Contains("$(", StringComparison.Ordinal))
-                {
-                    publicPin = null;
-                }
-            }
+            publicPin = null;
         }
 
         foreach (MsBuildEvaluatedItem item in snapshot.ItemsOfType("PackageVersion")

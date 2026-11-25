@@ -113,24 +113,40 @@
     <_WorksUnmappedSourceForwardProperties>UseHexalithProjectReferences=$(UseHexalithProjectReferences);UseNuGetDeps=$(UseNuGetDeps);HexalithBuildsRoot=$(HexalithBuildsRoot);HexalithEventStoreRoot=$(HexalithEventStoreRoot);HexalithEventStoreFromSource=$(HexalithEventStoreFromSource);HexalithPolymorphicSerializationsRoot=$(HexalithPolymorphicSerializationsRoot);HexalithPolymorphicSerializationsFromSource=$(HexalithPolymorphicSerializationsFromSource);HexalithCommonsRoot=$(HexalithCommonsRoot);HexalithCommonsFromSource=$(HexalithCommonsFromSource);HexalithCommonsHttpFromSource=$(HexalithCommonsHttpFromSource);HexalithMcpCliRoot=$(HexalithMcpCliRoot);HexalithMcpCliFromSource=$(HexalithMcpCliFromSource)</_WorksUnmappedSourceForwardProperties>
   </PropertyGroup>
 
-  <Target Name="ValidateHexalithDependencyMode" BeforeTargets="CollectPackageReferences;CoreCompile">
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <_WorksReadEventStoreReleasePin>ReadWorksDeclaredEventStoreVersion</_WorksReadEventStoreReleasePin>
+  </PropertyGroup>
+
+  <!-- Resolve the shared catalog in the same workspace order as package imports. A caller's
+       Builds tooling root or effective EventStore version cannot select the admitted pin. -->
+  <Target Name="ReadWorksDeclaredEventStoreVersion">
+    <ItemGroup>
+      <_WorksEventStorePinCatalog Include="$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props"
+                                 Condition="Exists('$(MSBuildThisFileDirectory)references/Hexalith.Builds/Props/Directory.Packages.props')" />
+      <_WorksEventStorePinCatalog Include="$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props"
+                                 Condition="'@(_WorksEventStorePinCatalog)' == '' and Exists('$(MSBuildThisFileDirectory)../Hexalith.Builds/Props/Directory.Packages.props')" />
+      <_WorksEventStorePinCatalog Include="$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props"
+                                 Condition="'@(_WorksEventStorePinCatalog)' == '' and Exists('$(MSBuildThisFileDirectory)../../references/Hexalith.Builds/Props/Directory.Packages.props')" />
+    </ItemGroup>
+    <XmlPeek XmlInputPath="@(_WorksEventStorePinCatalog)"
+             Condition="'@(_WorksEventStorePinCatalog)' != ''"
+             Query="(/Project/PropertyGroup/HexalithEventStoreVersion)[last()]/text()">
+      <Output TaskParameter="Result" ItemName="_WorksDeclaredEventStoreVersion" />
+    </XmlPeek>
+  </Target>
+
+  <Target Name="ValidateHexalithDependencyMode" BeforeTargets="CollectPackageReferences;CoreCompile"
+          DependsOnTargets="$(_WorksReadEventStoreReleasePin)">
     <Error Condition="'$(_WorksUnmappedSourceBuild)' == 'true' and ('$(HexalithBuildsRoot)' == '' or '$(HexalithCommonsRoot)' == '' or '$(HexalithMcpCliRoot)' == '')"
            Code="HXW0001" Text="Works Debug source builds require the root-declared Builds, Commons and McpCli checkouts." />
     <Error
       Condition="'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:false'"
       Code="HXW0003"
       Text="WorksAllowLocalEventStoreCandidate must be exactly true or false when supplied." />
-    <!-- Read the literal committed pin so ambient environment variables and command-line overrides
-         cannot silently change Release producer identity. Explicit candidate verification opts in. -->
-    <XmlPeek XmlInputPath="$(HexalithBuildsRoot)/Props/Directory.Packages.props"
-             Query="(/Project/PropertyGroup/HexalithEventStoreVersion)[last()]/text()"
-             Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true'">
-      <Output TaskParameter="Result" PropertyName="_WorksDeclaredEventStoreVersion" />
-    </XmlPeek>
     <Error
-      Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and ('$(HexalithEventStoreVersion)' != '$(_WorksDeclaredEventStoreVersion)' or '$(_WorksDeclaredEventStoreVersion)' == '')"
+      Condition="'$(Configuration)' == 'Release' and 'candidate:$(WorksAllowLocalEventStoreCandidate)' != 'candidate:true' and ('$(HexalithEventStoreVersion)' != '@(_WorksDeclaredEventStoreVersion)' or '@(_WorksDeclaredEventStoreVersion)' == '')"
       Code="HXW0003"
-      Text="Release requires the committed EventStore pin '$(_WorksDeclaredEventStoreVersion)'; received '$(HexalithEventStoreVersion)'. For isolated candidate verification, explicitly set WorksAllowLocalEventStoreCandidate=true." />
+      Text="Release requires the committed EventStore pin '@(_WorksDeclaredEventStoreVersion)'; received '$(HexalithEventStoreVersion)'. For isolated candidate verification, explicitly set WorksAllowLocalEventStoreCandidate=true." />
     <Error
       Condition="'$(RequestedUseHexalithProjectReferences)' != '' and '$(RequestedUseHexalithProjectReferences)' != 'true' and '$(RequestedUseHexalithProjectReferences)' != 'false'"
       Code="HXW0001"
@@ -203,9 +219,9 @@
                                 TargetFramework="$(TargetFramework)">
       <Output TaskParameter="PackageDefinitions" ItemName="_WorksResolvedPackages" />
     </ResolvePackageDependencies>
-    <Error Condition="'%(_WorksResolvedPackages.Type)' == 'package' and $([System.String]::Copy('%(_WorksResolvedPackages.Name)').ToUpperInvariant().StartsWith('HEXALITH.EVENTSTORE.')) and '%(_WorksResolvedPackages.Version)' != '$(_WorksDeclaredEventStoreVersion)'"
+    <Error Condition="'%(_WorksResolvedPackages.Type)' == 'package' and $([System.String]::Copy('%(_WorksResolvedPackages.Name)').ToUpperInvariant().StartsWith('HEXALITH.EVENTSTORE.')) and '%(_WorksResolvedPackages.Version)' != '@(_WorksDeclaredEventStoreVersion)'"
            Code="HXW0003"
-           Text="Release assets resolve '%(_WorksResolvedPackages.Identity)' instead of committed EventStore '$(_WorksDeclaredEventStoreVersion)'. Restore Release with the committed pin before building." />
+           Text="Release assets resolve '%(_WorksResolvedPackages.Identity)' instead of committed EventStore '@(_WorksDeclaredEventStoreVersion)'. Restore Release with the committed pin before building." />
     <Error Condition="'%(_WorksResolvedPackages.Type)' == 'package' and $([System.String]::Copy('%(_WorksResolvedPackages.ResolvedPath)').Replace('\', '/').ToUpperInvariant().StartsWith('$(_WorksCandidateCachePrefix)'))"
            Code="HXW0003"
            Text="Release assets still use the isolated candidate cache for '%(_WorksResolvedPackages.Identity)'. Restore without candidate admission before building." />

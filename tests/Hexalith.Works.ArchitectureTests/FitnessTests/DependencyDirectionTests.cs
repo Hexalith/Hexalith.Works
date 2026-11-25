@@ -522,12 +522,10 @@ public sealed class DependencyDirectionTests
         string root = RepositoryRoot.Locate();
         string VersionIn(string file) => System.Xml.Linq.XDocument.Load(Path.Combine(root, file))
             .Descendants("HexalithEventStoreVersion").ShouldHaveSingleItem().Value;
-        string candidate = VersionIn("Directory.Packages.props");
+        string candidate = VersionIn(Path.Combine(RepositoryRoot.DependencyRoot("Hexalith.Builds"), "Props", "Directory.Packages.props"));
         candidate.ShouldNotBeNullOrWhiteSpace();
         VersionIn("Directory.Build.props").ShouldBe(candidate);
-        System.Xml.Linq.XDocument.Load(Path.Combine(root, "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj"))
-            .Descendants("AssemblyMetadata").Single(item => (string?)item.Attribute("Include") == "WorksPinnedEventStoreVersion")
-            .Attribute("Value")!.Value.ShouldBe(candidate);
+        VersionIn("Directory.Packages.props").ShouldBe(candidate);
 
         foreach (string project in new[] { "src/Hexalith.Works.Contracts/Hexalith.Works.Contracts.csproj",
             "src/Hexalith.Works/Hexalith.Works.csproj", "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj" })
@@ -1196,17 +1194,14 @@ public sealed class DependencyDirectionTests
         DirectoryInfo temporaryRoot = Directory.CreateTempSubdirectory("Hexalith.Works.VersionPin-");
         try
         {
-            if (publicPin is not null)
-            {
-                WriteProject(temporaryRoot.FullName, "tests/Hexalith.Works.IntegrationTests/Hexalith.Works.IntegrationTests.csproj",
-                    $"""<Project><ItemGroup><AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="{XmlPath(publicPin)}" /></ItemGroup></Project>""");
-            }
+            string pin = publicPin is null ? string.Empty
+                : $"<PropertyGroup><HexalithEventStoreVersion>{XmlPath(publicPin)}</HexalithEventStoreVersion></PropertyGroup>";
             string catalog = WriteProject(temporaryRoot.FullName, "shared.props",
-                $"""<Project><ItemGroup><PackageVersion Include="{package}" Version="$({property})" /></ItemGroup></Project>""");
+                $"""<Project>{pin}<ItemGroup><PackageVersion Include="{package}" Version="$({property})" /></ItemGroup></Project>""");
             string assignment = WriteProject(temporaryRoot.FullName, definingFile,
                 $"""<Project><PropertyGroup><{property}>{version}</{property}></PropertyGroup></Project>""");
             string owner = WriteProject(temporaryRoot.FullName, "Owner.csproj",
-                $"""<Project><Import Project="{XmlPath(assignment)}" /><Import Project="{XmlPath(catalog)}" /></Project>""");
+                $"""<Project><Import Project="{XmlPath(catalog)}" /><Import Project="{XmlPath(assignment)}" /></Project>""");
             foreach (MsBuildProjectSnapshot snapshot in EvaluateSupportedLanes(owner))
             {
                 string[] violations = KernelDependencyPolicy.EvaluatePackageVersionOwnership(snapshot, catalog, temporaryRoot.FullName);

@@ -8,6 +8,13 @@
     <WorksPlatformTestRoot Condition="'$(WorksPlatformTestRoot)' == ''">$(HexalithPlatformRoot)</WorksPlatformTestRoot>
   </PropertyGroup>
 
+  <Target Name="RecordWorksDeclaredEventStoreVersion" BeforeTargets="GetAssemblyAttributes"
+          DependsOnTargets="ReadWorksDeclaredEventStoreVersion">
+    <ItemGroup>
+      <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="@(_WorksDeclaredEventStoreVersion)" />
+    </ItemGroup>
+  </Target>
+
   <!-- This preparation exercises the public package graph. Debug keeps the independently
        qualified sibling-source tests and does not compile this Release qualification class. -->
   <ItemGroup Condition="'$(Configuration)' != 'Release'">
@@ -18,7 +25,6 @@
   <ItemGroup>
     <AssemblyMetadata Include="WorksSelectedEventStoreVersion" Value="$(HexalithEventStoreVersion)" />
     <AssemblyMetadata Include="WorksSelectedPartiesVersion" Value="$(HexalithPartiesVersion)" />
-    <AssemblyMetadata Include="WorksPinnedEventStoreVersion" Value="5.5.1" />
     <AssemblyMetadata Include="WorksAllowLocalEventStoreCandidate" Value="$(WorksAllowLocalEventStoreCandidate)" />
     <PackageReference Include="Aspire.Hosting.Testing" />
     <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />

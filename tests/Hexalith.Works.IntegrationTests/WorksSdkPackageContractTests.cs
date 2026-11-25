@@ -4,6 +4,7 @@ using System.Text.Json;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.DomainService;
 using Hexalith.Parties.Client.Abstractions;
+using Hexalith.Platform.Identity;
 using Hexalith.Works.Projections.SharedRebuild;
 
 using Shouldly;
@@ -60,8 +61,9 @@ public sealed class WorksSdkPackageContractTests
             parties.GetProperty("type").GetString().ShouldBe("package");
         }
 
+        string identityAssembly = typeof(PlatformIdentityOptions).Assembly.GetName().Name!;
         JsonProperty platform = libraries.EnumerateObject().Where(
-            library => library.Name.StartsWith("Hexalith.Platform.Identity/", StringComparison.Ordinal)).ShouldHaveSingleItem();
+            library => library.Name.StartsWith(identityAssembly + "/", StringComparison.Ordinal)).ShouldHaveSingleItem();
         platform.Value.GetProperty("type").GetString().ShouldBe("project");
     }
 #endif
