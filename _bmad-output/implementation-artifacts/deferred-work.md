@@ -1570,6 +1570,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: The checked-in `python3 scripts/verify-process-packages.py` has no passing run at EventStore `1c919430`; it exited 130 twice locally, while the manual pack plus `validate-consumer-package-references.py` fallback passed all three consumers.
+  status: done 2026-11-25
+  resolution: The unchanged verifier exited 0 at exact EventStore revision 1c919430b24b25e00250228f29cb287ee10c71ae with its direct dependency pins and SDK 10.0.404. It packed 999.0.0-process-ci-test and verified all three isolated Release consumers for Contracts, Client and DomainService. Retained verifier log SHA-256: `474866d15668806827b1add6df12510aee128490a46bdf6f5e6cf79bdcd85266`.
   evidence: Story 4.12 review C12 chunk 2 AA17 (2026-10-11), low. Primary site `scripts/verify-process-packages.py`. Deferral reason: environment-blocked locally; the next CI run of the process-packages job settles it.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
