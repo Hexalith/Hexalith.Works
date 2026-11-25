@@ -1468,6 +1468,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: The single process sweep record is a serialization and CAS point for every source mutation.
+  status: done 2026-11-25
+  resolution: At the default six-source limit, five overlapping direct Works runners started from one sweep ETag and recovered from at least four actual CAS refusals. All six checkpoints, candidate markers and matching transition tokens reopened from persisted SDK state. This test measures contention at the default capacity with a serialized fake store.
   evidence: Story 4.12 review C12 BH10 (2026-10-11), unverified medium. Each checkpoint or status change reads and re-serializes a record of up to 256 KiB (`ProcessSweepState.cs:143`), hashes every map key, and CASes it with 8 write attempts. A load test with concurrent direct `RunAsync` callers would settle whether CAS exhaustion occurs at the supported capacity.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`

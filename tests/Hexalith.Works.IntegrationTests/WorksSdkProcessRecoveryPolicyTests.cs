@@ -326,6 +326,58 @@ public sealed class WorksSdkProcessRecoveryPolicyTests
         (await Sweeps(store, options).GetAsync(Token).ConfigureAwait(true)).Pending.ShouldBeEmpty();
     }
 
+    /// <summary>Concurrent direct runners contend on the sweep and all persist checkpoints within the default candidate count.</summary>
+    [Fact]
+    public async Task ConcurrentDirectRunnersAtDefaultCapacityRecoverFromSweepConflicts()
+    {
+        var store = new InMemoryReadModelStore();
+        var options = Profile(16);
+        options.SupportedCandidateCount = new EventStoreProcessOptions().SupportedCandidateCount;
+        options.OperationTimeout = TimeSpan.FromSeconds(2);
+        options.SourceServiceQuantum = TimeSpan.FromSeconds(18);
+        options.Validate().ShouldBeEmpty();
+        ProcessSource[] sources = [.. Enumerable.Range(0, options.SupportedCandidateCount)
+            .Select(index => new ProcessSource("tenant-contention", "work", $"source-{index:00}"))];
+        using (ServiceProvider seed = Runtime(store, options, Catalog()))
+        {
+            ProcessRunResult first = await seed.GetRequiredService<CheckpointedProcessRunner>().RunAsync(sources[0], Token);
+            first.Checkpoint.ShouldBe(1);
+        }
+
+        ReadModelEntry<ProcessSweepState> before = await store.GetAsync<ProcessSweepState>(
+            options.StateStoreName, ProcessStateKeys.Sweep, Token);
+        var contended = new WorksProcessSweepContentionStore(store, before.ETag.ShouldNotBeNull(), sources.Length - 1);
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(Token);
+        deadline.CancelAfter(TimeSpan.FromSeconds(10));
+        using ServiceProvider runtime = Runtime(contended, options, Catalog());
+        var runner = runtime.GetRequiredService<CheckpointedProcessRunner>();
+        ProcessRunResult[] outcomes = await Task.WhenAll(sources.Skip(1).Select(source => runner.RunAsync(source, deadline.Token)));
+        contended.Conflicts.ShouldBeGreaterThanOrEqualTo(sources.Length - 2);
+        foreach (ProcessRunResult outcome in outcomes)
+        {
+            outcome.Checkpoint.ShouldBe(1);
+            outcome.Status.ShouldBe(ProcessSourceStatus.Active);
+        }
+
+        ProcessSweepState after = await Sweeps(store, options).GetAsync(Token);
+        after.RetainedCandidates.ShouldBe(sources.Length);
+        after.PendingTransitions.Count.ShouldBe(sources.Length);
+        after.PendingPublications.ShouldBeEmpty();
+        ProcessCheckpointStore reopened = Checkpoints(store, options);
+        foreach (ProcessSource source in sources)
+        {
+            ProcessSourceState persisted = await reopened.GetAsync(source, Token);
+            persisted.Checkpoint.ShouldBe(1);
+            persisted.Status.ShouldBe(ProcessSourceStatus.Active);
+            persisted.Owner.ShouldBeNull();
+            ProcessPendingTransition transition = after.PendingTransitions[ProcessStateKeys.SourceId(source)];
+            transition.Source.ShouldBe(source);
+            transition.Generation.ShouldBe(persisted.LastTransitionGeneration);
+            transition.Token.ShouldBe(persisted.LastTransitionToken);
+            (await reopened.ContainsCandidateAsync(source, Token)).ShouldBeTrue();
+        }
+    }
+
     private static EventStoreProcessOptions Profile(int workBudget)
     {
         // Preserve work-unit bounds while allowing fixture overhead inside the SDK's 30-minute freshness cap.
