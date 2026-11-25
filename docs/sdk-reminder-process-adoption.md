@@ -25,6 +25,16 @@ the canonical registration and purpose mapping.
 
 Use the [Platform recovery runbook](../references/Hexalith.Platform/docs/works-host-parity.md#readiness-telemetry-and-privileged-operations) for `/ready` status, bounded `eventstore.domain.recovery.*` metrics, alerts and protected, audited `POST /work/processes/revalidate`. Current production authorization and audit providers remain required. [Cutover and rollback](platform-hosting-cutover.md) describes complete-fleet restore; changing a configuration switch cannot restore the archived host.
 
+## Process sweep serialization
+
+Works uses the SDK's `DaprReadModelStore`, which reads and writes sweep records
+with the registered Dapr client's JSON options. Keep those options compatible
+across replicas, restarts, and restores. A change to the persisted naming or
+conversion rules requires a coordinated state migration before deploying the
+new options. The standalone `sweep-serialization` scenario in
+`scripts/measure-projection-delivery.py` qualifies the default and snake-case
+clients against one retained Redis sweep.
+
 ## Reminder failure recovery
 
 A failed scheduler arm retains that await as `Pending` with `arm-failed`; independent awaits continue. Indexed reconciliation retries it after reconstruction. This is retained retry work, with no finite attempt budget or automatic dead-letter transition. Pending work keeps reminder readiness degraded until repaired. Submission uncertainty instead retains a `Retrying` witness and uses `RetryInitialDelay`/`RetryMaxDelay` backoff. A repeated callback inside that interval must not submit again.

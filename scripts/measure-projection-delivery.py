@@ -22,6 +22,7 @@ METHODS = {
     "terminal-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresRetainedTerminalMembershipCost",
     "sharded-reads": "WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines",
     "unpaged-queue": "WorksQueueMeasurementTests.WhatsNextMeasuresUnpagedEligibleResponses",
+    "sweep-serialization": "WorksProcessSweepSerializationTests.CustomDaprSerializerPreservesProcessSweepClaimsAcrossClients",
     "aborted-rebuild": "WorksRealStoreRebuildAbortTests.AbortedRebuildUnderConcurrentDeliveryKeepsTheServedGenerationOnTheRealStore",
 }
 # Seeding the 10,000-owner admitted queue cap on real Redis takes minutes; other scenarios fit the default.
@@ -124,6 +125,10 @@ def validate_report(result, scenario, method, runtime_id, redis_id):
     cases = ElementTree.parse(result).findall(".//test")
     if not cases or any(case.get("result") != "Pass" or case.get("method") != method.rsplit(".", 1)[1] for case in cases):
         raise RuntimeError("The measurement requires all selected cases to pass.")
+    if scenario == "sweep-serialization":
+        if len(cases) != 1:
+            raise RuntimeError("The sweep serializer qualification requires exactly one passing test.")
+        return {"qualification": scenario, "runtimeImage": runtime_id, "redisImage": redis_id}
     # xUnit escapes quotes in test output before writing the XML text node.
     samples = [json.loads(json.loads('"' + line + '"'))
                for case in cases for line in case.findtext("output", "").splitlines() if line.strip()]

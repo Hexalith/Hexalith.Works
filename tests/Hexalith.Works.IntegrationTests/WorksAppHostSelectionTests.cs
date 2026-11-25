@@ -63,6 +63,7 @@ public sealed class WorksAppHostSelectionTests
             (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.ShardedProjectionReadsMeasureDetailAndRecoveryDeadlines)),
             (typeof(WorksQueueMeasurementTests), nameof(WorksQueueMeasurementTests.WhatsNextMeasuresUnpagedEligibleResponses)),
             (typeof(WorksRealStoreRebuildAbortTests), nameof(WorksRealStoreRebuildAbortTests.AbortedRebuildUnderConcurrentDeliveryKeepsTheServedGenerationOnTheRealStore)),
+            (typeof(WorksProcessSweepSerializationTests), nameof(WorksProcessSweepSerializationTests.CustomDaprSerializerPreservesProcessSweepClaimsAcrossClients)),
         ];
         var explicitTests = typeof(WorksAppHostSelectionTests).Assembly.GetTypes()
             .SelectMany(type => type.GetMethods()
