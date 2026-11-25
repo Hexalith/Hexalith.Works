@@ -1470,6 +1470,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: The AD-28 synthetic-only gate for process control records exists only in documentation.
+  status: done 2026-11-25
+  resolution: Focused Release checks against Platform 616e27789f935ebb7f7f33406150ecf2dc9913a2 passed. The Platform composition refuses Production before creating any resource, including with a valid-looking manifest. Runtime registration independently refuses Production and Staging with both proof markers set and requires both markers for Development. AD-28 production admission remains closed.
   evidence: Story 4.12 review C12 AA-C10, carried from cycle 4 B13 (2026-10-10), unverified high. `docs/guides/checkpointed-processes.md:38` states the gate, but no code enforces it. Platform admission and release evidence would settle whether code enforcement is required.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
