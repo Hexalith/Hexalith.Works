@@ -965,3 +965,19 @@ Builds 6.8.1 gitlink. The [Works CI run](https://github.com/Hexalith/Hexalith.Wo
 failed before parity. Local `python3 references/Hexalith.Builds/check.py`
 exited 1 because the delivered Builds tag is still `v6.8.1`. The aligned CI/CD
 delivery and a live proof identity accepted by the current realm remain open.
+
+On an isolated copy of Works `dfa1c7d2f200ac425ebd044719c40c775adbe14f`
+with its recorded Builds `v6.8.1` gitlink, the same checker passed the CI/CD
+guard and exited 1 during Release restore. `HXW0003` expected EventStore
+`5.5.1` and received `5.5.2`. `python3 scripts/verify-source-debug.py --check-only`
+also exited 1 on PolymorphicSerializations Release version drift with the
+recorded gitlinks. The [checker log](../../.artifacts/story49-blockers.Ohz06XMT/recorded-head-check.log)
+and [preflight result](../../.artifacts/story49-blockers.Ohz06XMT/recorded-source/result.json)
+capture the failures independently of the local Builds checkout.
+
+The [Platform realm contract](../../references/Hexalith.Platform/docs/contracts/realm-contract-v1.md)
+assigns synthetic client provisioning to Platform Story 3.5. The selected
+realm declares no UI client and restricts resource-bound issuance to Works.
+The live disposition proof separately requires resource-bound issuance by
+EventStore Admin. Both identity requirements must be addressed before the
+current topology can qualify. Final full and CI qualification remain open.
