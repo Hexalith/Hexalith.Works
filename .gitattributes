@@ -98,6 +98,7 @@ tests/Hexalith.Works.IntegrationTests/WorksSdkRecoveryProfileTests.cs whitespace
 # Recognize authored CRLF in the binary preflight evidence writer.
 tests/Hexalith.Works.IntegrationTests/WorksPlatformRollbackBinaryTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksPlatformFleetRestoreTests.cs whitespace=cr-at-eol
+tests/Hexalith.Works.IntegrationTests/WorksSdkReminderRecoveryPolicyTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksRedisCaptureAcquisitionTests.cs whitespace=cr-at-eol
 tests/Hexalith.Works.IntegrationTests/WorksSdkProofRedis.cs whitespace=cr-at-eol
 

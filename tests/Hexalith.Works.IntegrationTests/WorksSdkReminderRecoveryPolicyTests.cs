@@ -1,6 +1,9 @@
 using System.Reflection;
 using System.Text.Json;
 
+using Dapr.Actors;
+using Dapr.Actors.Client;
+
 using Hexalith.EventStore.Client.Discovery;
 using Hexalith.EventStore.Client.Gateway;
 using Hexalith.EventStore.Client.Projections;
@@ -182,6 +185,77 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
         (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Healthy);
         using JsonDocument candidates = JsonDocument.Parse(store.SnapshotRaw("statestore", Prefix + ":tenant:" + Tenant + ":candidates").ShouldNotBeNull());
         candidates.RootElement.GetProperty("candidates").GetArrayLength().ShouldBe(3);
+    }
+
+    /// <summary>A stalled actor proxy cannot stop later reminders; a later pass retries its retained target.</summary>
+    [Fact]
+    public async Task StalledActorRegistrationPreservesRecoveryProgress()
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        var store = new InMemoryReadModelStore();
+        var logs = new WorksReminderRecoveryLogCapture();
+        ReminderTarget[] targets = [.. new[] { "hung-actor", "healthy-actor" }
+            .Select(item => new ReminderTarget(Tenant, "work", item))
+            .OrderBy(target => ReminderIdentityCodec.ComputeActorId(Tenant, target.Aggregate), StringComparer.Ordinal)];
+        string stalledId = ReminderIdentityCodec.ComputeActorId(Tenant, targets[0].Aggregate);
+        string healthyId = ReminderIdentityCodec.ComputeActorId(Tenant, targets[1].Aggregate);
+        var stalledCall = new TaskCompletionSource<ReminderConvergenceResult>(TaskCreationOptions.RunContinuationsAsynchronously);
+        IReminderActor stalled = Substitute.For<IReminderActor>();
+        stalled.ConvergeAsync(targets[0]).Returns(stalledCall.Task);
+        IReminderActor healthy = Substitute.For<IReminderActor>();
+        healthy.ConvergeAsync(targets[1]).Returns(new ReminderConvergenceResult(1, 0, 0, 0, 0));
+        IActorProxyFactory proxies = Substitute.For<IActorProxyFactory>();
+        proxies.CreateActorProxy<IReminderActor>(Arg.Is<ActorId>(id => id.GetId() == stalledId), ActorType).Returns(stalled);
+        proxies.CreateActorProxy<IReminderActor>(Arg.Is<ActorId>(id => id.GetId() == healthyId), ActorType).Returns(healthy);
+        using ServiceProvider services = Services(store, null, logs, actorProxyFactory: proxies);
+        foreach (ReminderTarget target in targets) await IndexAsync(services, target, ct);
+
+        var converged = new ReminderConvergenceResult(1, 0, 0, 0, 0);
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        deadline.CancelAfter(TimeSpan.FromSeconds(10));
+        Task<object> passTask = RunPassAsync(services, deadline.Token);
+        try
+        {
+            object pass = await passTask.WaitAsync(deadline.Token);
+            Property<int>(pass, "Armed").ShouldBe(1);
+            Property<int>(pass, "Incomplete").ShouldBe(1);
+            stalledCall.Task.IsCompleted.ShouldBeFalse();
+            _ = stalled.Received(1).ConvergeAsync(targets[0]);
+            _ = healthy.Received(1).ConvergeAsync(targets[1]);
+            (await HealthAsync(services, ct)).Status.ShouldBe(HealthStatus.Degraded);
+            Discovery(store, "indexed").GetProperty("isIncomplete").GetBoolean().ShouldBeTrue();
+            logs.Entries.Single(entry => entry.EventId == 200211).Properties["ActorId"].ShouldBe(stalledId);
+        }
+        finally
+        {
+            stalledCall.TrySetResult(converged);
+            try { await passTask.ConfigureAwait(true); }
+            catch (OperationCanceledException) when (deadline.IsCancellationRequested) { }
+        }
+
+        IReminderActor recovered = Substitute.For<IReminderActor>();
+        recovered.ConvergeAsync(targets[0]).Returns(converged);
+        proxies.CreateActorProxy<IReminderActor>(Arg.Is<ActorId>(id => id.GetId() == stalledId), ActorType).Returns(recovered);
+        var retryLogs = new WorksReminderRecoveryLogCapture();
+        using ServiceProvider restarted = Services(store, null, retryLogs, actorProxyFactory: proxies);
+        object retry;
+        while (true)
+        {
+            int previousWarnings = retryLogs.Entries.Count(entry => entry.EventId == 200211);
+            retry = await RunPassAsync(restarted, deadline.Token);
+            var warning = retryLogs.Entries.Where(entry => entry.EventId == 200211).Skip(previousWarnings).SingleOrDefault();
+            if (warning.Properties is null || (string?)warning.Properties["ExceptionType"] != "ProcessReadAdmissionException")
+                break;
+
+            // The completed remoting task can still be releasing its SDK admission slot.
+            warning.Properties["ActorId"].ShouldBe(stalledId);
+            await Task.Delay(20, deadline.Token);
+        }
+        Property<int>(retry, "Armed").ShouldBe(2);
+        Property<int>(retry, "Incomplete").ShouldBe(0);
+        _ = recovered.Received(1).ConvergeAsync(targets[0]);
+        Discovery(store, "indexed").GetProperty("isIncomplete").GetBoolean().ShouldBeFalse();
+        (await HealthAsync(restarted, ct)).Status.ShouldBe(HealthStatus.Healthy);
     }
 
     /// <summary>Host shutdown can interrupt a pass despite a different provider token, without publishing success or losing the durable cursor.</summary>
@@ -519,8 +593,9 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
         await worker.StopAsync(CancellationToken.None);
     }
 
-    private static ServiceProvider Services(InMemoryReadModelStore store, IReminderRegistrar registrar,
-        WorksReminderRecoveryLogCapture logs, StreamReadPage? page = null, bool enabled = true)
+    private static ServiceProvider Services(InMemoryReadModelStore store, IReminderRegistrar? registrar,
+        WorksReminderRecoveryLogCapture logs, StreamReadPage? page = null, bool enabled = true,
+        IActorProxyFactory? actorProxyFactory = null)
     {
         IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
         {
@@ -529,6 +604,9 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
             ["EventStore:Reminders:ReconciliationInterval"] = "00:00:00.050",
             ["EventStore:Reminders:RetryInitialDelay"] = "00:00:00.010",
         }).Build();
+        if (actorProxyFactory is not null)
+            configuration["EventStore:Reminders:CatalogOperationTimeout"] = "00:00:00.500";
+
         var services = new ServiceCollection();
         services.AddSingleton(configuration);
         IHostEnvironment environment = Substitute.For<IHostEnvironment>();
@@ -539,8 +617,18 @@ public sealed class WorksSdkReminderRecoveryPolicyTests
         services.AddSingleton<IReadModelConditionalEraser>(store);
         services.AddSingleton<TimeProvider>(new Story48FixedTimeProvider(s_now));
         services.AddWorksReminderAndCascadeRecovery(configuration);
-        services.RemoveAll<IReminderRegistrar>();
-        services.AddSingleton(registrar);
+        if (registrar is not null)
+        {
+            services.RemoveAll<IReminderRegistrar>();
+            services.AddSingleton(registrar);
+        }
+
+        if (actorProxyFactory is not null)
+        {
+            services.RemoveAll<IActorProxyFactory>();
+            services.AddSingleton(actorProxyFactory);
+        }
+
         var gateway = Substitute.For<IEventStoreGatewayClient>();
         gateway.ReadWorkloadStreamAsync(Arg.Any<StreamReadRequest>(), Arg.Any<CancellationToken>()).Returns(_ => page!);
         services.RemoveAll<IEventStoreGatewayClient>();

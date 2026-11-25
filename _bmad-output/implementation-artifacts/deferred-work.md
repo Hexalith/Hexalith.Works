@@ -1113,6 +1113,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
   summary: Establish and verify a bounded cancellation policy for stalled Dapr actor reminder-registration calls.
+  status: done 2026-11-25
+  resolution: The registered SDK registrar and Dapr actor invoker use the configured finite operation deadline. An unresponsive actor leaves durable incomplete evidence while the next actor succeeds. Reconstruction retries the retained target, clears incomplete coverage, and restores readiness. [Spec](spec-qualify-stalled-reminder-registration.md).
   evidence: The scheduler checks cancellation before actor remoting but cannot pass the token into `ScheduleResumeAsync`; settle this maybe-false finding with the configured Dapr remoting timeout or a stalled-proxy integration proof.
 
 - source_spec: `_bmad-output/implementation-artifacts/4-8-register-and-reconcile-date-reminders-durably.md`
