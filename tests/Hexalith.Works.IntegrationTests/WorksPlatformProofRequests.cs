@@ -1,5 +1,4 @@
 using System.Net.Http.Headers;
-using System.Text;
 using System.Text.Json;
 
 using Hexalith.EventStore.ServiceDefaults.Authentication;
@@ -20,10 +19,11 @@ internal static class WorksPlatformProofRequests
         claims["azp"] = caller;
         claims[RouteCatalogSurfacePolicy.ClaimType] = "service";
         claims[EventStoreWorkloadAuthenticationDefaults.OperationClaimType] = operations;
+        SigningCredentials signing = WorksAppHostSmokeHarness.CreateAssertionSigning(out string issuer);
         return new JsonWebTokenHandler { SetDefaultTimesOnTokenCreation = false }.CreateToken(new SecurityTokenDescriptor
         {
-            Issuer = "hexalith-dev", Audience = audience, IssuedAt = now, NotBefore = now.AddSeconds(-1), Expires = now.AddMinutes(2),
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(WorksAppHostSmokeHarness.DevSigningKey)), SecurityAlgorithms.HmacSha256),
+            Issuer = issuer, Audience = audience, IssuedAt = now, NotBefore = now.AddSeconds(-1), Expires = now.AddMinutes(2),
+            SigningCredentials = signing,
             Claims = claims,
         });
     }

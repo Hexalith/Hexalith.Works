@@ -50,6 +50,30 @@ internal static class WorksAppHostSmokeHarness
     internal static void BindPlatformCommandSigningKey(string pkcs8PrivateKey)
         => PlatformCommandSigningKey.Value = pkcs8PrivateKey;
 
+    /// <summary>Signs Platform proof assertions with the bound RSA key; consumer lane stays HMAC.</summary>
+    internal static SigningCredentials CreateAssertionSigning(out string issuer)
+    {
+        if (PlatformCommandSigningKey.Value is { Length: > 0 } pkcs8)
+        {
+            RSAParameters parameters;
+            using (RSA rsa = RSA.Create())
+            {
+                rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(pkcs8), out _);
+                parameters = rsa.ExportParameters(includePrivateParameters: true);
+            }
+
+            issuer = WorksSdkProofDelegationProvider.Issuer;
+            return new SigningCredentials(
+                new RsaSecurityKey(parameters) { KeyId = "story415-ephemeral" },
+                SecurityAlgorithms.RsaSha256);
+        }
+
+        issuer = "hexalith-dev";
+        return new SigningCredentials(
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(DevSigningKey)),
+            SecurityAlgorithms.HmacSha256);
+    }
+
     /// <summary>The Redis instance a <c>dapr init</c> leaves running.</summary>
     private const int DaprInitRedisPort = 6379;
 

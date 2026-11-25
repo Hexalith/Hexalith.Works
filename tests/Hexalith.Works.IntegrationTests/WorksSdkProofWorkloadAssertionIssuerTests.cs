@@ -47,4 +47,23 @@ public sealed class WorksSdkProofWorkloadAssertionIssuerTests
         token.GetClaim(EventStoreWorkloadAuthenticationDefaults.TenantBindingClaimType).Value.ShouldBe("sdk415-tenant");
         token.GetClaim(EventStoreWorkloadAuthenticationDefaults.DomainBindingClaimType).Value.ShouldBe("work");
     }
+
+    [Fact]
+    public void BoundPlatformProofKeySignsHttpAssertionsWithTheProofIssuer()
+    {
+        using RSA rsa = RSA.Create(2048);
+        WorksAppHostSmokeHarness.BindPlatformCommandSigningKey(Convert.ToBase64String(rsa.ExportPkcs8PrivateKey()));
+        try
+        {
+            var token = new JsonWebToken(WorksPlatformProofRequests.Assertion(
+                "eventstore", "works", [EventStoreWorkloadOperations.DomainServiceProject]));
+            token.Issuer.ShouldBe(WorksSdkProofDelegationProvider.Issuer);
+            token.Audiences.ShouldBe(["works"]);
+            token.GetClaim(EventStoreWorkloadAuthenticationDefaults.CallerClaimType).Value.ShouldBe("eventstore");
+        }
+        finally
+        {
+            WorksAppHostSmokeHarness.BindPlatformCommandSigningKey(string.Empty);
+        }
+    }
 }
