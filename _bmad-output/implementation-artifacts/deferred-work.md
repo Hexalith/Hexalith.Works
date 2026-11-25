@@ -1694,6 +1694,8 @@ The review-time RB6-6 unpublished EventStore restore prerequisite is superseded 
 ## Deferred from: code review of spec-4-15 (2026-10-17, src/ chunk)
 
 - Trusted-origin identity (target/causation/digest) not compared to envelope in `WorkItemEventStoreAggregate.Handle(ExpireWorkItem)`; unverified medium — confirm SDK boundary enforces it.
+  status: done 2026-11-25
+  resolution: The protected expiry test now varies causation independently while retaining a valid target and command digest. The pinned SDK returns Forbidden with an origin-binding-denied audit that omits both raw causation values. Scheduled and cascade positive controls still succeed.
 - Legacy-to-SDK runtime handoff (outstanding Dapr date reminders, cascade checkpoints) when `UseSdkRuntime` flips; unverified medium — settle in Story 4.16 rollback proof.
 - `MapActorsHandlers()` skipped under SDK mode; unverified medium — confirm SDK maps actor endpoints.
   status: done 2026-10-28

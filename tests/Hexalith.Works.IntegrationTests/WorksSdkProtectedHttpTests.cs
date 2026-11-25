@@ -1411,6 +1411,7 @@ public sealed class WorksSdkProtectedHttpTests
     [InlineData("kind")]
     [InlineData("digest")]
     [InlineData("target")]
+    [InlineData("causation")]
     [InlineData("caller")]
     public async Task ExpiryRequiresAuthenticatedBoundOriginAndCurrentWitness(string scenario)
     {
@@ -1437,7 +1438,8 @@ public sealed class WorksSdkProtectedHttpTests
         var request = new DomainServiceRequest(envelope, state)
         {
             TrustedEffectOrigin = scenario is "ordinary" or "missing-origin" ? null : new TrustedEffectOrigin(identity, workload,
-                scenario is "purpose" or "audit-outage" ? "wrong-purpose" : WorksEffectPurposes.ForKind(kind), "committed-source", nameof(ExpireWorkItem),
+                scenario is "purpose" or "audit-outage" ? "wrong-purpose" : WorksEffectPurposes.ForKind(kind),
+                scenario == "causation" ? "different-source" : "committed-source", nameof(ExpireWorkItem),
                 EffectIdentityCodec.RenderDigest(SHA256.HashData(payload))),
         };
         if (scenario == "digest") request = request with { Command = envelope with { Payload = [123] } };
@@ -1474,6 +1476,7 @@ public sealed class WorksSdkProtectedHttpTests
                     ? "adapter-authorization-denied" : "origin-binding-denied");
                 string safe = JsonSerializer.Serialize(audit);
                 safe.ShouldNotContain("committed-source");
+                safe.ShouldNotContain("different-source");
                 safe.ShouldNotContain("expiry-origin");
                 safe.ShouldNotContain(SigningKey);
             }
