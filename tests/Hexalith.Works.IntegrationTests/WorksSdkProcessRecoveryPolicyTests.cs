@@ -250,6 +250,82 @@ public sealed class WorksSdkProcessRecoveryPolicyTests
         (await ReadinessAsync(store, options)).Status.ShouldBe(HealthStatus.Healthy);
     }
 
+    /// <summary>Restoring only source state fences an older sweep claim; restoring both records preserves generation order.</summary>
+    [Fact]
+    public async Task SweepRestoreMustKeepItsSourceDispositionGeneration()
+    {
+        var store = new InMemoryReadModelStore();
+        var options = Profile(16);
+        var source = new ProcessSource("tenant-restore", "work", "source");
+        using (ServiceProvider services = Runtime(store, options, Catalog(source)))
+            _ = await services.GetRequiredService<ProcessReconciler>().RunPassAsync(Token);
+
+        ProcessSweepStore sweeps = Sweeps(store, options);
+        ProcessCheckpointStore checkpoints = Checkpoints(store, options);
+        long generation = await sweeps.PrepareDispositionAsync(source, Token);
+        ProcessPendingDisposition claim = (await sweeps.ClaimDispositionAsync(source, generation, Token)).ShouldNotBeNull();
+        (await checkpoints.RevalidateAsync(claim, Token)).ShouldBeTrue();
+        (await sweeps.MarkDispositionAppliedAsync(claim, Token)).ShouldBeTrue();
+        await ReconcileAfterDispositionAsync(store, options, source);
+
+        ReadModelEntry<ProcessSweepState> capturedSweep = await store.GetAsync<ProcessSweepState>(
+            options.StateStoreName, ProcessStateKeys.Sweep, Token);
+        ReadModelEntry<ProcessSourceState> capturedSource = await store.GetAsync<ProcessSourceState>(
+            options.StateStoreName, ProcessStateKeys.Source(source), Token);
+        capturedSource.Value.ShouldNotBeNull().Checkpoint.ShouldBe(1);
+        capturedSource.Value.LastDispositionGeneration.ShouldBe(generation);
+
+        (await store.TryEraseAsync(options.StateStoreName, ProcessStateKeys.Sweep,
+            capturedSweep.ETag.ShouldNotBeNull(), Token)).ShouldBeTrue();
+        sweeps = Sweeps(store, options);
+        checkpoints = Checkpoints(store, options);
+        ProcessSweepState reset = await sweeps.GetAsync(Token);
+        reset.Cycle.ShouldBe(0);
+        reset.Generation.ShouldBe(0);
+        long regressed = await sweeps.PrepareDispositionAsync(source, Token);
+        regressed.ShouldBeLessThan(generation);
+        ProcessPendingDisposition stale = (await sweeps.ClaimDispositionAsync(source, regressed, Token)).ShouldNotBeNull();
+        (await sweeps.IsClaimCurrentAsync(stale, Token)).ShouldBeTrue();
+        (await checkpoints.RevalidateAsync(stale, Token)).ShouldBeFalse();
+        (await store.GetAsync<ProcessSourceState>(options.StateStoreName, ProcessStateKeys.Source(source), Token))
+            .ShouldBe(capturedSource);
+        HealthCheckResult refused = await ReadinessAsync(store, options);
+        refused.Status.ShouldBe(HealthStatus.Degraded);
+        refused.Data["complete"].ShouldBe(false);
+        refused.Data["pendingDispositions"].ShouldBe(1);
+
+        await store.SaveAsync(options.StateStoreName, ProcessStateKeys.Sweep, capturedSweep.Value.ShouldNotBeNull(), Token);
+        (await ReadinessAsync(store, options)).Status.ShouldBe(HealthStatus.Healthy);
+        long restored = await sweeps.PrepareDispositionAsync(source, Token);
+        restored.ShouldBeGreaterThan(generation);
+        ProcessPendingDisposition fresh = (await sweeps.ClaimDispositionAsync(source, restored, Token)).ShouldNotBeNull();
+        (await checkpoints.RevalidateAsync(fresh, Token)).ShouldBeTrue();
+        (await sweeps.MarkDispositionAppliedAsync(fresh, Token)).ShouldBeTrue();
+        await ReconcileAfterDispositionAsync(store, options, source);
+        ProcessSourceState reopened = await checkpoints.GetAsync(source, Token);
+        reopened.Status.ShouldBe(ProcessSourceStatus.Active);
+        reopened.Checkpoint.ShouldBe(1);
+        reopened.LastDispositionGeneration.ShouldBe(restored);
+    }
+
+    private static async Task ReconcileAfterDispositionAsync(
+        InMemoryReadModelStore store, EventStoreProcessOptions options, ProcessSource source)
+    {
+        using ServiceProvider runtime = Runtime(store, options, Catalog(source));
+        var reconciler = runtime.GetRequiredService<ProcessReconciler>();
+        HealthCheckResult health = default;
+        for (int pass = 0; pass < 3; pass++)
+        {
+            _ = await reconciler.RunPassAsync(Token).ConfigureAwait(true);
+            health = await ReadinessAsync(store, options).ConfigureAwait(true);
+            if (health.Status == HealthStatus.Healthy)
+                break;
+        }
+
+        health.Status.ShouldBe(HealthStatus.Healthy);
+        (await Sweeps(store, options).GetAsync(Token).ConfigureAwait(true)).Pending.ShouldBeEmpty();
+    }
+
     private static EventStoreProcessOptions Profile(int workBudget)
     {
         // Preserve work-unit bounds while allowing fixture overhead inside the SDK's 30-minute freshness cap.

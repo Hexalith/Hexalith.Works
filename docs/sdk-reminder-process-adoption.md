@@ -35,6 +35,11 @@ new options. The standalone `sweep-serialization` scenario in
 `scripts/measure-projection-delivery.py` qualifies the default and snake-case
 clients against one retained Redis sweep.
 
+If a process sweep is lost while source checkpoints survive, the SDK can refuse
+new dispositions whose generation precedes a source's last disposition. Restore
+the complete quiesced fleet from a verified capture so its sweep and checkpoints
+come from the same snapshot, then require Healthy recovery readiness.
+
 ## Reminder failure recovery
 
 A failed scheduler arm retains that await as `Pending` with `arm-failed`; independent awaits continue. Indexed reconciliation retries it after reconstruction. This is retained retry work, with no finite attempt budget or automatic dead-letter transition. Pending work keeps reminder readiness degraded until repaired. Submission uncertainty instead retains a `Retrying` witness and uses `RetryInitialDelay`/`RetryMaxDelay` backoff. A repeated callback inside that interval must not submit again.

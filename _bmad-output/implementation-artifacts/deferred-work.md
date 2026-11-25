@@ -1462,6 +1462,8 @@ archived: 2026-10-23
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
   summary: Losing or restoring the process sweep record resets Cycle and Generation below persisted source values.
+  status: done 2026-11-25
+  resolution: The pinned SDK test removes only the sweep record after Healthy source coverage. The SDK refuses an older claim at the reset generation, preserves the source checkpoint and reports Degraded with the disposition pending. A matching capture restores Healthy, then a fresh disposition advances and completes coverage.
   evidence: Story 4.12 review C12 EC11 (2026-10-11), unverified medium. If only the sweep key is lost (`ProcessSweepStore.cs:20`), a source `LastDispositionGeneration` above the new generation makes `RevalidateAsync` return false until generations catch up (`ProcessCheckpointStore.cs:135`). A contract for state-provider restore and partial key loss, or the AD-28 restore proof, would settle whether this is reachable. Joins cycle 10 B9.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-12-publish-eventstore-checkpointed-process-and-recovery-runtime.md`
