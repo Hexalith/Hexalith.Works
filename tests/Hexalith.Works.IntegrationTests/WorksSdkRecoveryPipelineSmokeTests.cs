@@ -902,6 +902,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 .WithEnvironment("WORKS_SDK_PROOF_KEY", key);
             if (WorksAppHostSelection.IsPlatform)
             {
+                WorksAppHostSmokeHarness.BindPlatformCommandSigningKey(key);
                 string callerDirectory = Path.Combine(callerRoot, resource.Name + "-" + callerSession);
                 if (OperatingSystem.IsWindows()) Directory.CreateDirectory(callerDirectory);
                 else Directory.CreateDirectory(callerDirectory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);

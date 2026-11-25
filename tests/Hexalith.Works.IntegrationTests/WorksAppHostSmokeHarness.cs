@@ -8,6 +8,7 @@ using System.Reflection;
 using System.Runtime.ExceptionServices;
 using System.Runtime.Loader;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -41,6 +42,13 @@ namespace Hexalith.Works.IntegrationTests;
 internal static class WorksAppHostSmokeHarness
 {
     internal const string DevSigningKey = "DevOnlySigningKey-AtLeast32Chars!";
+
+    /// <summary>PKCS#8 RSA key the Platform proof hosting startup validates on the EventStore gateway.</summary>
+    private static readonly AsyncLocal<string?> PlatformCommandSigningKey = new();
+
+    /// <summary>Binds the live Platform command JWT to the proof RSA key installed on EventStore.</summary>
+    internal static void BindPlatformCommandSigningKey(string pkcs8PrivateKey)
+        => PlatformCommandSigningKey.Value = pkcs8PrivateKey;
 
     /// <summary>The Redis instance a <c>dapr init</c> leaves running.</summary>
     private const int DaprInitRedisPort = 6379;
@@ -985,25 +993,41 @@ internal static class WorksAppHostSmokeHarness
     /// <summary>Mints a development bearer token scoped to one tenant.</summary>
     public static string MintToken(string tenantId)
     {
-        var descriptor = new SecurityTokenDescriptor
+        ClaimsIdentity subject = new(
+        [
+            new Claim("sub", "works-reminder-recovery-user"),
+            new Claim("eventstore:surface", "ui"),
+            new Claim("tenants", JsonSerializer.Serialize(new[] { tenantId })),
+            new Claim("domains", JsonSerializer.Serialize(new[] { "work" })),
+            new Claim("permissions", JsonSerializer.Serialize(new[] { "command:submit", "command:query", "command:replay" })),
+        ]);
+        if (WorksAppHostSelection.IsPlatform && PlatformCommandSigningKey.Value is { Length: > 0 } pkcs8)
         {
-            Subject = new ClaimsIdentity(
-            [
-                new Claim("sub", "works-reminder-recovery-user"),
-                new Claim("eventstore:surface", "ui"),
-                new Claim("tenants", JsonSerializer.Serialize(new[] { tenantId })),
-                new Claim("domains", JsonSerializer.Serialize(new[] { "work" })),
-                new Claim("permissions", JsonSerializer.Serialize(new[] { "command:submit", "command:query", "command:replay" })),
-            ]),
+            using RSA rsa = RSA.Create();
+            rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(pkcs8), out _);
+            var descriptor = new SecurityTokenDescriptor
+            {
+                Subject = subject,
+                Issuer = WorksSdkProofDelegationProvider.Issuer,
+                Audience = "hexalith-eventstore",
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(
+                    new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" },
+                    SecurityAlgorithms.RsaSha256),
+            };
+            return new JsonWebTokenHandler().CreateToken(descriptor);
+        }
+
+        return new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+        {
+            Subject = subject,
             Issuer = "hexalith-dev",
             Audience = "hexalith-eventstore",
             Expires = DateTime.UtcNow.AddHours(1),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(Encoding.UTF8.GetBytes(DevSigningKey)),
                 SecurityAlgorithms.HmacSha256),
-        };
-
-        return new JsonWebTokenHandler().CreateToken(descriptor);
+        });
     }
 
     private static async Task<string> SubmitCommandAsync(

@@ -127,10 +127,22 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
             services.AddSingleton<ITrustedEffectAuditSink, WorksSdkProofAuditSink>();
             services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
             {
+                var signingKey = new RsaSecurityKey(rsa.ExportParameters(false)) { KeyId = key.KeyId };
                 var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
-                metadata.SigningKeys.Add(new RsaSecurityKey(rsa.ExportParameters(false)) { KeyId = key.KeyId });
+                metadata.SigningKeys.Add(signingKey);
+                options.Authority = null;
+                options.MetadataAddress = null;
+                options.RequireHttpsMetadata = false;
                 options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
-                options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.HmacSha256, SecurityAlgorithms.RsaSha256];
+                options.TokenValidationParameters.ValidIssuer = WorksSdkProofDelegationProvider.Issuer;
+                options.TokenValidationParameters.ValidIssuers = [WorksSdkProofDelegationProvider.Issuer];
+                options.TokenValidationParameters.ValidAudience = "hexalith-eventstore";
+                options.TokenValidationParameters.ValidAudiences = ["hexalith-eventstore"];
+                options.TokenValidationParameters.IssuerSigningKey = signingKey;
+                options.TokenValidationParameters.ValidateIssuer = true;
+                options.TokenValidationParameters.ValidateAudience = true;
+                options.TokenValidationParameters.ValidateIssuerSigningKey = true;
+                options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.RsaSha256];
             });
             services.Configure<TrustedEffectAuthorityOptions>(options => options.Rules = [
                 new("works", "works.date-resume", "work", "ResumeWorkItem"),
