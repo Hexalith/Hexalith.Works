@@ -1003,8 +1003,13 @@ internal static class WorksAppHostSmokeHarness
         ]);
         if (WorksAppHostSelection.IsPlatform && PlatformCommandSigningKey.Value is { Length: > 0 } pkcs8)
         {
-            using RSA rsa = RSA.Create();
-            rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(pkcs8), out _);
+            RSAParameters parameters;
+            using (RSA rsa = RSA.Create())
+            {
+                rsa.ImportPkcs8PrivateKey(Convert.FromBase64String(pkcs8), out _);
+                parameters = rsa.ExportParameters(includePrivateParameters: true);
+            }
+
             var descriptor = new SecurityTokenDescriptor
             {
                 Subject = subject,
@@ -1012,7 +1017,7 @@ internal static class WorksAppHostSmokeHarness
                 Audience = "hexalith-eventstore",
                 Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = new SigningCredentials(
-                    new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" },
+                    new RsaSecurityKey(parameters) { KeyId = "story415-ephemeral" },
                     SecurityAlgorithms.RsaSha256),
             };
             return new JsonWebTokenHandler().CreateToken(descriptor);
