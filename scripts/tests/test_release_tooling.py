@@ -221,13 +221,26 @@ class PackageValidationTests(unittest.TestCase):
                 VALIDATE.validate_packages(directory, boundaries)
 
     def test_package_rejects_forbidden_dependency(self) -> None:
+        for package_id in ["Hexalith.Works.AppHost", "Hexalith.Works", "hexalith.WORKS"]:
+            with self.subTest(package_id=package_id), tempfile.TemporaryDirectory() as temporary:
+                directory = Path(temporary)
+                dependency = (package_id, VERSION)
+                write_package(directory, dependencies=(dependency,))
+                boundaries = {"Hexalith.Works.Contracts": frozenset({dependency})}
+                with self.assertRaisesRegex(ValueError, "forbidden host/sample/test"):
+                    VALIDATE.validate_packages(directory, boundaries)
+
+    def test_package_accepts_a_manifest_sibling_dependency(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             directory = Path(temporary)
-            dependency = ("Hexalith.Works.AppHost", VERSION)
-            write_package(directory, dependencies=(dependency,))
-            boundaries = {"Hexalith.Works.Contracts": frozenset({dependency})}
-            with self.assertRaisesRegex(ValueError, "forbidden host/sample/test"):
-                VALIDATE.validate_packages(directory, boundaries)
+            dependency = ("Hexalith.Works.Contracts", VERSION)
+            write_package(directory, package_id="Hexalith.Works.Server", dependencies=(dependency,))
+            write_package(directory)
+            boundaries = {
+                "Hexalith.Works.Contracts": frozenset(),
+                "Hexalith.Works.Server": frozenset({("Hexalith.Works.Contracts", None)}),
+            }
+            self.assertEqual(len(VALIDATE.validate_packages(directory, boundaries)), 2)
 
     def test_packer_rejects_legacy_symbols_archive_outside_exact_inventory(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

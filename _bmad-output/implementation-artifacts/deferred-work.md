@@ -2454,6 +2454,8 @@ Resolution for `spec-reduce-works-ci-duration.md` stable-source requalification:
 
 - source_spec: `spec-reconcile-works-ci-cd-intent-gaps.md`
   summary: Reject the runnable `Hexalith.Works` host package ID as a dependency in `validate-nuget-packages.py`.
+  status: done 2026-11-25
+  resolution: The NuGet validator rejects an exact case-insensitive match for the runnable Hexalith.Works host ID even when it appears in the expected dependency boundary. The separately packable Works libraries remain valid dependencies. [Spec](spec-reject-runnable-host-package-dependency.md).
   evidence: Late iteration-3 row 97 of `spec-implement-works-ci-cd.md` is still open: `FORBIDDEN_DEPENDENCY_FRAGMENTS` lists only `.AppHost`, test, sample and `.ServiceDefaults` suffixes, so a dependency on the non-packable host ID `Hexalith.Works` would pass the fragment check if it entered the expected dependency set.
 
 - source_spec: `spec-qualify-unpaged-queue-responses.md`

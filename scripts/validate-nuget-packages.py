@@ -273,7 +273,8 @@ def validate_packages(
         forbidden = sorted(
             dependency_id
             for dependency_id, _ in package.dependencies
-            if any(fragment.casefold() in dependency_id.casefold() for fragment in FORBIDDEN_DEPENDENCY_FRAGMENTS)
+            if dependency_id.casefold() == "hexalith.works"
+            or any(fragment.casefold() in dependency_id.casefold() for fragment in FORBIDDEN_DEPENDENCY_FRAGMENTS)
         )
         if forbidden:
             raise ValueError(f"{package.package_id}: forbidden host/sample/test dependencies: {forbidden}")
