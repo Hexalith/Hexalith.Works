@@ -1,4 +1,7 @@
 using System.Text;
+using System.Text.Json;
+
+using Hexalith.EventStore.Contracts.Reminders;
 
 using Shouldly;
 
@@ -9,6 +12,60 @@ namespace Hexalith.Works.IntegrationTests;
 /// <summary>Actual isolated Redis restore preserves complete values, expiry and captured authority.</summary>
 public sealed class WorksPlatformFleetRestoreTests
 {
+    /// <summary>Full-fleet verification catches lost reminder indexes if they existed at capture time.</summary>
+    /// <param name="indexesPresentAtCapture">Whether the captured Redis inventory includes both discovery keys.</param>
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RestorePreservesTheCapturedReminderDiscoveryInventory(bool indexesPresentAtCapture)
+    {
+        CancellationToken ct = TestContext.Current.CancellationToken;
+        WorksSdkProofRedis fixture = await WorksSdkProofRedis.StartAsync(ct, activateSdkWriter: true).ConfigureAwait(true);
+        await using var ownedFixture = fixture.ConfigureAwait(true);
+        using ConnectionMultiplexer connection = await ConnectionMultiplexer.ConnectAsync(fixture.RedisEndpoint).ConfigureAwait(true);
+        IDatabase database = connection.GetDatabase();
+        const string tenant = "restore-reminder-tenant";
+        const string item = "restore-reminder-item";
+        const string prefix = "works||eventstore:reminders:v1:WorksSdkReminderActor:";
+        string actor = ReminderIdentityCodec.ComputeActorId(tenant, item);
+        RedisKey itemKey = prefix + "item:" + actor;
+        RedisKey candidateKey = prefix + "tenant:" + tenant + ":candidates";
+        RedisKey registryKey = prefix + "control:tenants";
+        // Use representative Dapr Redis hashes to test inventory completeness independently of actor startup.
+        HashEntry[] Fields(object state) => [new("data", JsonSerializer.Serialize(state)), new("version", "1")];
+        HashEntry[] itemFields = Fields(new { tenant, domain = "work", aggregate = item, version = 1,
+            entries = Array.Empty<object>(), quarantine = Array.Empty<object>() });
+        HashEntry[] candidates = Fields(new { tenant, candidates = new[] { new { domain = "work", aggregate = item, actorId = actor } } });
+        HashEntry[] registry = Fields(new { tenants = new[] { tenant } });
+        await database.HashSetAsync(itemKey, itemFields).ConfigureAwait(true);
+        if (indexesPresentAtCapture)
+        {
+            await database.HashSetAsync(candidateKey, candidates).ConfigureAwait(true);
+            await database.HashSetAsync(registryKey, registry).ConfigureAwait(true);
+        }
+
+        await fixture.CaptureFleetAsync(ct).ConfigureAwait(true);
+        if (indexesPresentAtCapture)
+        {
+            RedisKey[][] omitted = [[candidateKey], [registryKey], [candidateKey, registryKey]];
+            foreach (RedisKey[] keys in omitted)
+            {
+                (await database.KeyDeleteAsync(keys).ConfigureAwait(true)).ShouldBe(keys.Length);
+                (await database.HashGetAllAsync(itemKey).ConfigureAwait(true)).ShouldBe(itemFields, ignoreOrder: true);
+                InvalidOperationException failure = await Should.ThrowAsync<InvalidOperationException>(() => fixture.VerifyRestoredRedisAsync(ct))
+                    .ConfigureAwait(true);
+                failure.Message.ShouldContain("changed type or disappeared");
+                await fixture.RestoreRedisAsync(ct).ConfigureAwait(true);
+            }
+        }
+
+        await fixture.RestoreFleetAsync(ct).ConfigureAwait(true);
+        await fixture.VerifyRestoredRedisAsync(ct).ConfigureAwait(true);
+        (await database.HashGetAllAsync(itemKey).ConfigureAwait(true)).ShouldBe(itemFields, ignoreOrder: true);
+        (await database.HashGetAllAsync(candidateKey).ConfigureAwait(true)).ShouldBe(indexesPresentAtCapture ? candidates : [], ignoreOrder: true);
+        (await database.HashGetAllAsync(registryKey).ConfigureAwait(true)).ShouldBe(indexesPresentAtCapture ? registry : [], ignoreOrder: true);
+    }
+
     /// <summary>Captured hash fields may expire before restore or verification without hiding live-field corruption.</summary>
     [Theory]
     [InlineData(false)]

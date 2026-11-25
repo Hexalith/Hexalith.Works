@@ -1295,6 +1295,8 @@ archived: 2026-10-23
   evidence: Review finding R1-EC12. The probe writes the caller-supplied prefix as a JSON state key but interpolates it raw into the read URI. Documented evidence uses safe prefixes, yet reserved characters can select another path or query. This is unrelated post-baseline Story 6.1 work.
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-11-publish-eventstore-typed-reminder-reconciliation.md`
   summary: Establish whether an approved restore can contain reminder item state while omitting both its tenant registry and candidate index entries.
+  status: done 2026-11-25
+  resolution: The synthetic fleet verifier rejects loss of either captured reminder discovery index and of both together, even when the item record is intact. Restore preserves all three Redis records. A snapshot already missing both indexes passes byte-for-byte restore verification, so that verification alone cannot establish discovery completeness at capture. [Spec](spec-qualify-reminder-discovery-restore.md).
   evidence: Review finding R1-BH9 (unverified medium). Reconciliation cannot discover item state absent from both index documents, but no approved reminder backup/restore model exists yet. Story 4.16's restore drill must prove cross-key restore ordering and atomicity; if partial discovery loss is reachable, add an independent stream or item-state enumeration/rebuild seam.
 
 ## Deferred from: code review of spec-4-11-publish-eventstore-typed-reminder-reconciliation.md (2026-09-30, chunk 1)
