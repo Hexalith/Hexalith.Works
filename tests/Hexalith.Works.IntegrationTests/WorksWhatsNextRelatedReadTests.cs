@@ -61,9 +61,12 @@ public sealed class WorksWhatsNextRelatedReadTests
             .Select(item => item.WorkItemId.Value).Order(StringComparer.Ordinal).ShouldBe(expected.Order(StringComparer.Ordinal));
         string[] relatedReads = [.. RelatedKeys(scope, generation, s_queued.Concat(s_ineligible).Append("owner-mine"))
             .Where(recording.Keys.Contains).Order(StringComparer.Ordinal)];
-        // Only the returned candidates' parking and roll-up documents are read, each once.
+        // Only the returned candidates' parking and roll-up documents are read. A generation-stable
+        // ReadMany retry rereads that whole set together, so hits are a positive multiple of the set.
         relatedReads.ShouldBe([.. RelatedKeys(scope, generation, expected).Order(StringComparer.Ordinal)]);
-        recording.Keys.Count(relatedReads.Contains).ShouldBe(relatedReads.Length);
+        int relatedHits = recording.Keys.Count(relatedReads.Contains);
+        relatedHits.ShouldBeGreaterThanOrEqualTo(relatedReads.Length);
+        (relatedHits % relatedReads.Length).ShouldBe(0);
     }
 
     /// <summary>
