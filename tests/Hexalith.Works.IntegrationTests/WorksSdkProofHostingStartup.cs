@@ -9,12 +9,14 @@ using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.DomainService;
 using Hexalith.EventStore.Server.Commands;
 using Hexalith.EventStore.Server.DomainServices;
+using Hexalith.EventStore.ServiceDefaults.Authentication;
 using Hexalith.EventStore.ServiceDefaults.Routing;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -69,6 +71,9 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         // Every catalog participant must validate the same proof issuer, audience, and key. Rewriting
         // only EventStore leaves AuthenticationFingerprint mismatched and process evidence unavailable.
         ConfigureProofJwtBearer(services, rsa, key);
+        services.AddSingleton<IWorkloadAssertionIssuer>(provider => new WorksSdkProofWorkloadAssertionIssuer(
+            provider.GetRequiredService<RsaSecurityKey>(),
+            provider.GetService<IOptions<WorkloadAssertionIssuerOptions>>()?.Value.Workload));
         services.AddSingleton<WorksSdkProofIntentRegistry>();
         if (role is "operations")
             return;
@@ -149,29 +154,56 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         var key = new RsaSecurityKey(rsa) { KeyId = "story415-ephemeral" };
         services.AddSingleton(key);
         ConfigureProofJwtBearer(services, rsa, key);
+        services.AddSingleton<IWorkloadAssertionIssuer>(provider => new WorksSdkProofWorkloadAssertionIssuer(
+            provider.GetRequiredService<RsaSecurityKey>(),
+            provider.GetService<IOptions<WorkloadAssertionIssuerOptions>>()?.Value.Workload));
     }
 
     private static void ConfigureProofJwtBearer(IServiceCollection services, RSA rsa, RsaSecurityKey key)
     {
+        var signingKey = new RsaSecurityKey(rsa.ExportParameters(includePrivateParameters: false)) { KeyId = key.KeyId };
+        // Gateway stream reads authenticate on DaprInternal, not the human Bearer scheme. Install the
+        // proof authority on every JWT scheme while preserving each scheme's own audience.
+        services.PostConfigureAll<JwtBearerOptions>(options => InstallProofAuthority(options, signingKey));
         services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme, options =>
         {
-            var signingKey = new RsaSecurityKey(rsa.ExportParameters(includePrivateParameters: false)) { KeyId = key.KeyId };
-            var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
-            metadata.SigningKeys.Add(signingKey);
-            options.Authority = string.Empty;
-            options.MetadataAddress = string.Empty;
-            options.RequireHttpsMetadata = false;
-            options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
-            options.TokenValidationParameters.ValidIssuer = WorksSdkProofDelegationProvider.Issuer;
-            options.TokenValidationParameters.ValidIssuers = [WorksSdkProofDelegationProvider.Issuer];
+            var audiences = new HashSet<string>(StringComparer.Ordinal);
+            if (options.TokenValidationParameters.ValidAudience is { Length: > 0 } audience)
+                audiences.Add(audience);
+            if (options.TokenValidationParameters.ValidAudiences is not null)
+                foreach (string valid in options.TokenValidationParameters.ValidAudiences)
+                    if (valid is { Length: > 0 }) audiences.Add(valid);
+            audiences.Add("hexalith-eventstore");
             options.TokenValidationParameters.ValidAudience = "hexalith-eventstore";
-            options.TokenValidationParameters.ValidAudiences = ["hexalith-eventstore"];
-            options.TokenValidationParameters.IssuerSigningKey = signingKey;
-            options.TokenValidationParameters.ValidateIssuer = true;
-            options.TokenValidationParameters.ValidateAudience = true;
-            options.TokenValidationParameters.ValidateIssuerSigningKey = true;
-            options.TokenValidationParameters.ValidAlgorithms = [SecurityAlgorithms.RsaSha256];
+            options.TokenValidationParameters.ValidAudiences = audiences;
         });
+    }
+
+    private static void InstallProofAuthority(JwtBearerOptions options, RsaSecurityKey signingKey)
+    {
+        var metadata = new OpenIdConnectConfiguration { Issuer = WorksSdkProofDelegationProvider.Issuer };
+        metadata.SigningKeys.Add(signingKey);
+        options.Authority = string.Empty;
+        options.MetadataAddress = string.Empty;
+        options.RequireHttpsMetadata = false;
+        options.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata);
+        var issuers = new HashSet<string>(StringComparer.Ordinal) { WorksSdkProofDelegationProvider.Issuer };
+        if (options.TokenValidationParameters.ValidIssuer is { Length: > 0 } issuer)
+            issuers.Add(issuer);
+        if (options.TokenValidationParameters.ValidIssuers is not null)
+            foreach (string valid in options.TokenValidationParameters.ValidIssuers)
+                if (valid is { Length: > 0 }) issuers.Add(valid);
+        options.TokenValidationParameters.ValidIssuer = WorksSdkProofDelegationProvider.Issuer;
+        options.TokenValidationParameters.ValidIssuers = issuers;
+        options.TokenValidationParameters.IssuerSigningKey = signingKey;
+        options.TokenValidationParameters.ValidateIssuer = true;
+        options.TokenValidationParameters.ValidateAudience = true;
+        options.TokenValidationParameters.ValidateIssuerSigningKey = true;
+        var algorithms = options.TokenValidationParameters.ValidAlgorithms is { } existing
+            ? existing.ToHashSet(StringComparer.Ordinal)
+            : new HashSet<string>(StringComparer.Ordinal);
+        _ = algorithms.Add(SecurityAlgorithms.RsaSha256);
+        options.TokenValidationParameters.ValidAlgorithms = algorithms;
     }
 
     private static void ConfigureMetadata(IServiceCollection services)
