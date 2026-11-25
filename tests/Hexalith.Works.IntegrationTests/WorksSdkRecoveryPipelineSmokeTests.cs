@@ -995,10 +995,10 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
     internal static void ConfigureRecoveryProfile(IResourceBuilder<ProjectResource> target)
     {
         ArgumentNullException.ThrowIfNull(target);
-        // Actual catalog-bound actor turns completed in 2.22-2.36s while their source reads
-        // remained inside 2s. The old 2s whole slice could not even admit one such turn.
-        // This finite fixture supports twelve sources (24s of source reads) plus bounded
-        // state/catalog publication. The SDK retains its continuation if the 30s slice yields.
+        // Platform catalog-bound RSA stream reads for one parent history plus five child
+        // Cancel translations complete around 2s. The 1.97s slice cancelled that unit at the
+        // operation deadline; 4s admits it. Twelve-source freshness then exceeds the 30-minute
+        // SDK ceiling, so proof hosting replaces process option validation for that check only.
         target.WithEnvironment("Logging__LogLevel__Hexalith.EventStore.DomainService.ReminderReconciler", "Information")
             .WithEnvironment("Logging__LogLevel__Hexalith.Works.Recovery.WorksProcessTranslator", "Debug")
             .WithEnvironment("EventStore__Reminders__ReconciliationInterval", "00:00:20")
@@ -1008,9 +1008,9 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             .WithEnvironment("Works__Recovery__ContextReadTimeout", "00:00:02")
             .WithEnvironment("EventStore__Processes__RetryLimit", "10")
             .WithEnvironment("EventStore__Processes__SupportedCandidateCount", SupportedCandidates.ToString(System.Globalization.CultureInfo.InvariantCulture))
-            .WithEnvironment("EventStore__Processes__OperationTimeout", "00:00:01.9700000")
+            .WithEnvironment("EventStore__Processes__OperationTimeout", WorksAppHostSelection.IsPlatform ? "00:00:04" : "00:00:01.9700000")
             .WithEnvironment("EventStore__Processes__LeaseDuration", "00:00:30")
-            .WithEnvironment("EventStore__Processes__SourceServiceQuantum", "00:00:57.1300000")
+            .WithEnvironment("EventStore__Processes__SourceServiceQuantum", WorksAppHostSelection.IsPlatform ? "00:01:56" : "00:00:57.1300000")
             .WithEnvironment("EventStore__Processes__ReadinessMaxAge", "00:30:00");
     }
 

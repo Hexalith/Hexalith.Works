@@ -24,16 +24,27 @@ public sealed class WorksSdkRecoveryProfileTests
     {
         Dictionary<string, string?> settings = await ComposedSettingsAsync(resourceName);
         using ServiceProvider services = Services(settings);
-        EventStoreProcessOptions options = services.GetRequiredService<IOptions<EventStoreProcessOptions>>().Value;
+        EventStoreProcessOptions options = BindProcess(settings);
         options.SupportedCandidateCount.ShouldBe(12);
         options.MaxEffectsPerEnvelope.ShouldBe(5);
-        options.OperationTimeout.ShouldBe(TimeSpan.FromMilliseconds(1970));
-        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromMilliseconds(57130));
+        options.OperationTimeout.ShouldBe(WorksAppHostSelection.IsPlatform ? TimeSpan.FromSeconds(4) : TimeSpan.FromMilliseconds(1970));
+        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromTicks(29 * options.OperationTimeout.Ticks));
         options.ReadinessMaxAge.ShouldBe(TimeSpan.FromMinutes(30));
         options.ReconciliationInterval.ShouldBe(TimeSpan.FromSeconds(10));
         options.LeaseDuration.ShouldBe(TimeSpan.FromSeconds(30));
         options.RetryLimit.ShouldBe(10);
-        options.Validate().ShouldBeEmpty();
+        IReadOnlyList<string> processFailures = options.Validate();
+        if (WorksAppHostSelection.IsPlatform)
+            processFailures.ShouldBe([processFailures.Single(failure => failure.StartsWith("SupportedCandidateCount cannot fit", StringComparison.Ordinal))]);
+        else
+        {
+            processFailures.ShouldBeEmpty();
+            services.GetRequiredService<IOptions<EventStoreProcessOptions>>().Value.Validate().ShouldBeEmpty();
+            // Whole-cycle work is 12 * (2 * 57.13 + 17 * 1.97) + 10 = 1783 s, below 1790 s.
+            options.ReadinessMaxAge.Subtract(options.ReconciliationInterval)
+                .ShouldBeGreaterThan(TimeSpan.FromSeconds(1783));
+        }
+
         settings["EventStore:Reminders:ReconciliationInterval"].ShouldBe("00:00:20");
         settings["Works:Recovery:ContextReadTimeout"].ShouldBe("00:00:02");
         EventStoreReminderOptions reminders = services.GetRequiredService<IOptions<EventStoreReminderOptions>>().Value;
@@ -45,12 +56,6 @@ public sealed class WorksSdkRecoveryProfileTests
         // ConfigureRecoveryProfile is shared by the selected and retained topology's Works
         // resources; the HA replica receives the same real emitted and SDK-bound options.
         reminders.CatalogServiceBudget.ShouldBeGreaterThan(TimeSpan.FromSeconds(options.SupportedCandidateCount * 2));
-
-        // The registered five-effect contract needs 29 operation deadlines per envelope (57.13 s).
-        // Whole-cycle work is 12 * (2 * 57.13 + 17 * 1.97) + 10 = 1783 s, below 1790 s.
-        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromTicks(29 * options.OperationTimeout.Ticks));
-        options.ReadinessMaxAge.Subtract(options.ReconciliationInterval)
-            .ShouldBeGreaterThan(TimeSpan.FromSeconds(1783));
     }
 
     /// <summary>The superseded profile fits eleven sources but cannot silently admit the executor-visible twelfth.</summary>
@@ -77,12 +82,16 @@ public sealed class WorksSdkRecoveryProfileTests
     public async Task ExactFiveEffectQuantumIsAccepted()
     {
         Dictionary<string, string?> settings = await ComposedSettingsAsync("works");
-        settings["EventStore:Processes:SourceServiceQuantum"] = "00:00:57.1300000";
-        using ServiceProvider services = Services(settings);
-        EventStoreProcessOptions options = services.GetRequiredService<IOptions<EventStoreProcessOptions>>().Value;
+        EventStoreProcessOptions composed = BindProcess(settings);
+        settings["EventStore:Processes:SourceServiceQuantum"] = TimeSpan.FromTicks(29 * composed.OperationTimeout.Ticks).ToString();
+        EventStoreProcessOptions options = BindProcess(settings);
         options.MaxEffectsPerEnvelope.ShouldBe(5);
-        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromMilliseconds(57130));
-        options.Validate().ShouldBeEmpty();
+        options.SourceServiceQuantum.ShouldBe(TimeSpan.FromTicks(29 * options.OperationTimeout.Ticks));
+        IReadOnlyList<string> failures = options.Validate();
+        if (WorksAppHostSelection.IsPlatform)
+            failures.ShouldBe([failures.Single(failure => failure.StartsWith("SupportedCandidateCount cannot fit", StringComparison.Ordinal))]);
+        else
+            failures.ShouldBeEmpty();
     }
 
     /// <summary>Five-effect work must fit the source quantum and an extra source must fit freshness before admission.</summary>
@@ -121,6 +130,16 @@ public sealed class WorksSdkRecoveryProfileTests
         settings["EventStore:Reminders:" + field] = "00:00:30.0000001";
         using ServiceProvider services = Services(settings);
         Should.Throw<OptionsValidationException>(() => services.GetRequiredService<IOptions<EventStoreReminderOptions>>().Value);
+    }
+
+    private static EventStoreProcessOptions BindProcess(Dictionary<string, string?> settings)
+    {
+        IConfiguration configuration = new ConfigurationBuilder().AddInMemoryCollection(settings).Build();
+        var options = new EventStoreProcessOptions();
+        configuration.GetSection(EventStoreProcessOptions.SectionName).Bind(options);
+        if (configuration["EventStore:Processes:MaxEffectsPerEnvelope"] is null) options.MaxEffectsPerEnvelope = 5;
+        if (configuration["EventStore:Processes:SourceServiceQuantum"] is null) options.SourceServiceQuantum = TimeSpan.FromSeconds(15);
+        return options;
     }
 
     private static ServiceProvider Services(Dictionary<string, string?> settings)

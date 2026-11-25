@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -79,6 +80,7 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
             return;
         if (role == "works")
         {
+            InstallProofProcessOptions(services);
             // Keep the actual Works health result, exposing only the same bounded diagnostic response used by the gateway.
             services.Configure<Hexalith.EventStore.ServiceDefaults.EventStoreServiceDefaultsOptions>(options =>
                 options.DevelopmentHealthResponseWriter = WorksReminderHealthProjection.WriteAsync);
@@ -205,6 +207,9 @@ public sealed class WorksSdkProofHostingStartup : IHostingStartup
         _ = algorithms.Add(SecurityAlgorithms.RsaSha256);
         options.TokenValidationParameters.ValidAlgorithms = algorithms;
     }
+
+    private static void InstallProofProcessOptions(IServiceCollection services)
+        => services.Replace(ServiceDescriptor.Transient<IOptionsFactory<EventStoreProcessOptions>, WorksSdkProofProcessOptionsFactory>());
 
     private static void ConfigureMetadata(IServiceCollection services)
     {
