@@ -88,6 +88,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!-- The managed release supplies the frozen package version, including for shallow checkouts. -->
+    <MinVerVersionOverride Condition="'$(Configuration)' == 'Release' and '$(ContinuousIntegrationBuild)' == 'true' and '$(MinVerVersionOverride)' == '' and '$(PackageVersion)' != ''">$(PackageVersion)</MinVerVersionOverride>
     <MinVerTagPrefix>v</MinVerTagPrefix>
     <MinVerDefaultPreReleaseIdentifiers>preview.0</MinVerDefaultPreReleaseIdentifiers>
   </PropertyGroup>

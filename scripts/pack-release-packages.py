@@ -142,7 +142,6 @@ def main() -> int:
                 str(output),
                 f"-p:Version={args.version}",
                 f"-p:PackageVersion={args.version}",
-                f"-p:MinVerVersionOverride={args.version}",
                 "-p:UseHexalithProjectReferences=false",
                 "-p:ContinuousIntegrationBuild=true",
             ],
