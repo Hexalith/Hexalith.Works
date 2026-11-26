@@ -78,13 +78,14 @@ public sealed class WorksPlatformHaPipelineSmokeTests
             DateTimeOffset primaryStoppedAt = DateTimeOffset.UtcNow;
             bool primaryStoppedBeforeDue = primaryStoppedAt < due;
             primaryStoppedBeforeDue.ShouldBeTrue("The primary must be stopped before the scheduled date can fire.");
-            int resumeCountAtPrimaryStop = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, token).ConfigureAwait(false);
-            resumeCountAtPrimaryStop.ShouldBe(0, "Recovery must occur only after the primary has stopped.");
+            DateTimeOffset recoveryDeadline = due.AddMinutes(3);
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(token);
-            deadline.CancelAfter(TimeSpan.FromMinutes(3));
-            int resumed;
-            while ((resumed = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, deadline.Token).ConfigureAwait(false)) != 1)
-                await Task.Delay(200, deadline.Token).ConfigureAwait(false);
+            deadline.CancelAfter(recoveryDeadline - primaryStoppedAt);
+            int resumeCountAtPrimaryStop = await WorksAppHostSmokeHarness.CountResumedAsync(gateway, tenant, item, deadline.Token).ConfigureAwait(false);
+            resumeCountAtPrimaryStop.ShouldBe(0, "Recovery must occur only after the primary has stopped.");
+            int resumed = await WorksAppHostSmokeHarness.WaitForResumedCountAsync(
+                gateway, tenant, item, 1, deadline.Token, recoveryDeadline).ConfigureAwait(false);
+            resumed.ShouldBe(1);
             using HttpClient survivor = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, secondary, "Surviving Works", token).ConfigureAwait(false);
             using DaprClient survivorDapr = await WorksAppHostTestReadiness.CreateSdkDaprClientAsync(app, secondary, token).ConfigureAwait(false);
             var survivorStore = new DaprReadModelStore(survivorDapr);
