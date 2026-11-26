@@ -4,10 +4,10 @@ Hexalith.Works is the Hexalith work-item domain module. The repository is an umb
 
 ## Local Debug development
 
-Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), McpCli (contract declarations), Memories (Platform preparation contracts), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
+Debug builds consume EventStore and PolymorphicSerializations from sibling source so changes can be debugged across module boundaries. The source graph also needs Builds (central props/tooling), Commons (SDK primitives), McpCli (contract declarations), Memories (Platform preparation contracts), FrontComposer (a Memories source requirement), Tenants (SDK build inputs), Parties (client/contracts and the integration authority source fixture), and Platform (source-only Identity and Composition test adapters). AI.Tools supplies the required repository baseline. Initialize these root-declared dependencies:
 
 ```bash
-git -c submodule.recurse=false submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+git -c submodule.recurse=false submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.FrontComposer references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
 export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx -p:Configuration=Debug
 dotnet build Hexalith.Works.slnx --configuration Debug --no-restore
@@ -60,7 +60,7 @@ Required live classes run in that verifier with an explicitly selected, hashed P
 The [Platform profile contract](references/Hexalith.Platform/docs/works-host-parity.md#canonical-local-and-ci-profiles) also preserves the default `full` local gate, which adds source Debug conformance. CI records that source conformance was not requested; it does not claim a Debug pass. Both profiles require all eleven rows and all 44 proof kinds, with the same strict source/runtime/archive/launcher binding. The bootstrap binds its selected export back to the original Platform working overlay and refuses relevant drift in either source.
 
 ```bash
-git -c submodule.recurse=false submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
+git -c submodule.recurse=false submodule update --init references/Hexalith.AI.Tools references/Hexalith.Builds references/Hexalith.Commons references/Hexalith.McpCli references/Hexalith.Memories references/Hexalith.FrontComposer references/Hexalith.EventStore references/Hexalith.PolymorphicSerializations references/Hexalith.Tenants references/Hexalith.Parties references/Hexalith.Platform
 export HexalithBuildsRoot="$PWD/references/Hexalith.Builds"
 dotnet restore Hexalith.Works.slnx -p:Configuration=Release
 dotnet build Hexalith.Works.slnx --configuration Release --no-restore -warnaserror -m:1
