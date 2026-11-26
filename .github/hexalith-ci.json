@@ -1,7 +1,7 @@
 {
   "browsers": false,
   "buildProjects": [],
-  "buildsTag": "v6.8.3",
+  "buildsTag": "v6.8.4",
   "ciTimeoutMinutes": 30,
   "codeql": [
     "csharp",
