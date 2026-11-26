@@ -281,6 +281,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
         string? resumedEffect = null;
         string resumeParent = "work-sdk415-await-parent-" + suffix;
         string resumeChild = "work-sdk415-completed-child-" + suffix;
+        var resumeChildSource = new ProcessSource(tenant, "work", resumeChild);
         string rescheduled = "work-sdk415-rescheduled-" + suffix;
         // The Executor view reads only its own Assigned and the Queued items. Every other source here ends terminal or
         // InProgress, so this twelfth source stays Assigned to the synthetic Executor for the delegated restart and
@@ -642,8 +643,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             client = retryingClient;
             using DaprClient dapr = await DaprAsync(app, token).ConfigureAwait(false);
             var store = new OpenCircuitRetryStore(new DaprReadModelStore(dapr));
-            var source = new ProcessSource(tenant, "work", resumeChild);
-            await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value?.Checkpoint >= 4, token).ConfigureAwait(false);
+            await WaitAsync(async () => (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(resumeChildSource), token).ConfigureAwait(false)).Value?.Checkpoint >= 4, token).ConfigureAwait(false);
             (await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, resumeParent, token).ConfigureAwait(false)).ShouldBe(1);
             ResourceEvent gateway = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "eventstore", token, token).ConfigureAwait(false);
             using HttpClient actorState = await WorksAppHostTestReadiness.CreateDaprClientAsync(app, gateway, "EventStore", token).ConfigureAwait(false);
@@ -663,21 +663,21 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
             completedSweep!.RetainedCandidates.ShouldBe(recoveryGrants.Length);
             await EvidenceAsync("complete-supported-process-coverage", completedSweep, token).ConfigureAwait(false);
             await EvidenceAsync("child-resume-noop-restart-receipt-and-checkpoint", new { resumedEffect, replay, receipt = JsonSerializer.Deserialize<JsonElement>(body),
-                checkpoint = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(source), token).ConfigureAwait(false)).Value }, token).ConfigureAwait(false);
+                checkpoint = (await store.GetAsync<ProcessSourceState>("statestore", ProcessStateKeys.Source(resumeChildSource), token).ConfigureAwait(false)).Value }, token).ConfigureAwait(false);
             if (WorksAppHostSelection.IsPlatform)
             {
 #if WORKS_PLATFORM_PARITY
                 await EvidenceAsync("paged-process-restart-and-shared-store-owner-fencing",
                     await WorksPlatformRecoveryChecks.VerifyPagesAndOwnershipAsync(store, tenant, recoveryGrants, token).ConfigureAwait(false), token).ConfigureAwait(false);
                 await EvidenceAsync("protected-scoped-disposition-audit-before-mutation",
-                    await WorksPlatformOperationsChecks.VerifyAsync(app, store, source, token).ConfigureAwait(false), token).ConfigureAwait(false);
+                    await WorksPlatformOperationsChecks.VerifyAsync(app, store, resumeChildSource, token).ConfigureAwait(false), token).ConfigureAwait(false);
                 await EvidenceAsync("platform-named-redelivery-capture-through-commit-complete-family",
                     await WorksPlatformProjectionChecks.VerifyAsync(app, client, store, tenant, executorItem, identity, token,
                         expectedSources: recoveryGrants.Length).ConfigureAwait(false), token).ConfigureAwait(false);
 #endif
                 await EvidenceAsync("platform-query-and-explicit-receipt-replay",
                     await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, identity, executorItem,
-                        recoveryGrants.Length, token).ConfigureAwait(false), token).ConfigureAwait(false);
+                        recoveryGrants.Length, token, restoredAuditSource: null).ConfigureAwait(false), token).ConfigureAwait(false);
                 DateTimeOffset settledAt = DateTimeOffset.UtcNow;
                 WorksPlatformMetricPoint? clear = null;
                 await WaitAsync(() => Task.FromResult((clear = telemetry!.Points.FirstOrDefault(point => IsAlertClearAfter(point, settledAt))) is not null), token).ConfigureAwait(false);
@@ -714,7 +714,7 @@ public sealed class WorksSdkRecoveryPipelineSmokeTests
                 restoredRuntimeHashes.OrderBy(pair => pair.Key).ShouldBe(runtimeHashes.OrderBy(pair => pair.Key));
                 IReadOnlyList<string> verifiedConfiguration = await isolation.VerifyRestoredConfigurationAsync(token, sdkRunning: true).ConfigureAwait(false);
                 object convergence = await WorksPlatformRollbackChecks.VerifyAsync(app, client, rsa, tenant, resumeParent, resumedEffect!, identity, executorItem,
-                    recoveryGrants.Length, token, restored: true).ConfigureAwait(false);
+                    recoveryGrants.Length, token, restoredAuditSource: resumeChildSource).ConfigureAwait(false);
                 int dateResumed = await WorksAppHostSmokeHarness.CountResumedAsync(client, tenant, dateItem, token).ConfigureAwait(false);
                 int childCancelled = await CountAsync(client, tenant, childId, nameof(WorkItemCancelled), token).ConfigureAwait(false);
                 int childExpired = await CountAsync(client, tenant, expiryItem, nameof(WorkItemExpired), token).ConfigureAwait(false);

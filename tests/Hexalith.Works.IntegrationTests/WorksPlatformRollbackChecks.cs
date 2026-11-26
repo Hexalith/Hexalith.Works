@@ -8,6 +8,7 @@ using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
 
+using Hexalith.EventStore.Client.Processes;
 using Hexalith.EventStore.Client.Projections;
 using Hexalith.EventStore.Client.Reminders;
 using Hexalith.EventStore.Contracts.Effects;
@@ -31,9 +32,10 @@ internal static class WorksPlatformRollbackChecks
     /// <param name="executor">The test-only Parties identity for the delegated Executor query; no coordinator authority is composed.</param>
     /// <param name="executorItem">The work item currently Assigned to <paramref name="executor"/>'s Party, so the Executor view can read it.</param>
     /// <param name="expectedCandidates">The complete retained process candidate count of the fixture.</param>
+    /// <param name="restoredAuditSource">The source of the operator disposition recorded before the fleet snapshot.</param>
     internal static async Task<object> VerifyAsync(DistributedApplication app, HttpClient gateway, RSA authority,
         string tenant, string parent, string resumedEffect, WorksPlatformIdentityFixture executor, string executorItem,
-        int expectedCandidates, CancellationToken cancellationToken, bool restored = false)
+        int expectedCandidates, CancellationToken cancellationToken, ProcessSource? restoredAuditSource)
     {
         ArgumentNullException.ThrowIfNull(executor);
         ResourceEvent works = await WorksAppHostTestReadiness.WaitForResourceHealthyAsync(app, "works", cancellationToken, cancellationToken).ConfigureAwait(false);
@@ -101,7 +103,7 @@ internal static class WorksPlatformRollbackChecks
         resumedCount.ShouldBe(1);
         ProcessSweepState? sweep = null;
         int? restoredOperatorAuditAttempts = null;
-        if (restored)
+        if (restoredAuditSource is not null)
         {
             using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             deadline.CancelAfter(TimeSpan.FromMinutes(2));
@@ -113,19 +115,14 @@ internal static class WorksPlatformRollbackChecks
             } while (true);
             sweep.Pending.Count.ShouldBe(0);
 #if WORKS_PLATFORM_PARITY
-            // The operator record belongs to the completed child process source, not the resumed parent.
-            var source = new Hexalith.EventStore.Client.Processes.ProcessSource(submission.Identity.Tenant, submission.Identity.SourceDomain, submission.Identity.SourceAggregate);
-            WorksProcessDispositionAuditDocument? audit = null;
-            using var auditDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            auditDeadline.CancelAfter(TimeSpan.FromMinutes(2));
-            do
-            {
-                audit = (await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore",
-                    WorksSyntheticDispositionAuditSink.Key(source), auditDeadline.Token).ConfigureAwait(false)).Value;
-                if (audit is not null) break;
-                await Task.Delay(100, auditDeadline.Token).ConfigureAwait(false);
-            } while (true);
-            audit.ShouldNotBeNull().Attempts.ShouldHaveSingleItem().Actor.ShouldBe("synthetic-operator-416");
+            string auditKey = WorksSyntheticDispositionAuditSink.Key(restoredAuditSource);
+            WorksProcessDispositionAuditDocument audit = (await store.GetAsync<WorksProcessDispositionAuditDocument>("statestore",
+                auditKey, cancellationToken).ConfigureAwait(false)).Value.ShouldNotBeNull(
+                $"Restored operator audit is missing for process source {restoredAuditSource.CatalogKey} at {auditKey}.");
+            WorksProcessDispositionAuditRecord attempt = audit.Attempts.ShouldHaveSingleItem();
+            attempt.Source.ShouldBe(restoredAuditSource);
+            attempt.Actor.ShouldBe("synthetic-operator-416");
+            attempt.Workload.ShouldBe("eventstore-admin");
             restoredOperatorAuditAttempts = audit.Attempts.Count;
 #endif
         }
