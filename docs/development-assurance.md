@@ -18,7 +18,7 @@ Works uses EventStore source `7a42a0f01cfc6cafe6aa2d3e5ef05cbc370b22cb` in Debug
 Release selects `5.6.0`, whose NuGet producer is `295b5a6ba584167f21cfef40787477b8814e32da`.
 The Debug source includes later EventStore changes. The Release package still comes from the recorded producer.
 
-For PolymorphicSerializations, Debug uses `538fe092340a7a6266128463c4cfd008aad6ebd5`.
+For PolymorphicSerializations, Debug uses `c7a72fa83f63538d49d64f3b6f44e151afe6b22f`.
 The Works Release catalog selects `2.0.2`, whose NuGet producer is
 `94ae242d609d0126735a8ab387960ec41265a4f7`. The subsequent commits changed
 CI configuration and the Builds gitlink. The library sources at those revisions are identical.

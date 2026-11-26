@@ -7,7 +7,7 @@
       "releaseVersion": "5.6.0"
     },
     "references/Hexalith.PolymorphicSerializations": {
-      "sourceRevision": "538fe092340a7a6266128463c4cfd008aad6ebd5",
+      "sourceRevision": "c7a72fa83f63538d49d64f3b6f44e151afe6b22f",
       "releaseProperty": "HexalithPolymorphicSerializationsVersion",
       "releaseVersion": "2.0.2"
     }
