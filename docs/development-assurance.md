@@ -14,14 +14,14 @@ stage the reviewed root gitlinks before running the gate; this supports verifica
 The script never stages files itself. The separate Architecture marker guard characterizes committed
 revisions. A local build with an overlay qualifies the observed overlay, rather than pristine source alone.
 
-Works uses EventStore source `7a42a0f01cfc6cafe6aa2d3e5ef05cbc370b22cb` in Debug.
+Works uses EventStore source `f84fad626865c5ba1fafeb85bfef6fcba83b7c06` in Debug.
 Release selects `5.6.0`, whose NuGet producer is `295b5a6ba584167f21cfef40787477b8814e32da`.
 The Debug source includes later EventStore changes. The Release package still comes from the recorded producer.
 
-For PolymorphicSerializations, Debug uses `c7a72fa83f63538d49d64f3b6f44e151afe6b22f`.
+For PolymorphicSerializations, Debug uses `693237318be0c52e22fd5c77569b195327495b9a`.
 The Works Release catalog selects `2.0.2`, whose NuGet producer is
-`94ae242d609d0126735a8ab387960ec41265a4f7`. The subsequent commits changed
-CI configuration and the Builds gitlink. The library sources at those revisions are identical.
+`94ae242d609d0126735a8ab387960ec41265a4f7`. The later source revision is the published `v2.0.3` tag;
+those commits changed CI configuration and documentation. The library sources at those revisions are identical.
 
 The full local source gate and canonical Platform
 parity retain their independent requirements. Historical package authentication
