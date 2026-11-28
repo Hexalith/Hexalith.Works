@@ -101,6 +101,10 @@ class SourceDebugVerificationTests(unittest.TestCase):
         owners = set(MODULE.DEPENDENCIES) | {
             "references/Hexalith.Commons", "references/Hexalith.McpCli", "references/Hexalith.Builds"
         }
+        (root / ".gitmodules").write_text(
+            "".join(f'[submodule "{Path(path).name}"]\n\tpath = {path}\n' for path in sorted(owners)),
+            encoding="utf-8",
+        )
         for path in owners:
             checkout = root / path
             checkout.mkdir(parents=True)
@@ -127,8 +131,6 @@ class SourceDebugVerificationTests(unittest.TestCase):
             elif command[-2:] == ["rev-parse", "HEAD"]:
                 path = Path(command[2]).relative_to(root).as_posix()
                 output = self.checkouts.get(path, "c" * 40)
-            elif command[:3] == ["git", "config", "--file"]:
-                output = "\n".join(f"submodule.{Path(path).name}.path {path}" for path in sorted(owners))
             elif command[:2] == ["dotnet", "msbuild"]:
                 output = json.dumps({"Properties": self.versions})
             elif (

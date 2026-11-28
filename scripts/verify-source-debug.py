@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import configparser
 import contextlib
 import hashlib
 import json
@@ -134,11 +135,17 @@ def source_owners(root, run):
     available root dependencies. It remains distinct from the two reviewed
     source/package pairs; none of their identity checks is broadened.
     """
-    declared = run(["git", "config", "--file", str(root / ".gitmodules"),
-                    "--get-regexp", r"^submodule\..*\.path$"])
+    config = configparser.ConfigParser(interpolation=None)
+    try:
+        with (root / ".gitmodules").open(encoding="utf-8") as manifest:
+            config.read_file(manifest)
+    except configparser.Error as error:
+        raise ValueError(f"Invalid root submodule manifest: {error}") from error
     owners = {".": root}
-    for entry in declared.splitlines():
-        _, path = entry.split(maxsplit=1)
+    for section in config.sections():
+        if not (section.startswith('submodule "') and section.endswith('"')) or "path" not in config[section]:
+            continue
+        path = config[section]["path"].strip()
         parts = Path(path).parts
         if len(parts) != 2 or parts[0] != "references" or parts[1] in {".", ".."}:
             raise ValueError(f"Invalid root-declared source owner: {path}")
